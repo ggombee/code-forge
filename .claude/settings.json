@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "command": ".claude/hooks/skill-forced-eval.sh"
+      }
+    ]
+  }
+}
