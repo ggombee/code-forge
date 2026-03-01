@@ -11,16 +11,17 @@
 ### 새 프로젝트에 적용
 
 ```bash
-cd my-project
-bash <(curl -s https://raw.githubusercontent.com/ggombee/ggombee-agents/main/init.sh)
+# 어디서든 프로젝트 경로만 넘기면 됨
+bash ~/Desktop/ggombee-agents/init.sh /path/to/my-project
 ```
 
-또는 로컬에서 직접:
+GitHub에서 직접:
 
 ```bash
-cd my-project
-bash ~/path/to/ggombee-agents/init.sh
+bash <(curl -s https://raw.githubusercontent.com/ggombee/ggombee-agents/main/init.sh) /path/to/my-project
 ```
+
+경로 생략 시 현재 디렉토리에 설치된다.
 
 설치되는 파일:
 
@@ -32,11 +33,11 @@ bash ~/path/to/ggombee-agents/init.sh
 
 ### 규칙 업데이트
 
-중앙 레포에서 규칙을 수정한 뒤, 각 프로젝트에서 같은 스크립트를 다시 실행하면 최신으로 덮어쓴다.
+중앙 레포에서 규칙을 수정한 뒤, 같은 스크립트를 다시 실행하면 최신으로 덮어쓴다.
 
 ```bash
 # 기존 .claude/가 있으면 덮어쓸지 물어봄
-bash <(curl -s https://raw.githubusercontent.com/ggombee/ggombee-agents/main/init.sh)
+bash ~/Desktop/ggombee-agents/init.sh /path/to/my-project
 ```
 
 ---

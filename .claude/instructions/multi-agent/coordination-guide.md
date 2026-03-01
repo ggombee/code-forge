@@ -223,6 +223,28 @@ Task(...)  // 성공 → 결과 사용
 
 ---
 
+## Context Optimization (컨텍스트 최적화)
+
+대규모 작업에서 Context Window 초과와 중복 탐색을 방지하는 전략.
+
+### 3대 원칙
+
+| 원칙 | 문서 | 핵심 |
+|------|------|------|
+| **Phase 분리** | `../context-optimization/phase-based-execution.md` | 10개+ 파일 → Phase 나눠 실행 |
+| **중복 방지** | `../context-optimization/redundant-exploration-prevention.md` | 같은 파일 3회+ 읽기 금지 |
+| **분산 위임** | `../context-optimization/sub-agent-distribution.md` | 탐색은 Sub-agent, 메인은 조율만 |
+
+### 적용 기준
+
+```
+소규모 (1-3파일)  → 직접 처리, 최적화 불필요
+중규모 (4-8파일)  → 탐색/검증은 Sub-agent 위임
+대규모 (9개+파일) → Phase 분리 + 전면 Sub-agent 위임
+```
+
+---
+
 ## 참조 문서
 
 | 문서              | 경로                                  |
@@ -230,3 +252,7 @@ Task(...)  // 성공 → 결과 사용
 | 에이전트 목록     | `./agent-roster.md`                   |
 | 금지 패턴         | `../validation/forbidden-patterns.md` |
 | 필수 행동         | `../validation/required-behaviors.md` |
+| Phase 기반 실행   | `../context-optimization/phase-based-execution.md` |
+| 중복 탐색 방지    | `../context-optimization/redundant-exploration-prevention.md` |
+| Sub-agent 분배    | `../context-optimization/sub-agent-distribution.md` |
+| 스코프 완전성     | `../validation/scope-completeness.md` |

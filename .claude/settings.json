@@ -5,6 +5,12 @@
         "type": "command",
         "command": ".claude/hooks/skill-forced-eval.sh"
       }
+    ],
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": ".claude/hooks/session-env-setup.sh"
+      }
     ]
   }
 }

@@ -47,7 +47,7 @@
 
 ### 필요시 투입
 
-designer, vision, researcher, security-reviewer, qa-tester, document-writer, lint-fixer, build-fixer, architect, planner
+analyst, critic, deep-executor, designer, vision, researcher, security-reviewer, qa-tester, document-writer, lint-fixer, build-fixer, architect, planner
 
 ### general-purpose 에이전트
 
@@ -111,6 +111,10 @@ READ → REACT → ANALYZE → RESTRUCTURE → STRUCTURE → REFLECT
 | `.claude/instructions/multi-agent/execution-patterns.md` | 작업별 실행 패턴 |
 | `.claude/instructions/multi-agent/agent-roster.md` | 에이전트 목록/상세 |
 | `.claude/instructions/multi-agent/team-evaluation.md` | Agent Teams 평가 |
+| `.claude/instructions/context-optimization/redundant-exploration-prevention.md` | 반복 탐색 방지 |
+| `.claude/instructions/context-optimization/sub-agent-distribution.md` | 서브에이전트 컨텍스트 분배 |
+| `.claude/instructions/context-optimization/phase-based-execution.md` | 페이즈 기반 실행 |
+| `.claude/instructions/validation/scope-completeness.md` | 스코프 완전성 검증 |
 
 ---
 
@@ -173,6 +177,7 @@ https://www.figma.com/design/{fileKey}/{fileName}?node-id={nodeId}
 | `/lint-fix` | 린트 오류 자동 수정 |
 | `/git-all` | 전체 변경사항 커밋 후 푸시 |
 | `/git-session` | 현재 세션 파일만 커밋 후 푸시 |
+| `/git-merge` | 브랜치 머지 + push 자동화 |
 
 ---
 
@@ -180,13 +185,16 @@ https://www.figma.com/design/{fileKey}/{fileName}?node-id={nodeId}
 
 ```
 .claude/
-├── agents/          # 에이전트 정의 (15개)
-├── commands/        # 슬래시 명령어 (6개)
-├── skills/          # 스킬 (4개)
-├── rules/frontend/  # 코딩 규칙
-├── instructions/    # 멀티에이전트 협업, 검증 규칙
-├── hooks/           # UserPromptSubmit 훅
-├── settings.json    # 훅 설정
-├── plans/           # 작업 계획 (자동 생성, gitignored)
-└── temp/            # 임시 파일 (자동 생성, gitignored)
+├── agents/              # 에이전트 정의 (18개)
+├── commands/            # 슬래시 명령어 (7개)
+├── skills/              # 스킬 (4개)
+├── rules/frontend/      # 코딩 규칙
+├── instructions/        # 멀티에이전트 협업, 검증, 컨텍스트 최적화
+│   ├── multi-agent/     # 에이전트 협업 규칙
+│   ├── context-optimization/  # 컨텍스트 최적화 (Phase 분리, 중복 방지, 분산)
+│   └── validation/      # 검증 규칙 (금지 패턴, 품질 게이트, 스코프 완전성)
+├── hooks/               # UserPromptSubmit + SessionStart 훅
+├── settings.json        # 훅 설정
+├── plans/               # 작업 계획 (자동 생성, gitignored)
+└── temp/                # 임시 파일 (자동 생성, gitignored)
 ```
