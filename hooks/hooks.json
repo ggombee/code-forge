@@ -1,0 +1,69 @@
+{
+  "hooks": [
+    {
+      "type": "PostToolUse",
+      "matcher": "Edit|Write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/lint-fix.sh"
+        }
+      ]
+    },
+    {
+      "type": "PreToolUse",
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh"
+        }
+      ]
+    },
+    {
+      "type": "Stop",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "cd ${CLAUDE_PLUGIN_ROOT} && yarn lint && yarn tsc --noEmit"
+        }
+      ]
+    },
+    {
+      "type": "SubagentStart",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/metrics.sh start"
+        }
+      ]
+    },
+    {
+      "type": "SubagentStop",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/metrics.sh stop"
+        }
+      ]
+    },
+    {
+      "type": "SessionStart",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session.sh start"
+        }
+      ]
+    },
+    {
+      "type": "SessionEnd",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session.sh end"
+        }
+      ]
+    }
+  ]
+}

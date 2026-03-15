@@ -1,33 +1,7 @@
-# Dependencies
-node_modules/
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# IDE
 .idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS
 .DS_Store
-Thumbs.db
 
-# Build
-dist/
-build/
-*.tsbuildinfo
-
-# Logs
-*.log
-npm-debug.log*
-
-# Claude auto-generated plans
-.claude/plans/*.md
-
-# Claude temp files
-.claude/temp/*.md
+# 개발용 로컬 설정 (플러그인 배포에 불필요)
+.claude/docs/
+.claude/temp/
+.claude/settings.local.json

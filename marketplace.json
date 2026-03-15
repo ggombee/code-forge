@@ -1,0 +1,14 @@
+{
+  "name": "ggombee-agents",
+  "description": "범용 멀티 에이전트 Claude Code 플러그인",
+  "plugins": [
+    {
+      "name": "ggombee-agents",
+      "description": "프로젝트 스택에 맞는 에이전트/스킬/모듈 자동 제공",
+      "source": {
+        "type": "github",
+        "repo": "ggombee/ggombee-agents"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "ggombee-agents",
+  "version": "1.0.0",
+  "description": "범용 멀티 에이전트 Claude Code 플러그인. 프로젝트 스택(Framework/DS/State/Styling/Testing)에 맞는 에이전트와 스킬을 자동으로 제공한다.",
+  "author": {
+    "name": "ggombee"
+  },
+  "repository": "https://github.com/ggombee/ggombee-agents",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "agents",
+    "frontend",
+    "react",
+    "nextjs",
+    "testing",
+    "multi-agent"
+  ]
+}

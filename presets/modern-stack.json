@@ -1,0 +1,11 @@
+{
+  "name": "modern-stack",
+  "description": "MUI + App Router + Zustand + Tailwind + Vitest",
+  "modules": {
+    "framework": "react-nextjs-app",
+    "design-system": "mui",
+    "state": "zustand-tanstack",
+    "styling": "tailwind",
+    "testing": "vitest"
+  }
+}

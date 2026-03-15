@@ -1,0 +1,11 @@
+{
+  "name": "partner-standard",
+  "description": "PDS + Pages Router + Jotai + Emotion + Jest",
+  "modules": {
+    "framework": "react-nextjs-pages",
+    "design-system": "pds",
+    "state": "jotai-tanstack",
+    "styling": "emotion",
+    "testing": "jest"
+  }
+}
