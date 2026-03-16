@@ -1,7 +1,12 @@
 .idea/
 .DS_Store
+.vscode/
+node_modules/
+*.log
 
-# 개발용 로컬 설정 (플러그인 배포에 불필요)
+# 로컬 설정 (배포 불필요)
 .claude/docs/
 .claude/temp/
 .claude/settings.local.json
+.env
+.env.*
