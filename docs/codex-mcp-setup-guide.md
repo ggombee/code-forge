@@ -174,5 +174,56 @@ codex mcp 상태 확인해줘
 
 - 이 설정은 **완전 opt-in**입니다. 설정하지 않아도 다른 에이전트/스킬에 영향 없음
 - 팀원에게 설치를 강요하지 않음
-- 관련 스킬: `.claude/skills/codex/SKILL.md`
-- 관련 에이전트: `.claude/agents/codex.md`
+- 관련 스킬: `skills/codex/SKILL.md`
+- 관련 에이전트: `agents/codex.md`
+
+---
+
+# 기타 MCP 서버 설정
+
+## Atlassian (Jira + Confluence)
+
+프로젝트 루트 `.mcp.json`에 추가:
+
+```json
+{
+  "mcpServers": {
+    "Atlassian": {
+      "command": "uvx",
+      "args": ["mcp-atlassian"],
+      "env": {
+        "JIRA_URL": "https://{회사}.atlassian.net",
+        "JIRA_USERNAME": "{이메일}",
+        "JIRA_API_TOKEN": "{API 토큰}",
+        "CONFLUENCE_URL": "https://{회사}.atlassian.net/wiki",
+        "CONFLUENCE_USERNAME": "{이메일}",
+        "CONFLUENCE_API_TOKEN": "{API 토큰}"
+      }
+    }
+  }
+}
+```
+
+API 토큰 발급: https://id.atlassian.com/manage-profile/security/api-tokens
+
+## Figma
+
+```json
+{
+  "mcpServers": {
+    "Figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--figma-api-key={Figma PAT}",
+        "--stdio"
+      ]
+    }
+  }
+}
+```
+
+Figma PAT 발급: Figma → Settings → Personal Access Tokens
+
+> `.mcp.json`에 토큰이 포함되므로 반드시 `.gitignore`에 추가할 것.

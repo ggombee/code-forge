@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "Atlassian": {
+      "command": "uvx",
+      "args": ["mcp-atlassian"],
+      "env": {
+        "JIRA_URL": "https://company.atlassian.net",
+        "JIRA_USERNAME": "email@company.com",
+        "JIRA_API_TOKEN": "atlassian_token",
+        "CONFLUENCE_URL": "https://company.atlassian.net/wiki",
+        "CONFLUENCE_USERNAME": "email@company.com",
+        "CONFLUENCE_API_TOKEN": "atlassian_token"
+      }
+    },
+    "Figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--figma-api-key=Figma_Token",
+        "--stdio"
+      ]
+    }
+  }
+}

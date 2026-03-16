@@ -1,7 +1,7 @@
 {
   "name": "ggombee-agents",
-  "version": "1.0.0",
-  "description": "범용 멀티 에이전트 Claude Code 플러그인. 프로젝트 스택(Framework/DS/State/Styling/Testing)에 맞는 에이전트와 스킬을 자동으로 제공한다.",
+  "version": "1.1.1",
+  "description": "프로젝트 스택에 맞는 에이전트, 스킬, 컨벤션을 조합하는 Claude Code 플러그인. VAS(Vibe-Agent-System) 지원.",
   "author": {
     "name": "ggombee"
   },
@@ -14,6 +14,7 @@
     "react",
     "nextjs",
     "testing",
-    "multi-agent"
+    "multi-agent",
+    "vas"
   ]
 }
