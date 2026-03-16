@@ -109,7 +109,7 @@ Claude Code에서:
 codex mcp 상태 확인해줘
 ```
 
-또는 `/ggombee-agents:codex` 스킬을 호출하면 자동으로 ping 확인 후 사용 가능 여부를 알려줍니다.
+또는 `/code-forge:codex` 스킬을 호출하면 자동으로 ping 확인 후 사용 가능 여부를 알려줍니다.
 
 ---
 

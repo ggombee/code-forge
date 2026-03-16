@@ -1,5 +1,5 @@
 #!/bin/bash
-# ggombee-agents session hook
+# code-forge session hook
 # Usage: session.sh start | session.sh end
 
 set -euo pipefail
@@ -30,8 +30,8 @@ read_vas_config() {
 # Resolve VAS enabled status
 # Priority: project > global > unset
 resolve_vas_enabled() {
-  local project_config=".claude/ggombee-agents.local.md"
-  local global_config="$HOME/.claude/ggombee-agents.local.md"
+  local project_config=".claude/code-forge.local.md"
+  local global_config="$HOME/.claude/code-forge.local.md"
 
   local val
   val=$(read_vas_config "$project_config")
