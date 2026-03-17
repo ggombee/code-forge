@@ -49,10 +49,9 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
    c. react-spa (React SPA)
 
 2. Design System
-   a. pds (Partner Design System)
-   b. mui (Material UI)
-   c. ant-design (Ant Design)
-   d. none
+   a. mui (Material UI)
+   b. ant-design (Ant Design)
+   c. none
 
 3. State Management
    a. jotai-tanstack (Jotai + TanStack Query)
@@ -69,7 +68,7 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
    b. vitest (Vitest)
 
 또는 프리셋 사용:
-   p1. partner-standard (PDS + Pages Router + Jotai + Emotion + Jest)
+   p1. standard (Pages Router + Jotai + Emotion + Jest)
 
 선택 후 .claude/profile.json 생성 및 CLAUDE.md 생성으로 진행합니다.
 ```
@@ -79,10 +78,9 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
 ```jsonc
 // .claude/profile.json 예시
 {
-  "preset": "partner-standard",   // 프리셋 사용 (선택)
+  "preset": "standard",   // 프리셋 사용 (선택)
   "modules": {                    // 개별 모듈 직접 선택 (선택)
     "framework": "react-nextjs-pages",
-    "design-system": "pds",
     "state": "jotai-tanstack",
     "styling": "emotion",
     "testing": "jest",
@@ -117,7 +115,6 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
 | `framework`      | react-nextjs-pages  | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/react-nextjs-pages/SKILL.md` |
 | `framework`      | react-nextjs-app    | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/react-nextjs-app/SKILL.md` |
 | `framework`      | react-spa           | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/react-spa/SKILL.md` |
-| `design-system`  | pds                 | `${CLAUDE_PLUGIN_ROOT}/modules/design-systems/pds/SKILL.md` |
 | `design-system`  | mui                 | `${CLAUDE_PLUGIN_ROOT}/modules/design-systems/mui/SKILL.md` |
 | `design-system`  | ant-design          | `${CLAUDE_PLUGIN_ROOT}/modules/design-systems/ant-design/SKILL.md` |
 | `state`          | jotai-tanstack      | `${CLAUDE_PLUGIN_ROOT}/modules/state/jotai-tanstack/SKILL.md` |
@@ -187,7 +184,6 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
 | react-nextjs-pages  | Next.js 14 Pages Router       |
 | react-nextjs-app    | Next.js App Router            |
 | react-spa           | React SPA (Vite/CRA)          |
-| pds                 | PDS (Partner Design System)   |
 | mui                 | Material UI                   |
 | ant-design          | Ant Design                    |
 | jotai-tanstack      | Jotai + TanStack Query v5     |
@@ -209,7 +205,6 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
 프로젝트: {project.name}
 스택:
   Framework:     react-nextjs-pages  → Next.js 14 Pages Router
-  Design System: pds                 → PDS (Partner Design System)
   State:         jotai-tanstack      → Jotai + TanStack Query v5
   Styling:       emotion             → Emotion (@emotion/styled)
   Testing:       jest                → Jest
@@ -219,7 +214,6 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
 
 참조 모듈 (5개):
   @{CLAUDE_PLUGIN_ROOT}/modules/frameworks/react-nextjs-pages/SKILL.md
-  @{CLAUDE_PLUGIN_ROOT}/modules/design-systems/pds/SKILL.md
   @{CLAUDE_PLUGIN_ROOT}/modules/state/jotai-tanstack/SKILL.md
   @{CLAUDE_PLUGIN_ROOT}/modules/styling/emotion/SKILL.md
   @{CLAUDE_PLUGIN_ROOT}/modules/testing/jest/SKILL.md
@@ -228,6 +222,16 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
   - CLAUDE.md 내용을 확인하세요
   - 빌드/린트 명령어가 올바른지 확인하세요
   - profile.json의 overrides로 앱별 설정을 추가할 수 있습니다
+```
+
+### VAS 에이전트 추가 안내
+
+결과 요약 끝에 다음을 추가 출력한다:
+
+```
+👉 /vas-create-agent 를 실행하면
+   이 프로젝트에 최적화된 전용 에이전트를 자동 생성합니다.
+   (프로젝트 분석 → VAS 인스턴스 생성 → 빌드타임 컴파일)
 ```
 
 ---
@@ -247,5 +251,5 @@ profile.json이 없습니다. 프로젝트 스택을 선택해 주세요.
 
 | 프리셋명           | 스택                                          |
 | ------------------ | --------------------------------------------- |
-| partner-standard   | PDS + Pages Router + Jotai + Emotion + Jest   |
+| standard   | Pages Router + Jotai + Emotion + Jest   |
 | modern-stack       | MUI + App Router + Zustand + Tailwind + Vitest |

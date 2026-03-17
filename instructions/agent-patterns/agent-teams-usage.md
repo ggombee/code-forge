@@ -79,7 +79,7 @@ Task(subagent_type='general-purpose', team_name='sprint-team', name='api-dev', m
 TeamCreate({ team_name: 'codex-project', agent_type: 'codex' });
 
 // 팀원 spawn
-Task(subagent_type='implementation-executor', team_name='codex-project', name='impl', prompt='...');
+Task(subagent_type='implementor', team_name='codex-project', name='impl', prompt='...');
 
 // Codex가 품질 검증
 mcp__codex__codex_review({ uncommitted: true });

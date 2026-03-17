@@ -126,7 +126,7 @@ skills:
 
 ## VAS 확장 Frontmatter
 
-VAS 전용 필드 (`type`, `schema`, `extends`)와 Body 섹션 규격, Claude Code 필드와의 조합 규칙은 vas-activate의 `references/vas-rules.md`에 정의되어 있다. 에이전트 생성 시 해당 문서를 함께 참조한다.
+VAS 전용 필드 (`type`, `schema`, `extends`)와 Body 섹션 규격, Claude Code 필드와의 조합 규칙은 `plugins/vas/rules/vas-rules.md`에 정의되어 있다. 에이전트 생성 시 해당 문서를 함께 참조한다.
 
 ## 설계 원칙
 

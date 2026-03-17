@@ -201,7 +201,7 @@ act: act/dev/bug-fixer.md
 ---
 
 ## Must
-- [Styling] Emotion + PDS 토큰을 사용한다
+- [Styling] Emotion을 사용한다
 ```
 
 - `state`: 배열 — 여러 STATE 조합
@@ -242,8 +242,8 @@ refactorer → test-runner → reviewer
 
 | 스킬 | 용도 |
 |------|------|
-| `/vas-activate` | instance 에이전트를 로드하고 세션에 적용 |
-| `/vas-create-agent` | 프로젝트를 분석하여 instance 에이전트 생성 |
+| `/vas-build` | VAS 인스턴스를 정적 .md로 컴파일 (빌드타임 컴파일) |
+| `/vas-create-agent` | 프로젝트를 분석하여 instance 에이전트 생성 → 자동 빌드 |
 
 ---
 

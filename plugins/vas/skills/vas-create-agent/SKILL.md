@@ -12,16 +12,6 @@ agent-system: VAS
 
 - `references/subagent-spec.md` — Claude Code subagent frontmatter 필드 전체 규격
 
-## Prerequisites
-
-### vas-activate 확인
-
-이 스킬은 VAS 시스템 위에서 동작한다. 실행 전 VAS가 활성화되었는지 확인한다.
-
-- `.claude/rules/vibe-agent-system.md` 파일이 존재하면 → 로드된 상태
-- 파일이 없으면 → "VAS가 활성화되지 않았습니다. `/vas-activate`를 먼저 실행해주세요."
-- VAS 없이 진행 요청 시 → 중단. VAS 없이 에이전트를 만들면 상속 해석이 불가능하다.
-
 ## 기본 생성 구조
 
 **최소 5개 파일을 기본으로 생성하되, 프로젝트 성격에 따라 추가 에이전트를 자유롭게 생성한다:**
@@ -216,19 +206,23 @@ skills:
 
 ### Step 4: 에이전트 파일 생성
 
-1. `.agents/agents/`에 모든 에이전트 파일 작성 (base 1 + instance 4)
-2. instance 파일만 `.claude/agents/`에 심링크 생성:
-   ```bash
-   ln -sf ../../.agents/agents/{agent_name}.md .claude/agents/{agent_name}.md
-   ```
-3. 심링크 읽기 테스트로 정상 작동 확인
+1. `.agents/agents/`에 모든 에이전트 파일 작성 (base 1 + instance N)
 
-### Step 5: 후속 안내
+### Step 5: 빌드타임 컴파일
+
+`/vas-build --project` 를 실행하여 `.agents/agents/`의 VAS 인스턴스를 `.claude/agents/`에 컴파일한다.
+
+1. `.agents/agents/`의 `type: instance` 파일을 대상으로 VAS 빌드 수행
+2. STATE 체인 해석 → ACT 체인 해석 → 네이티브 frontmatter 매핑
+3. `.claude/agents/`에 플랫 .md 파일 생성
+4. 빌드 결과를 사용자에게 보고
+
+### Step 6: 후속 안내
 
 - 생성된 파일 목록
-- `/vas-activate {agent_name}`으로 활성화하는 방법
-- 규칙 수정 → `.agents/agents/{project}-*.md` 직접 편집
-- 역할 추가 → 이 스킬 다시 호출
+- 컴파일된 에이전트가 `.claude/agents/`에 위치하여 즉시 사용 가능
+- 규칙 수정 → `.agents/agents/{project}-*.md` 직접 편집 후 `/vas-build --project` 재실행
+- 역할 추가 → `/vas-create-agent {역할}` 으로 추가 생성
 
 ## 기존 에이전트 수정
 

@@ -1,13 +1,13 @@
 ---
 name: figma-to-code
-description: Figma 디자인을 Emotion/PDS 기반 코드로 변환. Pixel-perfect 구현.
+description: Figma 디자인을 Emotion 기반 코드로 변환. Pixel-perfect 구현.
 metadata:
   version: '1.0.0'
 ---
 
 # Figma to Code Skill
 
-> Figma 디자인을 Emotion styled + PDS 컴포넌트 기반 코드로 변환
+> Figma 디자인을 Emotion styled 기반 코드로 변환
 
 ---
 
@@ -100,9 +100,9 @@ export const Component: FC<Props> = ({ ...props }) => {
 
 ```typescript
 TeamCreate({ team_name: 'figma-team', description: 'Figma to Code 변환' });
-Task(subagent_type='implementation-executor', team_name='figma-team', name='component-1', model='sonnet',
+Task(subagent_type='implementor', team_name='figma-team', name='component-1', model='sonnet',
   prompt='FilterButton 컴포넌트 구현');
-Task(subagent_type='implementation-executor', team_name='figma-team', name='component-2', model='sonnet',
+Task(subagent_type='implementor', team_name='figma-team', name='component-2', model='sonnet',
   prompt='DateControls 컴포넌트 구현');
 // 완료 후 → shutdown_request → TeamDelete
 ```

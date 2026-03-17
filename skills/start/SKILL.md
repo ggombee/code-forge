@@ -106,9 +106,9 @@ mcp__figma__get_screenshot({
 
 ```typescript
 // 독립적인 탐색 작업은 병렬 실행
-Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '변경 대상 컴포넌트 구조 분석'));
-Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '기존 패턴 분석'));
-Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '관련 쿼리/서비스 파악'));
+Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '변경 대상 컴포넌트 구조 분석'));
+Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '기존 패턴 분석'));
+Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '관련 쿼리/서비스 파악'));
 ```
 
 ---

@@ -1,1 +1,0 @@
-../agents-default/document-writer.md

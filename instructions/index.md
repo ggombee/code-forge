@@ -22,8 +22,7 @@
 instructions/
 ├── index.md                          # 이 파일
 ├── agent-patterns/
-│   ├── parallel-execution.md         # 병렬 실행 패턴
-│   ├── read-parallelization.md       # 파일 읽기 병렬화
+│   ├── parallel-execution.md         # 병렬 실행 패턴 (Read Tool 특화 포함)
 │   ├── model-routing.md              # 모델 선택 기준
 │   └── agent-teams-usage.md          # Agent Teams 활용
 ├── multi-agent/
@@ -44,8 +43,7 @@ instructions/
 
 | 문서                    | 용도                                    | 사용 시점                |
 | ----------------------- | --------------------------------------- | ------------------------ |
-| `parallel-execution.md` | 독립 작업 동시 실행 원칙                | 병렬 실행 필요 시        |
-| `read-parallelization.md` | 파일 읽기 병렬화 기준               | 여러 파일 읽기 시        |
+| `parallel-execution.md` | 독립 작업 동시 실행 원칙 + Read Tool 병렬화 | 병렬 실행 필요 시        |
 | `model-routing.md`      | 복잡도별 모델 선택 (haiku/sonnet/opus)  | 에이전트 모델 선택 시    |
 | `agent-teams-usage.md`  | Agent Teams 7단계 흐름                  | Agent Teams 사용 시      |
 
@@ -54,7 +52,7 @@ instructions/
 | 문서                    | 용도                                    | 사용 시점                |
 | ----------------------- | --------------------------------------- | ------------------------ |
 | `coordination-guide.md` | 병렬 실행, 모델 라우팅, 컨텍스트 보존   | 에이전트 조합 필요 시    |
-| `agent-roster.md`       | 에이전트 상세 (explore, testgen 등) | 에이전트 선택 시         |
+| `agent-roster.md`       | 에이전트 상세 (scout, testgen 등) | 에이전트 선택 시         |
 | `execution-patterns.md` | Fan-Out, 배치, 백그라운드 패턴          | 구체적 실행 방법 필요 시 |
 | `teammate-done-process.md` | 팀원 작업 완료 6단계 프로세스        | Agent Teams 팀원 완료 시 |
 | `team-evaluation.md`   | 팀원 규칙 준수 평가 (100점)             | 팀원 작업 평가 시        |

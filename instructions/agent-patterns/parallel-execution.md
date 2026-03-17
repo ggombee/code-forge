@@ -54,13 +54,13 @@ Read({ file_path: "file3.ts" })
 
 ```typescript
 // ❌ 순차 호출
-Task(subagent_type="explore", prompt="구조 분석")
+Task(subagent_type="scout", prompt="구조 분석")
 // 대기...
-Task(subagent_type="explore", prompt="패턴 분석")
+Task(subagent_type="scout", prompt="패턴 분석")
 
 // ✅ 병렬 호출 - 단일 메시지에서 두 Task 호출
-Task(subagent_type="explore", model="haiku", prompt="구조 분석")
-Task(subagent_type="explore", model="haiku", prompt="패턴 분석")
+Task(subagent_type="scout", model="haiku", prompt="구조 분석")
+Task(subagent_type="scout", model="haiku", prompt="패턴 분석")
 ```
 
 ---
@@ -83,3 +83,28 @@ Task(subagent_type="explore", model="haiku", prompt="패턴 분석")
 - [ ] 병렬 실행해도 안전한가?
 - [ ] 순서가 중요한가?
 - [ ] 같은 리소스를 공유하는가?
+
+---
+
+### Read Tool 특화
+
+**독립적인 파일 읽기는 항상 병렬로 실행한다.**
+
+| 조건 | 병렬 여부 |
+|------|----------|
+| **3개+ 독립 파일** | 필수 병렬 |
+| **다른 디렉토리** | 권장 병렬 |
+| **패턴 매칭 결과** | 권장 병렬 |
+| **이전 Read 결과에 의존** | 순차 |
+| **동일 파일 반복** | 순차 |
+
+**에이전트별 병렬 읽기 필수 시점:**
+
+| 에이전트 | 병렬 읽기 필수 시점 |
+|----------|-------------------|
+| **scout** | 탐색 결과 파일들 동시 읽기 |
+| **analyst** | 관련 문서/코드 동시 읽기 |
+| **architect** | 의존성 분석 대상 파일들 |
+| **code-reviewer** | 변경된 파일들 동시 읽기 |
+| **deep-executor** | 5-10개 파일 동시 읽기 |
+| **implementor** | 패턴 확인용 파일들 |

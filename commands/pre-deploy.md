@@ -34,9 +34,9 @@ argument-hint: [파일/디렉토리 경로...]
 ## 에이전트 활용 (병렬)
 
 ```typescript
-// 검증 + 보안 검토 병렬
-Task(subagent_type="deployment-validator", model="sonnet", prompt="typecheck + lint + build 전체 검증")
-Task(subagent_type="security-reviewer", model="sonnet", prompt="배포 전 보안 취약점 검토")
+// 검증 + 코드 리뷰 병렬
+Task(subagent_type="build-fixer", model="sonnet", prompt="typecheck + lint + build 전체 검증")
+Task(subagent_type="code-reviewer", model="sonnet", prompt="배포 전 보안/품질 검토 (mode: both)")
 ```
 
 ## 금지 사항

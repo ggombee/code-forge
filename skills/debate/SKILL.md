@@ -1,14 +1,14 @@
 ---
 name: debate
-description: 교차 모델 토론. Claude + Codex(또는 self-debate) 최대 3라운드. 설계 결정, 아키텍처 선택 시 활용.
+description: 교차 모델 토론. Agent Teams / Codex CLI / self-debate 모드 선택. 설계 결정, 아키텍처 선택 시 활용.
 metadata:
-  version: '1.0.0'
+  version: '2.0.0'
 ---
 
 # Debate Skill
 
 > 중요 기술 결정 시 다각도 검증을 위한 교차 모델 토론 스킬.
-> Claude + Codex 또는 Claude self-debate로 최대 3라운드 진행 후 합의 도출.
+> 3가지 모드 중 환경에 맞는 방식을 자동 선택하여 최대 3라운드 진행 후 합의 도출.
 
 ---
 
@@ -23,14 +23,46 @@ metadata:
 
 ---
 
-## 모드
+## 모드 (3가지)
 
-### Mode 1: cross-model (기본)
+### Mode 1: agent-teams (최상위)
 
-Claude vs Codex CLI headless 토론. Codex가 설정된 환경에서만 사용 가능.
+Agent Teams로 팀원을 spawn하여 **실시간 병렬 토론**. Claude Max + `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 필요.
 
 ```text
-Claude (입장 A) ↔ Codex (입장 B)
+TeamCreate("debate-team")
+  → Agent("advocate", team_name="debate-team")   # 찬성
+  → Agent("critic", team_name="debate-team")     # 반대/비평
+  → codex exec (Bash)                             # Codex 외부 관점
+  ↓
+라운드 1~3: SendMessage로 팀원 간 공방
+  ↓
+팀 리더(Claude)가 합의 도출
+  ↓
+TeamDelete("debate-team")
+```
+
+**팀 구성:**
+
+| 팀원 | 역할 | 모델 | subagent_type |
+|------|------|------|---------------|
+| advocate | 입장 A 지지, 근거 제시 | sonnet | `general-purpose` 또는 `ggombee-agents:architect` |
+| critic | 입장 B 반론, 가혹한 비평 | sonnet | `ggombee-agents:critic` |
+| codex | 외부 모델 관점 (Bash로 실행) | gpt-5.4 | Codex CLI |
+
+**팀 리더 역할 (Claude 본체):**
+- 주제 정의 및 입장 배분
+- 각 라운드 SendMessage로 상대 주장 전달
+- 3라운드 후 합의 도출 및 최종 판정
+
+---
+
+### Mode 2: cross-model (Codex CLI)
+
+Agent Teams 없이 Claude + Codex CLI headless 토론.
+
+```text
+Claude (입장 A) ↔ Codex CLI (입장 B)
   ↓
 라운드 1: 초기 주장
   ↓
@@ -44,13 +76,12 @@ Claude (입장 A) ↔ Codex (입장 B)
 **Codex CLI 실행:**
 
 ```bash
-# headless 모드로 Codex 실행
-codex exec -m o4-mini -s read-only "{프롬프트}"
+codex exec -s read-only "{프롬프트}"
 ```
 
 ---
 
-### Mode 2: self-debate (폴백)
+### Mode 3: self-debate (폴백)
 
 Codex 미설정 시 Claude 내부 찬반 토론.
 
@@ -63,6 +94,32 @@ Claude (입장 A: 지지) ↔ Claude (입장 B: 반론)
   ↓
 합의 도출
 ```
+
+---
+
+## 모드 선택
+
+**사용자에게 먼저 묻는다.** 자동 선택하지 않는다.
+
+```text
+"토론 모드를 선택해주세요:
+
+1. agent-teams — Agent Teams로 팀원 병렬 토론 (Claude Max + 환경변수 필요)
+2. cross-model — Codex CLI와 1:1 토론 (Codex 설치 필요)
+3. self-debate — Claude 내부 찬반 토론 (별도 설정 불필요)
+
+또는 /debate --mode {모드명}으로 바로 시작할 수 있습니다."
+```
+
+**--mode 옵션이 있으면** 질문 없이 해당 모드로 즉시 진행.
+
+```text
+/debate --mode agent-teams  → Mode 1 즉시
+/debate --mode cross-model  → Mode 2 즉시
+/debate --mode self-debate  → Mode 3 즉시
+```
+
+**선택된 모드의 사전 조건 미충족 시** 안내 후 다른 모드 제안.
 
 ---
 
@@ -115,6 +172,18 @@ $ARGUMENTS 있음 → 모드 선택 후 진행
 ### Phase 2: 라운드 진행
 
 각 라운드는 **주장 → 반론 → 재반론** 구조로 진행.
+
+#### Agent Teams 모드 라운드 흐름
+
+```text
+라운드 N:
+  1. 팀 리더 → SendMessage(to="advocate", "라운드 N 주장을 제시해줘: {주제}")
+  2. advocate 응답 수신
+  3. 팀 리더 → SendMessage(to="critic", "다음 주장에 반론해줘: {advocate 주장}")
+  4. critic 응답 수신
+  5. 팀 리더 → codex exec (Bash)로 Codex 외부 관점 수집
+  6. 다음 라운드에 이전 결과 전달
+```
 
 #### 라운드 1: 초기 주장
 
@@ -203,47 +272,6 @@ $ARGUMENTS 있음 → 모드 선택 후 진행
 | **ADAPT (2회 실패)** | 기존 접근 실패 시 debate로 대안 탐색 |
 | **설계 분기점** | 2개 이상 동등한 옵션 존재 시 자동 제안 |
 
-```text
-thinking-model 흐름:
-GROUND → 복잡도 L 판단 → debate 스킬 호출
-                            ↓
-                    cross-model 또는 self-debate
-                            ↓
-                    합의 결과를 ADAPT/EXECUTE에 반영
-```
-
----
-
-## 실행 흐름
-
-| 단계 | 작업 | 도구 |
-|------|------|------|
-| 1 | 주제 및 맥락 정의 | - |
-| 2 | 모드 선택 (cross-model / self-debate) | - |
-| 3 | Codex 가용 확인 (cross-model 시) | `codex exec -m o4-mini -s read-only "ping"` |
-| 4 | 입장 A/B 설정 | - |
-| 5 | 라운드 1: 초기 주장 | cross-model: Codex CLI / self-debate: 내부 |
-| 6 | 라운드 2: 반론 | cross-model: Codex CLI / self-debate: 내부 |
-| 7 | 라운드 3: 재반론 + 합의 탐색 | cross-model: Codex CLI / self-debate: 내부 |
-| 8 | 합의 도출 및 권장 결정 | - |
-
----
-
-## Codex CLI 사용법
-
-```bash
-# 기본 실행 (read-only sandbox)
-codex exec -m o4-mini -s read-only "{프롬프트}"
-
-# 예시: 라운드 1 반론 요청
-codex exec -m o4-mini -s read-only \
-  "다음 아키텍처 결정에 대해 반론 입장에서 주장해줘: {주제}\n\n상대 주장: {입장 A 내용}"
-
-# 예시: 합의 탐색
-codex exec -m o4-mini -s read-only \
-  "다음 토론의 합의 가능 지점을 찾아줘:\n입장 A: {A 요약}\n입장 B: {B 요약}"
-```
-
 ---
 
 ## 출력 형식
@@ -254,8 +282,9 @@ codex exec -m o4-mini -s read-only \
 ## Debate Summary
 
 **주제:** {토론 주제}
-**모드:** cross-model / self-debate
+**모드:** agent-teams / cross-model / self-debate
 **라운드:** {실행된 라운드 수}/3
+**참가자:** {참가 모델/에이전트 목록}
 
 ### 토론 요약
 
@@ -273,7 +302,6 @@ codex exec -m o4-mini -s read-only \
 ### 미해결 논점
 
 - {논점 1}: {간략 설명}
-- {논점 2}: {간략 설명}
 
 ### 권장 결정
 
@@ -298,7 +326,8 @@ codex exec -m o4-mini -s read-only \
 
 | 문서 | 용도 |
 |------|------|
-| `.claude/rules/core/thinking-model.md` | GROUND/ADAPT 연계 |
-| `.claude/instructions/multi-agent/coordination-guide.md` | 병렬 협업 |
-| `.claude/instructions/validation/forbidden-patterns.md` | 금지 패턴 |
+| `rules/thinking-model.md` | GROUND/ADAPT 연계 |
+| `instructions/multi-agent/coordination-guide.md` | 멀티에이전트 협업 |
+| `instructions/validation/forbidden-patterns.md` | 금지 패턴 |
 | `skills/codex/SKILL.md` | Codex CLI 설정 |
+| `skills/setup-agent-teams/SKILL.md` | Agent Teams 환경 설정 |

@@ -1,1 +1,0 @@
-../agents-default/security-reviewer.md

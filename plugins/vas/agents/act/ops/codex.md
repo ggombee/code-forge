@@ -25,7 +25,7 @@ extends: act/act.md
 - [Deliverable] 통합된 코드 또는 Codex의 리뷰 피드백
 
 ## Collaboration
-- [Handoff] Team Lead 역할 시 implementation-executor, testgen 등과 협업한다
+- [Handoff] Team Lead 역할 시 implementor, testgen 등과 협업한다
 
 ## Permission
 - [Model] sonnet

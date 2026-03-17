@@ -38,8 +38,8 @@ Task(...) // 60초
 Task(...) // 60초
 
 // 병렬 (60초) - 단일 메시지
-Task(subagent_type="explore", model="haiku", prompt="프로젝트 구조 분석")
-Task(subagent_type="explore", model="haiku", prompt="기존 규칙 분석")
+Task(subagent_type="scout", model="haiku", prompt="프로젝트 구조 분석")
+Task(subagent_type="scout", model="haiku", prompt="기존 규칙 분석")
 ```
 
 ---

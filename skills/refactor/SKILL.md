@@ -50,11 +50,11 @@ metadata:
 
 ```typescript
 TeamCreate({ team_name: 'refactor-team', description: '리팩토링 분석 및 실행' });
-Task(subagent_type='explore', team_name='refactor-team', name='code-analyzer', model='haiku',
+Task(subagent_type='scout', team_name='refactor-team', name='code-analyzer', model='haiku',
   prompt='리팩토링 대상 코드 분석');
-Task(subagent_type='explore', team_name='refactor-team', name='test-checker', model='haiku',
+Task(subagent_type='scout', team_name='refactor-team', name='test-checker', model='haiku',
   prompt='관련 테스트 현황 파악');
-Task(subagent_type='explore', team_name='refactor-team', name='dep-analyzer', model='haiku',
+Task(subagent_type='scout', team_name='refactor-team', name='dep-analyzer', model='haiku',
   prompt='의존성 파일 목록 추출');
 // 완료 후 → shutdown_request → TeamDelete
 ```
@@ -62,9 +62,9 @@ Task(subagent_type='explore', team_name='refactor-team', name='dep-analyzer', mo
 **Task 병렬 모드 (폴백):**
 
 ```typescript
-Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '리팩토링 대상 코드 분석'));
-Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '관련 테스트 현황 파악'));
-Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '의존성 파일 목록 추출'));
+Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '리팩토링 대상 코드 분석'));
+Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '관련 테스트 현황 파악'));
+Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '의존성 파일 목록 추출'));
 ```
 
 **수집 항목:**

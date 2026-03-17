@@ -1,1 +1,0 @@
-../agents-default/critic.md

@@ -1,5 +1,6 @@
 ---
 agent-system: VAS
+status: reference-only
 ---
 
 # VAS (Vibe-Agent-System) 해석 규칙

@@ -70,7 +70,7 @@ $ARGUMENTS 있음 → 다음 단계 진행
 | 1 | 입력 확인 | - |
 | 2 | 복잡도 판단 | sequentialthinking |
 | 3 | 버그 재현/탐색 | Read/Grep/Glob |
-| 4 | 원인 분석 | Task (Explore) |
+| 4 | 원인 분석 | Task (Scout) |
 | 5 | 옵션 도출 | sequentialthinking |
 | 6 | 옵션 제시/선택 | - |
 | 7 | 구현 | Edit |
@@ -85,7 +85,7 @@ $ARGUMENTS 있음 → 다음 단계 진행
 ```typescript
 // 에러 관련 파일 탐색
 Task(
-  (subagent_type = 'explore'),
+  (subagent_type = 'scout'),
   (model = 'haiku'),
   (prompt = `
   에러 증상: {에러 메시지}
