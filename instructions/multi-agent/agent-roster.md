@@ -10,7 +10,7 @@
 
 | 에이전트 | 기본 모델 | 도구 | 차단 도구 | 병렬 | 용도 |
 |----------|-----------|------|----------|------|------|
-| **scout** | haiku | Read, Glob, Grep, Bash | Write, Edit | O | 코드베이스 탐색, 패턴 분석 |
+| **explore** | haiku | Read, Glob, Grep, Bash | Write, Edit | O | 코드베이스 탐색, 패턴 분석 |
 | **analyst** | opus | Read, Grep, Glob | Write, Edit, Bash | O | 요구사항 분석, 갭 식별 |
 | **architect** | opus | Read, Grep, Glob | Write, Edit, Bash | O | 아키텍처 분석, 설계 자문 |
 | **researcher** | sonnet | Read, Grep, Glob, Bash | Write, Edit | O | 외부 문서/라이브러리 조사 |
@@ -33,61 +33,57 @@
 
 ## 에이전트 분류
 
-에이전트는 사용 가능한 도구(tools) 기준으로 4단계로 분류된다.
+### 분석 전용 (READ-ONLY)
 
-### READ-ONLY
+코드를 수정하지 않고 분석/리포트만 제공하는 에이전트.
 
-코드를 읽기만 하는 에이전트. Write/Edit/Bash 없음.
+| 에이전트 | 목적 | 출력 |
+|----------|------|------|
+| **explore** | 코드베이스 탐색 | 파일 목록, 패턴 분석 |
+| **analyst** | 요구사항 갭 분석 | 7섹션 분석 리포트 |
+| **architect** | 아키텍처 분석 | 진단, 권장사항, 트레이드오프 |
+| **researcher** | 외부 문서 조사 | 출처 URL 포함 리서치 리포트 |
+| **code-reviewer** | 코드 리뷰 (품질+보안) | 심각도별 피드백, OWASP 취약점 리포트 |
+| **refactor-advisor** | 리팩토링 분석 | Before/After + 우선순위 |
+| **vision** | 미디어 파일 분석 | 구조화된 정보 추출 |
 
-| 에이전트 | 목적 | @참조 |
-|----------|------|-------|
-| **analyst** | 요구사항 갭 분析 | 없음 |
-| **architect** | 아키텍처 분析 | 없음 |
-| **refactor-advisor** | 리팩토링 분析 | 없음 |
-| **vision** | 미디어 파일 분析 | 없음 |
+### 수정 전문 (READ-WRITE)
 
-### SHELL-ACCESS
+코드를 직접 수정하는 에이전트.
 
-Bash 실행 가능하나 파일 직접 수정 불가. Write/Edit 없음.
+| 에이전트 | 목적 | 수정 범위 |
+|----------|------|----------|
+| **lint-fixer** | 린트/타입 오류 수정 | 오류 라인만 |
+| **build-fixer** | 빌드 오류 수정 | 최소 diff |
+| **testgen** | 테스트 생성 + TDD | 테스트 파일 (+ TDD 시 구현) |
+| **implementor** | 계획 기반 구현 | 대상 파일 |
+| **deep-executor** | 자율적 심층 구현 | 대상 파일 (넓은 범위) |
 
-| 에이전트 | 목적 | @참조 |
-|----------|------|-------|
-| **scout** | 코드베이스 탐색 | parallel-execution |
-| **code-reviewer** | 코드 리뷰 (품질+보안) | parallel-execution |
-| **git-operator** | 커밋, 브랜치, 스테이징 | 없음 |
-| **researcher** | 외부 문서 조사 | 없음 |
+### Codex 협업 (MCP opt-in)
 
-### EDIT-ONLY
+MCP 서버 설정 시에만 사용 가능. 미설정 환경에서는 무시.
 
-기존 파일 수정 가능. Write(새 파일 생성) 불가.
+| 에이전트 | 목적 | 전제 조건 |
+|----------|------|----------|
+| **codex** | Codex 페어 프로그래밍, Team Lead | codex-mcp MCP 서버 |
 
-| 에이전트 | 목적 | @참조 |
-|----------|------|-------|
-| **lint-fixer** | 린트/타입 오류 수정 | coding-standards |
-| **build-fixer** | 빌드 오류 수정 | coding-standards |
+### Git 전용
 
-### READ-WRITE-FULL
-
-모든 도구 접근 가능. Write 포함.
-
-| 에이전트 | 목적 | @참조 |
-|----------|------|-------|
-| **implementor** | 계획 기반 구현 | parallel-execution, coding-standards |
-| **deep-executor** | 자율적 심층 구현 | parallel-execution, coding-standards |
-| **testgen** | 테스트 생성 + TDD | parallel-execution, coding-standards |
-| **codex** | Codex 페어 프로그래밍, Team Lead | parallel-execution, coding-standards |
+| 에이전트 | 목적 |
+|----------|------|
+| **git-operator** | 커밋, 브랜치, 스테이징 |
 
 ---
 
 ## 에이전트 상세
 
-### scout
+### explore
 
 **목적**: 코드베이스 빠른 탐색, 파일 구조 파악
 
 ```typescript
-Task(subagent_type='scout', model='haiku', prompt='apps/{앱이름}/src/{도메인} 폴더 구조 파악');
-Task(subagent_type='scout', model='sonnet', prompt='필터 disabled 조건 분석');
+Task(subagent_type='explore', model='haiku', prompt='apps/{앱이름}/src/{도메인} 폴더 구조 파악');
+Task(subagent_type='explore', model='sonnet', prompt='필터 disabled 조건 분석');
 ```
 
 ---
@@ -254,7 +250,7 @@ Task(subagent_type='analyst', model='opus', prompt='요구사항 분석');
 Task(subagent_type='architect', model='opus', prompt='아키텍처 분석');
 
 // 3. 구현 (sonnet)
-Task(subagent_type='implementor', model='sonnet', prompt='분석 기반 구현');
+Task(subagent_type='deep-executor', model='sonnet', prompt='분석 기반 구현');
 ```
 
 ### 구현 → 검증 (병렬)
@@ -286,5 +282,5 @@ Task(subagent_type='implementor', model='sonnet', prompt='리팩토링 실행');
 |------|------|
 | `${CLAUDE_PLUGIN_ROOT}/instructions/multi-agent/coordination-guide.md` | 병렬 실행 원칙, 모델 라우팅 |
 | `${CLAUDE_PLUGIN_ROOT}/instructions/multi-agent/execution-patterns.md` | 실행 패턴 상세 |
-| `${CLAUDE_PLUGIN_ROOT}/rules/coding-standards.md` | 코딩 기준 + 금지 패턴 |
+| `${CLAUDE_PLUGIN_ROOT}/instructions/validation/forbidden-patterns.md` | 금지 패턴 |
 | `${CLAUDE_PLUGIN_ROOT}/rules/thinking-model.md` | 작업 절차 |

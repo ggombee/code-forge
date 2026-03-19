@@ -1,6 +1,7 @@
 ---
 name: setup-notifier
 description: Mac 알림 설정. Claude Code에서 승인 요청 시 terminal-notifier로 배너 알림을 보낸다.
+category: setup
 ---
 
 # /setup-notifier

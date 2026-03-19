@@ -1,6 +1,7 @@
 ---
 name: setup-test
 description: 프론트엔드 프로젝트에 테스트 환경을 초기 세팅합니다. 프로젝트 구조를 자동 감지하여 jest/vitest 설정, customRender, MSW 등을 구성합니다.
+category: setup
 ---
 
 # /setup-test

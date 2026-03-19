@@ -14,13 +14,13 @@
 | **DELEGATE**   | 전문 에이전트에 즉시 위임             | 품질 향상          |
 
 ```typescript
-// ❌ 순차 실행 (120초)
-Task((subagent_type = 'scout'), (prompt = '파일 구조 분석')); // 60초
-Task((subagent_type = 'scout'), (prompt = 'API 패턴 분석')); // 60초
+// 순차 실행 (120초)
+Task((subagent_type = 'explore'), (prompt = '파일 구조 분석')); // 60초
+Task((subagent_type = 'explore'), (prompt = 'API 패턴 분석')); // 60초
 
-// ✅ 병렬 실행 (60초) - 단일 메시지에서 호출
-Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '파일 구조 분석'));
-Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = 'API 패턴 분석'));
+// 병렬 실행 (60초) - 단일 메시지에서 호출
+Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '파일 구조 분석'));
+Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = 'API 패턴 분석'));
 ```
 
 ---
@@ -46,8 +46,8 @@ Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = 'API 패턴 분석'
 TeamCreate({ team_name: 'analysis-team', description: '코드 분석 및 리뷰' });
 
 // 2. 팀원 spawn (병렬)
-Task(subagent_type='scout', team_name='analysis-team', name='code-analyzer', model='haiku', prompt='코드 구조 분석');
-Task(subagent_type='scout', team_name='analysis-team', name='pattern-checker', model='haiku', prompt='패턴 분석');
+Task(subagent_type='explore', team_name='analysis-team', name='code-analyzer', model='haiku', prompt='코드 구조 분석');
+Task(subagent_type='explore', team_name='analysis-team', name='pattern-checker', model='haiku', prompt='패턴 분석');
 Task(subagent_type='code-reviewer', team_name='analysis-team', name='reviewer', model='sonnet', prompt='코드 리뷰');
 ```
 
@@ -64,8 +64,8 @@ Task(subagent_type='code-reviewer', team_name='analysis-team', name='reviewer', 
 
 ```typescript
 // Agent Teams 없이 병렬 실행
-Task(subagent_type='scout', model='haiku', prompt='코드 구조 분석');
-Task(subagent_type='scout', model='haiku', prompt='패턴 분석');
+Task(subagent_type='explore', model='haiku', prompt='코드 구조 분석');
+Task(subagent_type='explore', model='haiku', prompt='패턴 분석');
 Task(subagent_type='code-reviewer', model='sonnet', prompt='코드 리뷰');
 ```
 
@@ -82,7 +82,7 @@ Task(subagent_type='code-reviewer', model='sonnet', prompt='코드 리뷰');
 | MCP 도구 (Figma)     |     X     | 메인 에이전트 전용                |
 
 **제약**: Skill 도구(/start, /done 등)와 MCP 도구(Figma)는 메인 에이전트에서만 사용 가능.
-커스텀 에이전트(scout, lint-fixer 등)는 도구가 제한됨.
+커스텀 에이전트(explore, lint-fixer 등)는 도구가 제한됨.
 
 ---
 
@@ -110,7 +110,7 @@ general-purpose + "bug-fix 스킬 읽어"       = 버그 수정 역할 + 전체 
 
 | 작업 유형          | 에이전트 타입       | 이유                        |
 | ------------------ | ------------------- | --------------------------- |
-| 읽기 전용 탐색     | `scout`             | 빠르고 가볍다               |
+| 읽기 전용 탐색     | `explore`           | 빠르고 가볍다               |
 | 린트/타입 수정만   | `lint-fixer`        | 규칙 기반 단순 수정         |
 | 구현이 필요한 작업 | **general-purpose** | Write/Edit/Bash 필요        |
 | 스킬 지식 필요     | **general-purpose** | 스킬 파일 읽기 + 구현 동시  |
@@ -337,7 +337,7 @@ Task(subagent_type='general-purpose', model='sonnet',
 
 ```typescript
 // Agent 1: 분석 결과를 파일에 저장
-Task((subagent_type = 'scout'), (prompt = '분석 후 .claude/temp/analysis.md에 저장'));
+Task((subagent_type = 'explore'), (prompt = '분석 후 .claude/temp/analysis.md에 저장'));
 
 // Agent 2: 파일 읽어서 작업 수행
 Task((subagent_type = 'implementor'), (prompt = '.claude/temp/analysis.md 읽고 구현'));

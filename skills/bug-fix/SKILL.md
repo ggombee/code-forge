@@ -1,6 +1,7 @@
 ---
 name: bug-fix
 description: 버그 분석 및 수정. 2-3가지 해결 옵션 제시 후 구현.
+category: implementation
 metadata:
   version: '1.1.0'
 ---

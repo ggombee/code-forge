@@ -85,15 +85,17 @@
 
 | Agent | 기본 모델 | 복잡할 때 |
 |-------|----------|----------|
-| scout | haiku | sonnet |
+| explore | haiku | sonnet |
 | analyst | opus | opus (항상) |
 | architect | opus | opus (항상) |
 | researcher | sonnet | sonnet |
 | code-reviewer | sonnet | opus |
+| security-reviewer | sonnet | opus |
 | refactor-advisor | sonnet | opus |
 | lint-fixer | haiku | sonnet |
 | build-fixer | sonnet | sonnet |
 | testgen | sonnet | sonnet |
+| tdd-guide | sonnet | sonnet |
 | implementor | sonnet | opus |
 | deep-executor | sonnet | opus |
 | codex | sonnet | opus |
@@ -103,7 +105,7 @@
 
 ## 비용 최적화 전략
 
-1. **탐색은 항상 haiku** (scout)
+1. **탐색은 항상 haiku** (explore)
 2. **구현은 기본 sonnet** (implementor, deep-executor)
 3. **분석/설계만 opus** (analyst, architect, Plan)
 4. **정책 관련 → 무조건 상향**

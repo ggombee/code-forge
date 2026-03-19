@@ -1,6 +1,7 @@
 ---
 name: figma-to-code
 description: Figma 디자인을 Emotion 기반 코드로 변환. Pixel-perfect 구현.
+category: implementation
 metadata:
   version: '1.0.0'
 ---

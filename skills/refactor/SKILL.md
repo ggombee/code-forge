@@ -1,6 +1,7 @@
 ---
 name: refactor
 description: 코드 리팩토링 분석 및 실행. 정책 보호 테스트 포함.
+category: implementation
 metadata:
   version: '1.0.0'
 ---

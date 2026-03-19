@@ -1,6 +1,7 @@
 ---
 name: debate
 description: 교차 모델 토론. Agent Teams / Codex CLI / self-debate 모드 선택. 설계 결정, 아키텍처 선택 시 활용.
+category: analysis
 metadata:
   version: '2.0.0'
 ---

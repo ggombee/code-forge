@@ -1,6 +1,7 @@
 ---
 name: genius-thinking
 description: 10가지 인지 공식 + TRIZ/SCAMPER/JTBD/HMW 프레임워크로 체계적 아이디어 발상 및 우선순위화.
+category: analysis
 ---
 
 # Genius Thinking Skill

@@ -1,6 +1,7 @@
 ---
 name: research
 description: 구조화된 리서치 수행. 주제별 깊이(quick/standard/deep) 선택, 병렬 수집, 신뢰도 등급 부여, 마크다운 리포트 생성.
+category: analysis
 ---
 
 # Research Skill

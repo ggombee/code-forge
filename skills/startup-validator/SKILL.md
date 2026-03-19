@@ -1,6 +1,7 @@
 ---
 name: startup-validator
 description: Peter Thiel 7 Questions + YC PMF + The Mom Test + JTBD로 스타트업 아이디어를 엄격하게 검증. 100점 만점 채점 + 약점 진단 + 개선 로드맵.
+category: analysis
 ---
 
 # Startup Validator Skill

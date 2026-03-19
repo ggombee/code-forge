@@ -1,6 +1,7 @@
 ---
 name: codex
 description: Claude + OpenAI Codex 협업 스킬. MCP 서버 설정 시에만 사용 가능.
+category: utility
 ---
 
 # Codex Pair Programming

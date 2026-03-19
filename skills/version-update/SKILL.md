@@ -1,6 +1,7 @@
 ---
 name: version-update
 description: Node/Rust/Python 프로젝트의 시맨틱 버전을 업데이트하고 안전하게 커밋 및 (선택적) push.
+category: utility
 ---
 
 # Version Update Skill

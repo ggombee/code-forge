@@ -4,12 +4,12 @@
       "command": "uvx",
       "args": ["mcp-atlassian"],
       "env": {
-        "JIRA_URL": "https://company.atlassian.net",
-        "JIRA_USERNAME": "email@company.com",
-        "JIRA_API_TOKEN": "atlassian_token",
-        "CONFLUENCE_URL": "https://company.atlassian.net/wiki",
-        "CONFLUENCE_USERNAME": "email@company.com",
-        "CONFLUENCE_API_TOKEN": "atlassian_token"
+        "JIRA_URL": "https://your-domain.atlassian.net",
+        "JIRA_USERNAME": "your-email@example.com",
+        "JIRA_API_TOKEN": "your-jira-api-token",
+        "CONFLUENCE_URL": "https://your-domain.atlassian.net/wiki",
+        "CONFLUENCE_USERNAME": "your-email@example.com",
+        "CONFLUENCE_API_TOKEN": "your-confluence-api-token"
       }
     },
     "Figma": {
@@ -17,7 +17,7 @@
       "args": [
         "-y",
         "figma-developer-mcp",
-        "--figma-api-key=Figma_Token",
+        "--figma-api-key=your-figma-token",
         "--stdio"
       ]
     }

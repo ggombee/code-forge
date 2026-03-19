@@ -1,6 +1,7 @@
 ---
 name: docs-creator
 description: Claude Code 문서 작성. CLAUDE.md, SKILL.md, COMMAND.md 효율적 작성.
+category: utility
 metadata:
   version: '1.0.0'
 ---

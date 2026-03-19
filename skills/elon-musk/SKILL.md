@@ -1,6 +1,7 @@
 ---
 name: elon-musk
 description: 제1원칙 사고법으로 복잡한 문제를 근본 제약부터 재설계. 가정 A/B/C 분류 + 사전부검 분석.
+category: analysis
 ---
 
 # Elon Musk Skill — First Principles Thinking

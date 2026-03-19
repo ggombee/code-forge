@@ -1,6 +1,7 @@
 ---
 name: crawler
 description: Playwright로 웹사이트를 직접 탐색하여 크롤링 흐름 설계. API/네트워크 분석, 문서화, 크롤러 코드 생성.
+category: utility
 ---
 
 # Crawler Skill

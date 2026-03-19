@@ -58,12 +58,12 @@ Task(subagent_type='general-purpose', team_name='commit-analysis', name='risk-ch
 
 ```typescript
 // 단순 구조 탐색: haiku
-Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = 'apps/{앱이름}/src/{도메인} 폴더 구조 파악'));
-Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = 'packages/shared/queries 파일 목록'));
+Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = 'apps/{앱이름}/src/{도메인} 폴더 구조 파악'));
+Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = 'packages/shared/queries 파일 목록'));
 
 // 정책/로직 분석: sonnet
-Task((subagent_type = 'scout'), (model = 'sonnet'), (prompt = '주문 필터 조건 분석 - disabled, 기본값'));
-Task((subagent_type = 'scout'), (model = 'sonnet'), (prompt = '기간 계산 로직 분석 - getPeriod 구현'));
+Task((subagent_type = 'explore'), (model = 'sonnet'), (prompt = '주문 필터 조건 분석 - disabled, 기본값'));
+Task((subagent_type = 'explore'), (model = 'sonnet'), (prompt = '기간 계산 로직 분석 - getPeriod 구현'));
 ```
 
 ---
@@ -74,8 +74,8 @@ Task((subagent_type = 'scout'), (model = 'sonnet'), (prompt = '기간 계산 로
 
 ```typescript
 // Fan-Out: 도메인별 분석 (sonnet - 정책 이해 필요)
-Task((subagent_type = 'scout'), (model = 'sonnet'), (prompt = 'order 도메인 정책 분석 → .claude/temp/order.md'));
-Task((subagent_type = 'scout'), (model = 'sonnet'), (prompt = 'payment 도메인 정책 분석 → .claude/temp/payment.md'));
+Task((subagent_type = 'explore'), (model = 'sonnet'), (prompt = 'order 도메인 정책 분석 → .claude/temp/order.md'));
+Task((subagent_type = 'explore'), (model = 'sonnet'), (prompt = 'payment 도메인 정책 분석 → .claude/temp/payment.md'));
 
 // Fan-In: 결과 수집
 Read('.claude/temp/order.md');
@@ -93,10 +93,10 @@ Task((subagent_type = 'Plan'), (model = 'opus'), (prompt = '도메인 간 정책
 
 ```typescript
 // 1단계: 구조 탐색 (haiku)
-Task((subagent_type = 'scout'), (model = 'haiku'), (prompt = '파일 구조 파악'));
+Task((subagent_type = 'explore'), (model = 'haiku'), (prompt = '파일 구조 파악'));
 
 // 2단계: 정책 분석 (sonnet/opus)
-Task((subagent_type = 'scout'), (model = 'sonnet'), (prompt = '비즈니스 로직 분석'));
+Task((subagent_type = 'explore'), (model = 'sonnet'), (prompt = '비즈니스 로직 분석'));
 
 // 3단계: 계획 수립 (opus)
 Task((subagent_type = 'Plan'), (model = 'opus'), (prompt = '분석 결과 기반 구현 계획'));
@@ -142,7 +142,7 @@ Task((subagent_type = 'testgen'), (model = 'sonnet'), (run_in_background = true)
 ```typescript
 // 1단계: 복잡도 판단 (haiku - 빠른 초기 파악)
 Task(
-  (subagent_type = 'scout'),
+  (subagent_type = 'explore'),
   (model = 'haiku'),
   (prompt = `
   티켓: {티켓번호}
@@ -159,7 +159,7 @@ Task(
 // HIGH → opus
 
 // 3단계: Figma 분석 (sonnet - 디자인 의도 파악)
-Task((subagent_type = 'scout'), (model = 'sonnet'), (prompt = 'Figma 디자인 분석 - 상태별 스타일, 인터랙션'));
+Task((subagent_type = 'explore'), (model = 'sonnet'), (prompt = 'Figma 디자인 분석 - 상태별 스타일, 인터랙션'));
 
 // 4단계: 정책 분석 (HIGH일 때 opus)
 Task(
