@@ -129,7 +129,75 @@ Claude Code 빌트인 에이전트와 이름 충돌을 검증한다.
 | EDIT-ONLY | lint-fixer, build-fixer | coding-standards |
 | READ-WRITE-FULL | implementor, deep-executor, assayer, codex | parallel-execution, coding-standards |
 
-### Step 7: 빌드 매니페스트 생성
+### Step 7: 보안 패턴 스캔
+
+컴파일된 에이전트 파일에서 위험 패턴을 검사한다.
+
+**스캔 대상:** 컴파일 출력 디렉토리의 모든 .md 파일
+
+**위험 패턴 목록:**
+
+| 패턴 | 위험도 | 설명 |
+|------|--------|------|
+| `dangerouslyDisableSandbox` | CRITICAL | 샌드박스 비활성화 |
+| `--no-verify` | HIGH | git 훅 우회 |
+| `rm -rf` | HIGH | 재귀 삭제 |
+| `curl\|sh` 또는 `wget\|sh` | CRITICAL | 원격 스크립트 실행 |
+| `eval(` | HIGH | 동적 코드 실행 |
+| `ignore previous instructions` | CRITICAL | 프롬프트 인젝션 |
+
+**스캔 방법:**
+
+```bash
+PATTERNS_CRITICAL=("dangerouslyDisableSandbox" "curl.*|.*sh" "wget.*|.*sh" "ignore previous instructions")
+PATTERNS_HIGH=("--no-verify" "rm -rf" "eval(")
+
+FOUND_CRITICAL=false
+FOUND_HIGH=false
+
+echo "🔍 Security Scan..."
+
+for file in ${OUTPUT_DIR}/*.md; do
+  for pattern in "${PATTERNS_CRITICAL[@]}"; do
+    if grep -q "$pattern" "$file"; then
+      echo "⚠️  CRITICAL: '$pattern' found in $(basename $file)"
+      FOUND_CRITICAL=true
+    fi
+  done
+  for pattern in "${PATTERNS_HIGH[@]}"; do
+    if grep -q "$pattern" "$file"; then
+      echo "⚠️  HIGH: '$pattern' found in $(basename $file)"
+      FOUND_HIGH=true
+    fi
+  done
+done
+```
+
+**결과 처리:**
+
+| 발견 결과 | 대응 |
+|----------|------|
+| CRITICAL 패턴 발견 | 빌드 중단, 에러 출력 |
+| HIGH 패턴 발견 | 경고 출력, 사용자 확인 요청 |
+| 패턴 미발견 | `✅ Security scan passed` 출력 후 계속 |
+
+**출력 예시:**
+
+빌드 중단:
+```
+🔍 Security Scan...
+⚠️  CRITICAL: 'dangerouslyDisableSandbox' found in deep-executor.md
+❌ Build aborted: CRITICAL security pattern detected.
+   Review the source instance and remove dangerous patterns.
+```
+
+통과:
+```
+🔍 Security Scan...
+✅ Security scan passed (14 agents scanned)
+```
+
+### Step 8: 빌드 매니페스트 생성
 
 `agents/.smith-build-manifest.json`에 빌드 메타데이터를 기록한다.
 

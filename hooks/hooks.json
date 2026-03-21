@@ -19,6 +19,15 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/lint-fix.sh"
           }
         ]
+      },
+      {
+        "matcher": "Agent|Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/bellows-log.sh"
+          }
+        ]
       }
     ],
     "PreToolUse": [

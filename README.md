@@ -2,7 +2,7 @@
 
 > 설치하면 Claude Code가 더 잘 동작합니다.
 
-14개 전문 에이전트, 23개 워크플로우 스킬, 13개 스택 모듈.
+14개 전문 에이전트, 24개 워크플로우 스킬, 13개 스택 모듈.
 검증된 사고모델이 모든 작업의 품질을 일관되게 유지합니다.
 
 ---
@@ -13,7 +13,7 @@
 
 ```bash
 # 1. 마켓플레이스 등록 (최초 1회)
-claude plugin marketplace add https://github.com/ggombee/ggombee-marketplace.git
+claude plugin marketplace add https://github.com/ggombee/forge-market.git
 
 # 2. 플러그인 설치
 claude plugin install code-forge
@@ -108,12 +108,25 @@ Whetstone(숫돌)은 그 코딩 근육을 갈고닦는 도구입니다.
 
 | 스킬 | 한 줄 설명 |
 |------|----------|
+| `/stats` | 에이전트/스킬 사용량 통계 |
 | `/done` | 이미 구현한 코드 → 검증 → 커밋 → PR |
 | `/quality` | 포맷 → 린트 → 타입 체크, 에러 자동 수정 |
 | `/refactor` | 리팩토링 분석 + 정책 보호 테스트 |
 | `/generate-test` | BDD 시나리오 기반 테스트 코드 생성 |
 | `/debate` | 서로 다른 모델끼리 토론시켜서 방향 결정 |
 | `/figma-to-code` | Figma 디자인을 코드로 변환 |
+
+---
+
+## Bellows — 사용량 추적
+
+에이전트와 스킬 호출을 자동으로 기록합니다. `/stats`로 확인.
+
+```
+/stats              # 전체 통계
+/stats --week       # 최근 7일
+/stats --project    # 현재 프로젝트만
+```
 
 ---
 

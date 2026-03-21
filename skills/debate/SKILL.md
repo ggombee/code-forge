@@ -47,8 +47,8 @@ TeamDelete("debate-team")
 
 | 팀원 | 역할 | 모델 | subagent_type |
 |------|------|------|---------------|
-| advocate | 입장 A 지지, 근거 제시 | sonnet | `general-purpose` 또는 `ggombee-agents:architect` |
-| critic | 입장 B 반론, 가혹한 비평 | sonnet | `ggombee-agents:critic` |
+| advocate | 입장 A 지지, 근거 제시 | sonnet | `general-purpose` 또는 `code-forge:architect` |
+| critic | 입장 B 반론, 가혹한 비평 | sonnet | `code-forge:critic` |
 | codex | 외부 모델 관점 (Bash로 실행) | gpt-5.4 | Codex CLI |
 
 **팀 리더 역할 (Claude 본체):**
