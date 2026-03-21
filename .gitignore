@@ -10,3 +10,4 @@ node_modules/
 .claude/settings.local.json
 .env
 .env.*
+.plugin-cache-version

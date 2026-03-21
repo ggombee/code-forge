@@ -41,7 +41,7 @@
 
 - **CLAUDE.md 50줄 제한**: 매 턴마다 로드되므로 토큰 누적 방지
 - **@참조 lazy loading**: 모듈 컨벤션은 필요할 때만 로드
-- **Anvil 빌드타임 컴파일**: STATE+ACT 상속 체인을 런타임에 해석하지 않고 정적 .md로 사전 컴파일
+- **Smith 빌드타임 컴파일**: STATE+ACT 상속 체인을 런타임에 해석하지 않고 정적 .md로 사전 컴파일
 - **에이전트별 도구 제한**: 불필요한 도구를 disallowedTools로 차단하여 도구 선택 오버헤드 감소
 - **프리셋**: 5개 모듈을 한 줄로 지정 (standard, modern-stack)
 
@@ -70,12 +70,12 @@
 
 - **무소음 원칙**: session-init.sh는 버전 일치 시 아무 출력 없음. 불일치 시에만 한 줄 알림
 - **자동 동기화**: 플러그인 업데이트 후 다음 세션에서 CLAUDE.md 자동 재생성
-- **Anvil 온보딩**: /anvil-create-agent가 내부적으로 /anvil-build + /anvil-verify를 자동 호출
+- **Smith 온보딩**: /smith-create-agent가 내부적으로 /smith-build + /smith-verify를 자동 호출
 - **hooks**: 사용자가 인지하지 못하는 사이에 자동 lint 수정, 위험 명령 차단
 
 ---
 
-## 6. Anvil (Agent Anvil System) 설계 철학
+## 6. Smith (Agent Smith System) 설계 철학
 
 **"STATE(지식)와 ACT(행동)를 분리하여 에이전트를 조합한다."**
 
@@ -83,11 +83,11 @@
 - ACT class: "이 에이전트가 어떻게 행동하는가" (분석, 구현, 리뷰 등)
 - instance: STATE + ACT 조합 → 컴파일 → 정적 .md
 
-### Anvil STATE ↔ modules 경계
+### Smith STATE ↔ modules 경계
 
 | 구분 | 역할 | 예시 |
 |------|------|------|
-| Anvil STATE | 에이전트 **페르소나의 지식 배경** | "나는 React를 안다" |
+| Smith STATE | 에이전트 **페르소나의 지식 배경** | "나는 React를 안다" |
 | modules | **프로젝트 컨벤션** 상세 | "이 프로젝트에서 React를 이렇게 쓴다" |
 
 둘은 다른 역할이므로 통합하지 않는다. STATE는 에이전트의 정체성, modules는 프로젝트의 규칙이다.
@@ -100,7 +100,7 @@
 
 - 외부 패키지 의존 없이 code-forge 자체 testgen 에이전트로 해결
 - `docs/testgen-guide.md`에 상세 가이드 (선택자 우선순위, 모킹 사유 분류, Fail-First 전략 등)
-- Anvil 에이전트(agents/testgen.md)가 가이드를 @참조로 로드
+- Smith 에이전트(agents/testgen.md)가 가이드를 @참조로 로드
 - TDD 모드: 소스 미존재 시 자동으로 Red-Green-Refactor 사이클 진입
 
 ---
@@ -114,4 +114,4 @@
 - [ ] 토큰 효율을 해치지 않는가? (에이전트 크기, CLAUDE.md 크기)
 - [ ] 사용자가 인지하지 못하는 사이에 동작하는가? (hooks, 자동 동기화)
 - [ ] Codex opt-in 원칙을 지키는가? (없어도 동작, 있으면 추가 가치)
-- [ ] Anvil STATE와 modules의 경계를 존중하는가?
+- [ ] Smith STATE와 modules의 경계를 존중하는가?

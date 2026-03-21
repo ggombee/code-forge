@@ -12,6 +12,7 @@ maxTurns: 50
 @${CLAUDE_PLUGIN_ROOT}/instructions/agent-patterns/read-parallelization.md
 @${CLAUDE_PLUGIN_ROOT}/instructions/validation/forbidden-patterns.md
 @${CLAUDE_PLUGIN_ROOT}/rules/coding-standards.md
+@${CLAUDE_PLUGIN_ROOT}/rules/thinking-model.md
 
 # Test Generation Agent
 

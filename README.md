@@ -73,14 +73,14 @@ claude --plugin-dir ./code-forge
 | **Figma → 코드** | `/figma-to-code`로 Figma 디자인을 코드로 변환 |
 | **코드 리뷰 자동화** | `code-reviewer` 에이전트가 품질+보안 리뷰 |
 | **멀티에이전트 협업** | 14개 전문 에이전트가 분석/구현/검증 병렬 수행 |
-| **Anvil 에이전트 시스템** | 프로젝트에 최적화된 에이전트 생성 |
+| **Smith 에이전트 시스템** | 프로젝트에 최적화된 에이전트 생성 |
 | **Mac 알림** | `/setup-notifier`로 승인 요청 시 배너 알림 설정 |
 
 ---
 
 ## 에이전트 (14개)
 
-`/anvil-build`로 컴파일된 에이전트. 권한에 따라 4단계로 분류된다.
+`/smith-build`로 컴파일된 에이전트. 권한에 따라 4단계로 분류된다.
 
 ### READ-ONLY — 분석만, 파일 수정 없음
 
@@ -118,28 +118,28 @@ claude --plugin-dir ./code-forge
 
 ---
 
-## Anvil (Agent Anvil System)
+## Smith (Agent Smith System)
 
-STATE(지식)와 ACT(행동)를 분리하여 에이전트를 정의하는 시스템. `/anvil-build`가 Anvil 인스턴스를 빌드타임에 정적 .md로 컴파일하므로, 런타임 해석 비용 없이 Claude Code 네이티브 포맷으로 동작한다.
+STATE(지식)와 ACT(행동)를 분리하여 에이전트를 정의하는 시스템. `/smith-build`가 Smith 인스턴스를 빌드타임에 정적 .md로 컴파일하므로, 런타임 해석 비용 없이 Claude Code 네이티브 포맷으로 동작한다.
 
 ```
-Anvil 인스턴스 (_agents/*.md) → /anvil-build → 플랫 .md (agents/)
+Smith 인스턴스 (_agents/*.md) → /smith-build → 플랫 .md (agents/)
 ```
 
 ### 프로젝트 전용 에이전트 생성
 
 ```
-/anvil-create-agent
+/smith-create-agent
 ```
 
-프로젝트를 분석하여 `.agents/agents/`에 Anvil 인스턴스를 생성하고 `/anvil-build --project`로 `.claude/agents/`에 컴파일한다.
+프로젝트를 분석하여 `.agents/agents/`에 Smith 인스턴스를 생성하고 `/smith-build --project`로 `.claude/agents/`에 컴파일한다.
 
-### Anvil 스킬
+### Smith 스킬
 
 | 스킬 | 설명 |
 |------|------|
-| `/anvil-build` | Anvil 인스턴스를 정적 .md로 컴파일 (전체/프로젝트/검증) |
-| `/anvil-create-agent` | 프로젝트 분석 → Anvil instance 생성 → 자동 빌드 |
+| `/smith-build` | Smith 인스턴스를 정적 .md로 컴파일 (전체/프로젝트/검증) |
+| `/smith-create-agent` | 프로젝트 분석 → Smith instance 생성 → 자동 빌드 |
 
 ---
 
@@ -234,16 +234,16 @@ Anvil 인스턴스 (_agents/*.md) → /anvil-build → 플랫 .md (agents/)
 ```
 code-forge/
 ├── .claude-plugin/plugin.json    # 플러그인 매니페스트
-├── agents/                       # 컴파일된 에이전트 14개 (/anvil-build로 생성)
+├── agents/                       # 컴파일된 에이전트 14개 (/smith-build로 생성)
 ├── plugins/
-│   └── anvil/                    # Anvil (Agent Anvil System)
+│   └── smith/                    # Smith (Agent Smith System)
 │       ├── agents/
-│       │   ├── _agents/          #   Anvil 기본 instance 15개 (컴파일 소스)
+│       │   ├── _agents/          #   Smith 기본 instance 15개 (컴파일 소스)
 │       │   ├── interface/        #   구조 정의 (state-agent, act-agent)
 │       │   ├── state/            #   STATE class (role, language, framework, ...)
 │       │   └── act/              #   ACT class (analysis, dev, quality, ops)
-│       ├── skills/               #   /anvil-build, /anvil-create-agent
-│       └── rules/                #   Anvil 해석 규칙 (reference-only)
+│       ├── skills/               #   /smith-build, /smith-create-agent
+│       └── rules/                #   Smith 해석 규칙 (reference-only)
 ├── skills/                       # 스킬 22개
 ├── modules/                      # 스택 모듈 13개
 ├── presets/                      # 프리셋 (standard, modern-stack)

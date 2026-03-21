@@ -10,6 +10,7 @@ maxTurns: 50
 
 @${CLAUDE_PLUGIN_ROOT}/instructions/agent-patterns/parallel-execution.md
 @${CLAUDE_PLUGIN_ROOT}/rules/coding-standards.md
+@${CLAUDE_PLUGIN_ROOT}/rules/thinking-model.md
 
 # Deep-Executor Agent
 

@@ -432,27 +432,27 @@ CLAUDE.md 생성 완료 후, 프로젝트 로컬 설정 파일을 생성한다.
 ---
 version: {plugin.json의 version}
 plugins:
-  anvil:
+  smith:
     enabled: false
 ---
 ```
 
 - `version`: 이 프로젝트에 적용된 code-forge 버전. 플러그인 업데이트 후 `/setup` 재실행 시 버전 차이를 감지하여 CLAUDE.md를 재생성한다.
-- `plugins.anvil`: `/anvil-setup`에서 확장한다. 초기값은 `enabled: false`.
+- `plugins.smith`: `/smith-setup`에서 확장한다. 초기값은 `enabled: false`.
 
-## Step 6: Anvil 설정
+## Step 6: Smith 설정
 
-`/anvil-setup` 스킬을 자동 호출하여 Anvil 활성화 여부를 설정한다.
-`/anvil-setup`은 Step 5에서 생성한 `code-forge.local.md`의 `plugins.anvil` 섹션을 업데이트한다.
+`/smith-setup` 스킬을 자동 호출하여 Smith 활성화 여부를 설정한다.
+`/smith-setup`은 Step 5에서 생성한 `code-forge.local.md`의 `plugins.smith` 섹션을 업데이트한다.
 
-### Anvil 에이전트 추가 안내
+### Smith 에이전트 추가 안내
 
 결과 요약 끝에 다음을 추가 출력한다:
 
 ```
-/anvil-create-agent 를 실행하면
+/smith-create-agent 를 실행하면
    이 프로젝트에 최적화된 전용 에이전트를 자동 생성합니다.
-   (프로젝트 분석 → Anvil 인스턴스 생성 → 빌드타임 컴파일)
+   (프로젝트 분석 → Smith 인스턴스 생성 → 빌드타임 컴파일)
 ```
 
 ---
