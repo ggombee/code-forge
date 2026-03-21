@@ -7,18 +7,61 @@
 
 ---
 
-## 30초 설치
+## 설치
+
+### 방법 1: 마켓플레이스 (권장)
 
 ```bash
+# 1. 마켓플레이스 등록 (최초 1회)
+claude plugin marketplace add https://github.com/ggombee/ggombee-marketplace.git
+
+# 2. 플러그인 설치
+claude plugin install code-forge
+
+# 3. 프로젝트 세팅
+claude
+> /setup
+```
+
+전역 설치(기본)면 모든 프로젝트에서 사용 가능. 특정 프로젝트에만 쓰려면:
+
+```bash
+claude plugin install code-forge --scope project
+```
+
+### 방법 2: 로컬 클론
+
+```bash
+# 1. 클론
 git clone https://github.com/ggombee/code-forge.git
+
+# 2. 플러그인 디렉토리 지정하여 실행
+claude --plugin-dir /path/to/code-forge
+
+# 3. 프로젝트 세팅
+> /setup
 ```
 
+### 방법 3: Claude에게 시키기
+
+Claude Code 세션에서 이 README URL을 주면 됩니다:
+
 ```
-/install-plugin /path/to/code-forge
-/setup
+이 플러그인 설치해줘: https://github.com/ggombee/code-forge
 ```
 
-`/setup` 한 번이면 끝. package.json을 읽어서 스택을 자동 감지하고, 프로젝트에 맞는 CLAUDE.md를 생성합니다.
+Claude가 알아서 `claude plugin marketplace add` → `install` → `/setup`까지 처리합니다.
+
+### 설치 확인
+
+```bash
+claude plugin list
+```
+
+### `/setup`이 하는 일
+
+package.json을 읽어서 스택을 자동 감지하고, 프로젝트에 맞는 CLAUDE.md를 생성합니다.
+스택 선택, 기능 설정(Smith/Whetstone/Bellows on/off)까지 대화형으로 진행됩니다.
 
 ---
 

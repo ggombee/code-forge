@@ -3,6 +3,18 @@
 프로젝트 스택에 맞는 에이전트, 스킬, 규칙을 자동으로 제공하는 Claude Code 플러그인.
 설치 후 `/setup` 한 번이면 프로젝트에 맞는 CLAUDE.md가 자동 생성되고, 14개 에이전트와 23개 스킬이 바로 동작한다.
 
+## 설치
+
+```bash
+# 마켓플레이스 등록 (최초 1회) → 설치
+claude plugin marketplace add https://github.com/ggombee/ggombee-marketplace.git
+claude plugin install code-forge
+```
+
+또는 로컬: `claude --plugin-dir /path/to/code-forge`
+
+설치 후 `/setup` 실행 → 상세 가이드: README.md 참조
+
 ## 대장간 체계
 
 인지적 도제이론(Cognitive Apprenticeship) 기반 대장간 메타포:
