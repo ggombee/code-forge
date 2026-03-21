@@ -6,7 +6,7 @@ description: Jest 테스트 컨벤션. __tests__/ 구조, useFakeTimers, AAA 패
 # Jest 유닛 테스트 컨벤션
 
 순수 함수(utils, helpers, lib, adapters)에 대한 유닛 테스트 작성 규칙.
-컴포넌트/훅 테스트는 `testgen` 에이전트가 담당한다.
+컴포넌트/훅 테스트는 `assayer` 에이전트가 담당한다.
 
 ## 적용 대상
 

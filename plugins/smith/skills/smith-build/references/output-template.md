@@ -104,7 +104,7 @@ maxTurns: {instance maxTurns}
 | SHELL-ACCESS | scout, code-reviewer | parallel-execution.md |
 | SHELL-ACCESS | git-operator, researcher | 없음 |
 | EDIT-ONLY | lint-fixer, build-fixer | coding-standards.md |
-| READ-WRITE-FULL | implementor, deep-executor, testgen, codex | parallel-execution.md, coding-standards.md |
+| READ-WRITE-FULL | implementor, deep-executor, assayer, codex | parallel-execution.md, coding-standards.md |
 
 ---
 

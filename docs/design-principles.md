@@ -75,7 +75,26 @@
 
 ---
 
-## 6. Smith (Agent Smith System) 설계 철학
+## 6. 대장간 체계 (Forge Concept)
+
+**"인지적 도제이론을 대장간 메타포로 구현한다."**
+
+인지적 도제이론(Cognitive Apprenticeship)은 6단계로 구성된다: Modeling(시범) → Coaching(지도) → Scaffolding(발판) → Fading(제거) → Articulation(명료화) → Reflection(성찰). 대장간 메타포는 이 이론을 Claude Code 플러그인 구조로 옮긴 것이다.
+
+| 대장간 | 역할 | 구현체 | 도제이론 |
+|--------|------|--------|---------|
+| **Forge** (대장간) | 전체 플랫폼 | code-forge | 학습 환경 |
+| **Smith** (대장장이) | 에이전트 빌드 시스템 | `plugins/smith/` | Modeling (에이전트가 어떻게 동작해야 하는지 정의) |
+| **Anvil** (작업대) | 사용자 인터페이스 | CLI, 스킬, 커맨드 | Coaching (작업마다 가이드) |
+| **Whetstone** (숫돌) | 코딩 연습 | `/practice` | Scaffolding → Fading (점진적 힌트 → 힌트 제거) |
+| **Blueprint** (설계도) | 사고모델 + 규칙 | `rules/` | Articulation (원칙 명료화) |
+| **Bellows** (풀무) | 로깅/관찰 | `hooks/` | Reflection (사용 패턴 성찰) |
+
+이 체계는 코드에 강제하지 않는다. 디렉토리명은 Claude Code 스펙을 따른다. 대장간 이름은 문서와 커뮤니케이션에서만 사용한다.
+
+---
+
+## 7. Smith (Agent Smith System) 설계 철학
 
 **"STATE(지식)와 ACT(행동)를 분리하여 에이전트를 조합한다."**
 
@@ -94,13 +113,36 @@
 
 ---
 
-## 7. testgen (테스트 생성) 자립 원칙
+## 8. /start 원큐 워크플로우 원칙
+
+**"단일 진입점으로 복잡성을 흡수한다."**
+
+- MD 파일, 텍스트, Figma 링크, 이미지 — 어떤 형태든 `/start` 하나로 진입
+- 체크포인트 2개(구현 확인, 커밋 확인)만 사용자가 판단, 나머지는 에이전트가 처리
+- 3단계 fallback: Pencil 메모 → Figma 링크 → 캡처 이미지 순으로 graceful degradation
+- 진입점을 단순하게 유지하면서 내부 워크플로우는 복잡하게 — 복잡성은 에이전트 체인이 처리
+
+---
+
+## 9. /practice (Whetstone) 원칙
+
+**"에이전트가 코드를 짜주는 동안, 사람도 실력을 쌓아야 한다."**
+
+- 면접관 페르소나: 답을 주지 않고 질문으로 이끈다
+- 4단계 힌트 시스템 (Scaffolding의 점진적 구현): 레벨 1(방향) → 2(개념) → 3(구체적 단서) → 4(거의 정답)
+- 힌트를 요청하지 않으면 주지 않는다 — 스스로 생각하는 시간 보장
+- 완성 후 리뷰: "이 접근법의 trade-off는?" 같은 심화 질문으로 Articulation 유도
+- knowledge/ 파일을 참조하여 "이건 React 베스트 프랙티스 위반입니다" 같은 근거 있는 피드백
+
+---
+
+## 10. assayer (테스트 생성) 자립 원칙
 
 **"code-forge 설치만으로 TDD + BDD + 자동 수정이 완전 동작한다."**
 
-- 외부 패키지 의존 없이 code-forge 자체 testgen 에이전트로 해결
-- `docs/testgen-guide.md`에 상세 가이드 (선택자 우선순위, 모킹 사유 분류, Fail-First 전략 등)
-- Smith 에이전트(agents/testgen.md)가 가이드를 @참조로 로드
+- 외부 패키지 의존 없이 code-forge 자체 assayer 에이전트로 해결
+- `docs/assayer-guide.md`에 상세 가이드 (선택자 우선순위, 모킹 사유 분류, Fail-First 전략 등)
+- agents/assayer.md가 가이드를 @참조로 로드
 - TDD 모드: 소스 미존재 시 자동으로 Red-Green-Refactor 사이클 진입
 
 ---
@@ -115,3 +157,4 @@
 - [ ] 사용자가 인지하지 못하는 사이에 동작하는가? (hooks, 자동 동기화)
 - [ ] Codex opt-in 원칙을 지키는가? (없어도 동작, 있으면 추가 가치)
 - [ ] Smith STATE와 modules의 경계를 존중하는가?
+- [ ] 대장간 메타포에 부합하는가? (Forge/Smith/Anvil/Whetstone/Blueprint 체계와 충돌하지 않는가?)

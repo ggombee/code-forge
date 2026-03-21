@@ -52,7 +52,7 @@ instructions/
 | 문서                    | 용도                                    | 사용 시점                |
 | ----------------------- | --------------------------------------- | ------------------------ |
 | `coordination-guide.md` | 병렬 실행, 모델 라우팅, 컨텍스트 보존   | 에이전트 조합 필요 시    |
-| `agent-roster.md`       | 에이전트 상세 (scout, testgen 등) | 에이전트 선택 시         |
+| `agent-roster.md`       | 에이전트 상세 (scout, assayer 등) | 에이전트 선택 시         |
 | `execution-patterns.md` | Fan-Out, 배치, 백그라운드 패턴          | 구체적 실행 방법 필요 시 |
 | `teammate-done-process.md` | 팀원 작업 완료 6단계 프로세스        | Agent Teams 팀원 완료 시 |
 | `team-evaluation.md`   | 팀원 규칙 준수 평가 (100점)             | 팀원 작업 평가 시        |

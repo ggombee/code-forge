@@ -347,7 +347,7 @@ Task((subagent_type = 'implementor'), (prompt = '.claude/temp/analysis.md 읽고
 
 ```typescript
 Task(
-  (subagent_type = 'testgen'),
+  (subagent_type = 'assayer'),
   (prompt = `
   대상: apps/{앱이름}/src/{도메인}/views/listV2/useOrderListV2.ts
   기존 패턴: packages/shared/queries 참조

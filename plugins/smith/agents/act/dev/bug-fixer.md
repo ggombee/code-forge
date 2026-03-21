@@ -25,7 +25,7 @@ extends: act/act.md
 - [Deliverable] 수정된 코드와 검증 결과
 
 ## Collaboration
-- [Handoff] testgen에 회귀 테스트 작성을 요청한다
+- [Handoff] assayer에 회귀 테스트 작성을 요청한다
 
 ## Permission
 - [Model] sonnet

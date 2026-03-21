@@ -94,7 +94,7 @@
 | refactor-advisor | sonnet | opus |
 | lint-fixer | haiku | sonnet |
 | build-fixer | sonnet | sonnet |
-| testgen | sonnet | sonnet |
+| assayer | sonnet | sonnet |
 | tdd-guide | sonnet | sonnet |
 | implementor | sonnet | opus |
 | deep-executor | sonnet | opus |

@@ -268,7 +268,7 @@ git diff
 
 | 경로 패턴 | 분류 | 테스트 도구 |
 |-----------|------|------------|
-| `components/`, `views/`, `hooks/` | 컴포넌트/훅 | **testgen 에이전트** |
+| `components/`, `views/`, `hooks/` | 컴포넌트/훅 | **assayer 에이전트** |
 | `utils/`, `helpers/`, `lib/` | 순수 함수 | **Claude 직접 작성** |
 | `styled.ts`, `constants.ts`, `types.ts` | UI/타입 | 스킵 |
 
@@ -276,9 +276,9 @@ git diff
 
 | 변경 내용 | 테스트 전략 | 도구 |
 |-----------|------------|------|
-| 필터/검색 UI 변경 | 통합 테스트 | **testgen** |
-| disabled/readonly 조건 변경 | 통합 테스트 | **testgen** |
-| 새 UI 상태 추가 | BDD 시나리오 | **testgen** |
+| 필터/검색 UI 변경 | 통합 테스트 | **assayer** |
+| disabled/readonly 조건 변경 | 통합 테스트 | **assayer** |
+| 새 UI 상태 추가 | BDD 시나리오 | **assayer** |
 | 날짜/기간/가격 계산 변경 | 유닛 테스트 | **Claude 직접** |
 | 상태 전이 로직 변경 | 유닛 테스트 | **Claude 직접** |
 | 텍스트/라벨/스타일 변경 | 스킵 | - |
@@ -287,9 +287,9 @@ git diff
 
 ### 5-3. 테스트 실행
 
-**컴포넌트/훅 + 정책 영향 → testgen:**
+**컴포넌트/훅 + 정책 영향 → assayer:**
 ```typescript
-Task(subagent_type = 'testgen', prompt = `targetPath: {대상} mode: create`);
+Task(subagent_type = 'assayer', prompt = `targetPath: {대상} mode: create`);
 ```
 
 **순수 함수 + 정책 영향 → Claude 직접:**
@@ -343,7 +343,7 @@ Phase 5 품질 게이트 통과 후:
 
   lint:  PASS
   build: PASS
-  test:  PASS (testgen으로 3개 생성)
+  test:  PASS (assayer으로 3개 생성)
 
 커밋하고 PR을 올릴까요? [Y/n]
 ```

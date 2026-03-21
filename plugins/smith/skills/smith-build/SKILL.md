@@ -127,7 +127,7 @@ Claude Code 빌트인 에이전트와 이름 충돌을 검증한다.
 | SHELL-ACCESS | scout, code-reviewer | parallel-execution |
 | SHELL-ACCESS | git-operator, researcher | 없음 |
 | EDIT-ONLY | lint-fixer, build-fixer | coding-standards |
-| READ-WRITE-FULL | implementor, deep-executor, testgen, codex | parallel-execution, coding-standards |
+| READ-WRITE-FULL | implementor, deep-executor, assayer, codex | parallel-execution, coding-standards |
 
 ### Step 7: 빌드 매니페스트 생성
 

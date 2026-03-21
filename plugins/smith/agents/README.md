@@ -65,7 +65,7 @@ instance   →  실제 활성화 대상 (STATE 조합 + ACT)
 └── act/
     ├── act.md                    # ACT 추상 class
     ├── analysis/                 # 분석 (requirement-analyst, spec-to-testcase)
-    ├── dev/                      # 개발 (implementor, bug-fixer, refactorer, testgen)
+    ├── dev/                      # 개발 (implementor, bug-fixer, refactorer, assayer)
     ├── quality/                  # 검증 (reviewer, test-runner, security-reviewer)
     └── ops/                      # 운영 (git-operator)
 
@@ -218,14 +218,14 @@ ACT class들은 파이프라인으로 연결된다:
 ### 기능 개발
 
 ```
-requirement-analyst → spec-to-testcase → testgen → implementor → test-runner → reviewer
+requirement-analyst → spec-to-testcase → assayer → implementor → test-runner → reviewer
    요구사항 분석        테스트 케이스 도출    테스트 작성     구현         검증          리뷰
 ```
 
 ### 버그 수정
 
 ```
-bug-fixer → testgen → test-runner → reviewer
+bug-fixer → assayer → test-runner → reviewer
   분석/수정    회귀 테스트    검증       리뷰
 ```
 

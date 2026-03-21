@@ -190,7 +190,7 @@ Bash("yarn test --filter={앱이름} -- --testPathPattern='정책'");
 ```typescript
 // 병렬 검증
 Task((subagent_type = 'lint-fixer'), (model = 'haiku'), (prompt = '린트 오류 수정'));
-Task((subagent_type = 'testgen'), (prompt = '추가 테스트 생성'));
+Task((subagent_type = 'assayer'), (prompt = '추가 테스트 생성'));
 Task((subagent_type = 'code-reviewer'), (prompt = '리팩토링 결과 리뷰'));
 ```
 

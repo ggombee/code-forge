@@ -22,7 +22,7 @@ extends: act/act.md
 - [Deliverable] 테스트 케이스 체크리스트 (Given-When-Then, 우선순위 포함)
 
 ## Collaboration
-- [Handoff] testgen에 테스트 케이스 체크리스트를 전달한다
+- [Handoff] assayer에 테스트 케이스 체크리스트를 전달한다
 
 ## Permission
 - [Model] opus

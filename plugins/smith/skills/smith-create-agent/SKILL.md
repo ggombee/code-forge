@@ -49,7 +49,7 @@ agent-system: Smith
 | architect | `${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/act/analysis/requirement-analyst.md` |
 | dev | `${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/act/dev/implementor.md` |
 | reviewer | `${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/act/quality/reviewer.md` |
-| tester | `${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/act/dev/testgen.md` |
+| tester | `${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/act/dev/assayer.md` |
 
 ACT class의 `## Permission` 섹션에서 `model`, `tools`, `permissionMode`를 자동 추출하여 instance frontmatter에 적용한다.
 

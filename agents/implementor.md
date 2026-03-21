@@ -59,7 +59,7 @@ maxTurns: 50
 | scout | 구현 전 코드베이스 탐색 |
 | lint-fixer | 구현 후 오류 수정 |
 | code-reviewer | 구현 후 품질 검토 |
-| testgen | 구현 후 테스트 생성 |
+| assayer | 구현 후 테스트 생성 |
 
 ---
 

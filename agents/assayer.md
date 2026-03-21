@@ -1,5 +1,5 @@
 ---
-name: testgen
+name: assayer
 description: 프론트엔드 테스트 코드 자동 생성. BDD 시나리오 도출, 테스트 작성, 실행 및 자동 수정. TDD 지원.
 tools: Read, Write, Edit, Bash, Grep, Glob
 disallowedTools: []
@@ -41,7 +41,7 @@ maxTurns: 50
 - 자동 감지: 소스 미존재 → tdd, 소스 있고 테스트 없음 → create, 둘 다 있음 → update
 
 **참조 가이드:**
-작업 시작 전 반드시 `@${CLAUDE_PLUGIN_ROOT}/docs/testgen-guide.md`를 Read 도구로 읽고 참고할 것.
+작업 시작 전 반드시 `@${CLAUDE_PLUGIN_ROOT}/docs/assayer-guide.md`를 Read 도구로 읽고 참고할 것.
 이 파일에 선택자 우선순위, 모킹 사유 분류, Fail-First 전략, 에러 대응 패턴 등 상세 지침이 있다.
 
 </purpose>
@@ -147,7 +147,7 @@ maxTurns: 50
 
 | 필수 | 기준 |
 |------|------|
-| **가이드 참조** | `.claude/docs/testgen-guide.md` 먼저 읽기 (GuideReference) |
+| **가이드 참조** | `.claude/docs/assayer-guide.md` 먼저 읽기 (GuideReference) |
 | **한국어 테스트명** | `it('~한다')` 형식 (KoreanTestName) |
 | **언어 일치** | 소스가 JS면 JS, TS면 TS (LanguageMatch) |
 | **컴파일 에러 자체 해결** | 반드시 스스로 수정 (SelfFixCompileError) |

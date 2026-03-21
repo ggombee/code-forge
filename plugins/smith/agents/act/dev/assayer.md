@@ -1,7 +1,7 @@
 ---
 type: class
 agent-system: Smith
-name: testgen
+name: assayer
 schema: interface/act-agent.md
 extends: act/act.md
 ---

@@ -43,13 +43,13 @@ category: implementation
 
 3. mode를 결정합니다:
    - `--tdd` 옵션 있음 -> `tdd` 모드
-   - `--tdd` 없으면 -> testgen 에이전트가 소스 파일 상태를 보고 자동 결정
+   - `--tdd` 없으면 -> assayer 에이전트가 소스 파일 상태를 보고 자동 결정
      (파일 미존재/스켈레톤 -> tdd, 구현됨+테스트 없음 -> create, 구현됨+테스트 있음 -> update)
 
-4. `testgen` 에이전트에게 Task tool로 위임합니다:
+4. `assayer` 에이전트에게 Task tool로 위임합니다:
 
    ```
-   Task(subagent_type: "testgen", prompt: "
+   Task(subagent_type: "assayer", prompt: "
      targetPath: [대상 파일 경로]
      mode: [create | update | tdd] (--tdd 시 tdd, 아니면 미지정하여 에이전트가 자동 감지)
      figmaUrl: [Figma URL 또는 없음]
@@ -88,7 +88,7 @@ category: implementation
    어떤 파일에 대해 테스트를 생성할까요?
    ```
 
-5. 사용자가 선택한 파일에 대해 `testgen` 에이전트를 호출합니다.
+5. 사용자가 선택한 파일에 대해 `assayer` 에이전트를 호출합니다.
 
 6. 전체 결과를 요약합니다.
 

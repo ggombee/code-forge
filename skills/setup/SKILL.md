@@ -440,20 +440,91 @@ plugins:
 - `version`: 이 프로젝트에 적용된 code-forge 버전. 플러그인 업데이트 후 `/setup` 재실행 시 버전 차이를 감지하여 CLAUDE.md를 재생성한다.
 - `plugins.smith`: `/smith-setup`에서 확장한다. 초기값은 `enabled: false`.
 
-## Step 6: Smith 설정
+## Step 6: 기능 선택 (옵셔널)
 
-`/smith-setup` 스킬을 자동 호출하여 Smith 활성화 여부를 설정한다.
-`/smith-setup`은 Step 5에서 생성한 `code-forge.local.md`의 `plugins.smith` 섹션을 업데이트한다.
+스택 설정 완료 후, code-forge의 옵셔널 기능을 대화형으로 설정한다.
+**초기 설정 시 여기서 한번에 처리. 이후 개별 레포에서 변경하려면 각 설정 스킬을 직접 호출.**
 
-### Smith 에이전트 추가 안내
-
-결과 요약 끝에 다음을 추가 출력한다:
+> 나중에 변경: `/smith-setup` (Smith on/off), 또는 `code-forge.local.md` 직접 수정
 
 ```
-/smith-create-agent 를 실행하면
-   이 프로젝트에 최적화된 전용 에이전트를 자동 생성합니다.
-   (프로젝트 분석 → Smith 인스턴스 생성 → 빌드타임 컴파일)
+추가 기능을 설정합니다. 필요한 것만 켜주세요.
+
+[1/3] Smith (에이전트 빌드 시스템)
+  프로젝트에 최적화된 전용 에이전트를 만들 수 있습니다.
+  → [Y] 사용 / [n] 사용 안 함
+
+[2/3] Whetstone (코딩 연습)
+  /practice로 코딩 면접 시뮬레이션을 할 수 있습니다.
+  → [Y] 사용 / [n] 사용 안 함
+
+[3/3] Bellows (사용량 로깅)
+  어떤 에이전트/스킬을 얼마나 쓰는지 로컬 로그를 남깁니다.
+  → [y] 사용 / [N] 사용 안 함
 ```
+
+대문자가 기본값. 사용자가 Enter만 누르면 기본값 적용.
+
+설정 결과를 `code-forge.local.md`에 저장:
+
+```yaml
+plugins:
+  smith:
+    enabled: true    # 사용자 선택 반영
+  whetstone:
+    enabled: true
+  bellows:
+    enabled: false
+```
+
+### Smith를 켠 경우
+
+```
+Smith가 활성화되었습니다.
+
+지금 바로 프로젝트 전용 에이전트를 만들까요?
+  → [Y] /smith-create-agent 실행 / [n] 나중에
+
+(나중에 하려면 /smith-create-agent를 실행하세요)
+```
+
+Y → `/smith-create-agent` 자동 호출 (프로젝트 분석 → 에이전트 생성 → 빌드)
+n → 스킵, 안내 메시지만 출력
+
+### 설정 완료 안내
+
+```
+설정이 완료되었습니다.
+
+이 설정은 code-forge.local.md에 저장됩니다.
+개별 프로젝트에서 나중에 변경하려면:
+  /smith-setup        → Smith(에이전트 빌드) on/off
+  code-forge.local.md → 직접 편집도 가능
+```
+
+---
+
+## CLAUDE.md 백업 안내
+
+기존 CLAUDE.md가 있는 경우:
+
+```
+기존 CLAUDE.md가 발견되었습니다.
+
+  1. 백업 후 새로 생성 (기존 → .claude/CLAUDE.md.bak)
+  2. 기존 내용과 합치기 (기존 내용 하단에 code-forge 설정 추가)
+  3. 취소
+
+어떻게 할까요?
+```
+
+| 선택 | 동작 |
+|------|------|
+| 1 | 기존 파일을 `.claude/CLAUDE.md.bak`으로 이동 후 새로 생성 |
+| 2 | 기존 CLAUDE.md 하단에 `---` 구분선 + code-forge 설정 추가 |
+| 3 | 아무것도 하지 않고 종료 |
+
+2번 선택 시 기존 내용을 보존하면서 스택/명령어/모듈 참조만 추가한다.
 
 ---
 
@@ -466,7 +537,7 @@ plugins:
 | preset 파일 없음              | 오류 출력 후 알려진 프리셋 목록 안내             |
 | 모듈 SKILL.md 없음            | 경고 출력 후 해당 모듈 참조 제외하고 계속 진행   |
 | profile.json JSON 파싱 실패   | 오류 내용 출력 후 수정 요청                      |
-| CLAUDE.md 이미 존재           | 덮어쓰기 전 기존 내용 백업 (.claude/CLAUDE.md.bak) |
+| CLAUDE.md 이미 존재           | 아래 CLAUDE.md 백업 안내 참조 |
 | 전역 profile.json 이미 존재   | 기존 설정 보여주고 덮어쓰기 확인                 |
 | 로컬 + 전역 모두 존재         | 로컬 우선 적용, 전역은 fallback임을 안내         |
 

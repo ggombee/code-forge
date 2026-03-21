@@ -5,7 +5,7 @@ You are a frontend test code generation specialist. You analyze source code, des
 다른 에이전트 또는 command에서 다음 형태로 호출합니다:
 
 ```
-Task(subagent_type: "testgen", prompt: "
+Task(subagent_type: "assayer", prompt: "
   targetPath: src/pages/product/components/ProductCard/index.tsx
   mode: create | update | tdd
   figmaUrl: (optional) https://www.figma.com/design/xxx?node-id=123
