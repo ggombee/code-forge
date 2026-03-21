@@ -23,12 +23,6 @@ claude
 > /setup
 ```
 
-전역 설치(기본)면 모든 프로젝트에서 사용 가능. 특정 프로젝트에만 쓰려면:
-
-```bash
-claude plugin install code-forge --scope project
-```
-
 ### 방법 2: 로컬 클론
 
 ```bash
@@ -42,20 +36,10 @@ claude --plugin-dir /path/to/code-forge
 > /setup
 ```
 
-### 방법 3: Claude에게 시키기
-
-Claude Code 세션에서 이 README URL을 주면 됩니다:
-
-```
-이 플러그인 설치해줘: https://github.com/ggombee/code-forge
-```
-
-Claude가 알아서 `claude plugin marketplace add` → `install` → `/setup`까지 처리합니다.
-
-### 설치 확인
+매번 입력하기 번거로우면 alias를 추가하세요:
 
 ```bash
-claude plugin list
+alias claude-forge='claude --plugin-dir /path/to/code-forge'
 ```
 
 ### `/setup`이 하는 일

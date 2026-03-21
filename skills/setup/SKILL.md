@@ -30,6 +30,48 @@ $ARGUMENTS 있음 → 파일 경로로 인식
 
 ---
 
+## 선택 UI 규칙
+
+**모든 선택은 방향키+엔터 형식으로 제시한다.** 숫자 입력이나 Y/n 텍스트 입력을 받지 않는다.
+
+### 기본 형식
+
+```
+질문 텍스트
+
+> 옵션 A               ← 커서 위치 (방향키로 이동)
+  옵션 B
+  옵션 C
+  기타 (직접 입력)      ← Tab 누르면 자유 텍스트 입력 모드
+```
+
+- `>` 커서가 현재 선택을 표시한다
+- 위/아래 방향키로 이동, Enter로 확정
+- 감지된 항목이 있으면 해당 항목에 커서를 기본 위치로 놓는다
+- **"기타 (직접 입력)"** 옵션에서 Tab을 누르면 자유 텍스트 입력 모드로 전환된다
+
+### Yes/No 형식
+
+```
+질문 텍스트
+
+> 사용                  ← 기본값이면 여기에 커서
+  사용 안 함
+```
+
+### 구현 방식 (Claude가 따를 규칙)
+
+Claude Code에서는 실제 TUI를 렌더링할 수 없으므로, 아래 방식으로 동일한 UX를 달성한다:
+
+1. 옵션을 위 형식으로 보여준다 (`>` 커서로 기본값 표시)
+2. 사용자가 **번호, 이름, 또는 자연어**로 응답하면 해당 옵션을 선택한 것으로 처리
+3. Enter만 누르면 (빈 응답) 기본값(`>` 위치) 적용
+4. 옵션에 없는 텍스트를 입력하면 "기타 (직접 입력)"으로 처리
+
+**핵심: 한 번에 하나만 묻고, 응답을 받은 후 다음으로 넘어간다.**
+
+---
+
 ## Step 1: 대화형 온보딩 (profile.json 없을 때)
 
 `.claude/profile.json`이 없으면 아래 서브스텝을 순차 진행한다.
@@ -42,22 +84,47 @@ code-forge 설정을 시작합니다.
 
 이 설정을 어디에 적용할까요?
 
-  1. 이 프로젝트에만 (./CLAUDE.md + .claude/profile.json)
-  2. 전역 설정 (~/.claude/CLAUDE.md + ~/.claude/profile.json)
-
-> 대부분 1번을 선택합니다.
+> 이 프로젝트에만 (.claude/)
+  전역 설정 (~/.claude/)
 ```
 
 | 선택 | installTarget | profile.json 경로 | CLAUDE.md 경로 |
 |------|--------------|-------------------|---------------|
-| 1 | `local` | `.claude/profile.json` | `./CLAUDE.md` |
-| 2 | `global` | `~/.claude/profile.json` | `~/.claude/CLAUDE.md` |
+| 이 프로젝트에만 | `local` | `.claude/profile.json` | `./CLAUDE.md` |
+| 전역 설정 | `global` | `~/.claude/profile.json` | `~/.claude/CLAUDE.md` |
 
-### 1-1. package.json 자동 감지
+### 1-1. package.json 자동 감지 + 프로젝트 유형 판별
 
 `package.json`이 존재하면 dependencies를 분석하여 스택을 자동 추론한다.
 
-**감지 규칙:**
+**프로젝트 유형 판별:**
+
+먼저 프로젝트가 프론트엔드 서비스인지 판별한다.
+
+| 조건 | 유형 | 스택 설정 |
+|------|------|----------|
+| `react`, `next`, `vue`, `angular` 등 UI 프레임워크 존재 | **서비스** | 스택 설정 진행 |
+| `bin` 필드 존재 + UI 프레임워크 없음 | **CLI/도구** | 스택 설정 건너뛰기 |
+| `main`/`exports` 필드 + UI 프레임워크 없음 | **라이브러리** | 스택 설정 건너뛰기 |
+| `package.json` 없음 | **기타** | 스택 설정 건너뛰기 |
+| UI 프레임워크 없지만 판단 불확실 | **확인 필요** | 사용자에게 질문 |
+
+**서비스가 아닌 경우:**
+
+```
+이 프로젝트는 프론트엔드 서비스가 아닌 것 같습니다.
+(감지: CLI 도구 / 라이브러리 / 스택 미감지)
+
+스택 모듈 설정이 필요한가요?
+
+> 건너뛰기 (명령어 + 기능 설정만)
+  아니요, 스택 설정도 할게요
+```
+
+→ "건너뛰기" 선택 시: 1-2, 1-3을 건너뛰고 1-4(프로젝트 정보)로 직행
+→ "스택 설정도 할게요" 선택 시: 정상 진행
+
+**감지 규칙 (서비스인 경우):**
 
 | dependency | 추론 모듈 |
 |-----------|----------|
@@ -83,6 +150,27 @@ code-forge 설정을 시작합니다.
 | `tailwind.config.*` 존재 | styling: `tailwind` |
 | `jest.config.*` 존재 | testing: `jest` |
 | `vitest.config.*` 존재 | testing: `vitest` |
+
+**미매칭 라이브러리 감지:**
+
+감지 규칙에 매칭되지 않는 관련 라이브러리가 있으면 해당 카테고리의 "기타" 옵션으로 자동 추가한다.
+
+예시:
+- `recoil` 감지 → State 카테고리에 `recoil (감지됨)` 옵션 동적 추가
+- `sass` 감지 → Styling 카테고리에 `sass (감지됨)` 옵션 동적 추가
+- `@testing-library/react` 있지만 jest/vitest 없음 → Testing에 해당 정보 표시
+
+**카테고리별 감지 확장 규칙:**
+
+| 카테고리 | 추가 감지 대상 |
+|---------|--------------|
+| Framework | `vue`, `angular`, `svelte`, `solid-js`, `remix`, `gatsby` |
+| State | `recoil`, `mobx`, `valtio`, `xstate`, `swr` (TanStack Query 대체) |
+| Styling | `sass`/`scss`, `less`, `vanilla-extract`, `panda-css`, `linaria` |
+| Design System | `chakra-ui`, `radix-ui`, `shadcn`, `mantine` |
+| Testing | `playwright`, `cypress`, `storybook` |
+
+감지되면 해당 카테고리 옵션 목록에 `{라이브러리명} (감지됨)` 형태로 자동 삽입한다.
 
 **프로젝트 정보 자동 추출:**
 
@@ -125,76 +213,96 @@ package.json이 없으면 이 단계를 건너뛰고 1-3으로 직행한다.
 
   standard: Pages Router + Jotai + Emotion + Jest
 
-이 프리셋을 사용할까요?
-  1. 네, standard 프리셋으로 진행
-  2. 아니요, 직접 선택할게요
+> standard 프리셋으로 진행
+  직접 선택할게요
 ```
 
-→ 1번 선택 시: 1-4로 건너뜀 (프로젝트 정보 확인)
-→ 2번 선택 시: 1-3으로 진행
+→ "standard 프리셋으로 진행" 선택 시: 1-4로 건너뜀 (프로젝트 정보 확인)
+→ "직접 선택할게요" 선택 시: 1-3으로 진행
 
 **프리셋 매칭 안 될 때:**
 
 ```
 사용 가능한 프리셋:
-  1. standard — Pages Router + Jotai + Emotion + Jest
-  2. modern-stack — MUI + App Router + Zustand + Tailwind + Vitest
-  3. 직접 선택 (감지 결과 기반)
+
+> standard — Pages Router + Jotai + Emotion + Jest
+  modern-stack — MUI + App Router + Zustand + Tailwind + Vitest
+  직접 선택 (감지 결과 기반)
 ```
 
 ### 1-3. 카테고리별 순차 질문
 
 직접 선택 시 한 번에 한 카테고리씩 질문한다.
-자동 감지 결과가 있으면 `← 감지됨`으로 표시하고 기본값으로 설정한다.
+자동 감지 결과가 있으면 해당 항목에 `>` 커서를 놓는다 (기본 선택).
+
+**각 카테고리마다 "기타" 옵션이 있다.** 감지되었지만 옵션에 없는 라이브러리는 자동으로 옵션에 추가된다.
 
 ```
 [1/5] Framework
 
-  1. react-nextjs-pages — Next.js Pages Router
-  2. react-nextjs-app — Next.js App Router  ← 감지됨
-  3. react-spa — React SPA (Vite/CRA)
-
-선택 (기본: 2):
+> react-nextjs-app — Next.js App Router     ← 감지됨
+  react-nextjs-pages — Next.js Pages Router
+  react-spa — React SPA (Vite/CRA)
+  기타 (직접 입력)
 ```
 
 ```
 [2/5] Design System
 
-  1. mui — Material UI
-  2. ant-design — Ant Design
-  3. 없음  ← 기본
-
-선택 (기본: 3):
+> 없음
+  mui — Material UI
+  ant-design — Ant Design
+  기타 (직접 입력)
 ```
 
 ```
 [3/5] State Management
 
-  1. jotai-tanstack — Jotai + TanStack Query  ← 감지됨
-  2. zustand-tanstack — Zustand + TanStack Query
-  3. redux-rtk — Redux Toolkit + RTK Query
+> jotai-tanstack — Jotai + TanStack Query   ← 감지됨
+  zustand-tanstack — Zustand + TanStack Query
+  redux-rtk — Redux Toolkit + RTK Query
+  기타 (직접 입력)
+```
 
-선택 (기본: 1):
+감지되었지만 옵션에 없는 경우 (예: recoil 감지):
+
+```
+[3/5] State Management
+
+> recoil — Recoil                            ← 감지됨
+  jotai-tanstack — Jotai + TanStack Query
+  zustand-tanstack — Zustand + TanStack Query
+  redux-rtk — Redux Toolkit + RTK Query
+  기타 (직접 입력)
 ```
 
 ```
 [4/5] Styling
 
-  1. emotion — Emotion (@emotion/styled)  ← 감지됨
-  2. tailwind — Tailwind CSS
-  3. styled-components
-
-선택 (기본: 1):
+> emotion — Emotion (@emotion/styled)       ← 감지됨
+  tailwind — Tailwind CSS
+  styled-components — Styled Components
+  기타 (직접 입력)
 ```
 
 ```
 [5/5] Testing
 
-  1. jest — Jest
-  2. vitest — Vitest  ← 감지됨
-
-선택 (기본: 2):
+> vitest — Vitest                            ← 감지됨
+  jest — Jest
+  기타 (직접 입력)
 ```
+
+**"기타" 선택 시 동작:**
+
+```
+[3/5] State Management
+
+사용 중인 상태 관리 라이브러리를 입력해 주세요:
+> recoil
+```
+
+입력값은 `modules.state`에 문자열로 저장된다. 대응하는 모듈 SKILL.md가 없으면 규칙 참조에서 제외되지만, profile.json에는 기록되어 CLAUDE.md 스택 섹션에 표시된다.
 
 ### 1-4. 프로젝트 정보 확인
 
@@ -209,8 +317,11 @@ package.json이 없으면 이 단계를 건너뛰고 1-3으로 직행한다.
   lint:  yarn lint
   test:  yarn test
 
-이대로 진행할까요? (수정이 필요하면 말씀해 주세요)
+> 이대로 진행
+  수정할게요
 ```
+
+→ "수정할게요" 선택 시: 각 항목을 하나씩 다시 질문
 
 package.json이 없었으면 각 항목을 직접 물어본다:
 
@@ -253,11 +364,12 @@ package.json이 없었으면 각 항목을 직접 물어본다:
   lint:  yarn lint
   test:  yarn test
 
-이대로 생성할까요? [Y/n]
+> 생성
+  처음부터 다시
 ```
 
-→ Y: profile.json 생성 후 Step 2로 진행
-→ N: 1-2부터 재시작
+→ "생성": profile.json 생성 후 Step 2로 진행
+→ "처음부터 다시": 1-0부터 재시작
 
 ### 파일이 있는 경우 — 파싱
 
@@ -265,6 +377,7 @@ package.json이 없었으면 각 항목을 직접 물어본다:
 // .claude/profile.json 예시
 {
   "installTarget": "local",          // "local" | "global" (기본: "local")
+  "projectType": "service",          // "service" | "library" | "cli" | "other"
   "preset": "standard",              // 프리셋 사용 (선택)
   "modules": {                       // 개별 모듈 직접 선택 (선택)
     "framework": "react-nextjs-pages",
@@ -293,6 +406,13 @@ package.json이 없었으면 각 항목을 직접 물어본다:
 2. preset의 `modules`를 기본값으로 설정
 3. profile.json의 `modules` 명시값으로 덮어씀
 4. `overrides` 병합
+
+### 커스텀 모듈 처리
+
+`modules`의 값이 알려진 모듈 목록에 없으면 (예: `"state": "recoil"`):
+- 대응하는 SKILL.md가 없으므로 규칙 참조에서 제외
+- CLAUDE.md 스택 섹션에는 입력값 그대로 표시 (예: `State: recoil`)
+- 에러 없이 정상 진행
 
 ### 모듈 → SKILL.md 경로 매핑
 
@@ -367,6 +487,10 @@ package.json이 없었으면 각 항목을 직접 물어본다:
 @{CLAUDE_PLUGIN_ROOT}/modules/testing/{testing}/SKILL.md
 ```
 
+**projectType이 "service"가 아닌 경우:**
+- 스택 섹션과 규칙 참조 섹션을 생략
+- 명령어 섹션만 포함
+
 ### 스택 설명 매핑
 
 | 모듈값              | 설명                          |
@@ -384,6 +508,8 @@ package.json이 없었으면 각 항목을 직접 물어본다:
 | styled-components   | Styled Components             |
 | jest                | Jest                          |
 | vitest              | Vitest                        |
+
+매핑에 없는 값 (커스텀 입력)은 입력값 그대로 표시한다.
 
 ---
 
@@ -443,27 +569,45 @@ plugins:
 ## Step 6: 기능 선택 (옵셔널)
 
 스택 설정 완료 후, code-forge의 옵셔널 기능을 대화형으로 설정한다.
-**초기 설정 시 여기서 한번에 처리. 이후 개별 레포에서 변경하려면 각 설정 스킬을 직접 호출.**
+**하나씩 순차적으로 묻는다. 한 번에 모두 보여주지 않는다.**
 
 > 나중에 변경: `/smith-setup` (Smith on/off), 또는 `code-forge.local.md` 직접 수정
 
-```
-추가 기능을 설정합니다. 필요한 것만 켜주세요.
+### 6-1. Smith
 
+```
 [1/3] Smith (에이전트 빌드 시스템)
-  프로젝트에 최적화된 전용 에이전트를 만들 수 있습니다.
-  → [Y] 사용 / [n] 사용 안 함
+프로젝트에 최적화된 전용 에이전트를 만들 수 있습니다.
 
-[2/3] Whetstone (코딩 연습)
-  /practice로 코딩 면접 시뮬레이션을 할 수 있습니다.
-  → [Y] 사용 / [n] 사용 안 함
-
-[3/3] Bellows (사용량 로깅)
-  어떤 에이전트/스킬을 얼마나 쓰는지 로컬 로그를 남깁니다.
-  → [y] 사용 / [N] 사용 안 함
+> 사용
+  사용 안 함
 ```
 
-대문자가 기본값. 사용자가 Enter만 누르면 기본값 적용.
+→ 응답을 받은 후 다음으로 넘어간다.
+
+### 6-2. Whetstone
+
+```
+[2/3] Whetstone (코딩 연습)
+/practice로 코딩 면접 시뮬레이션을 할 수 있습니다.
+
+> 사용
+  사용 안 함
+```
+
+### 6-3. Bellows
+
+```
+[3/3] Bellows (사용량 로깅)
+어떤 에이전트/스킬을 얼마나 쓰는지 로컬 로그를 남깁니다.
+
+  사용
+> 사용 안 함
+```
+
+Bellows는 기본값이 "사용 안 함"이다.
+
+### 설정 결과
 
 설정 결과를 `code-forge.local.md`에 저장:
 
@@ -483,13 +627,17 @@ plugins:
 Smith가 활성화되었습니다.
 
 지금 바로 프로젝트 전용 에이전트를 만들까요?
-  → [Y] /smith-create-agent 실행 / [n] 나중에
 
-(나중에 하려면 /smith-create-agent를 실행하세요)
+> /smith-create-agent 실행
+  나중에
 ```
 
-Y → `/smith-create-agent` 자동 호출 (프로젝트 분석 → 에이전트 생성 → 빌드)
-n → 스킵, 안내 메시지만 출력
+→ "/smith-create-agent 실행" 선택 시: 자동 호출 (프로젝트 분석 → 에이전트 생성 → 빌드)
+→ "나중에" 선택 시: 스킵
+
+```
+(나중에 하려면 /smith-create-agent를 실행하세요)
+```
 
 ### 설정 완료 안내
 
@@ -511,20 +659,18 @@ n → 스킵, 안내 메시지만 출력
 ```
 기존 CLAUDE.md가 발견되었습니다.
 
-  1. 백업 후 새로 생성 (기존 → .claude/CLAUDE.md.bak)
-  2. 기존 내용과 합치기 (기존 내용 하단에 code-forge 설정 추가)
-  3. 취소
-
-어떻게 할까요?
+> 백업 후 새로 생성 (기존 → .claude/CLAUDE.md.bak)
+  기존 내용과 합치기 (하단에 code-forge 설정 추가)
+  취소
 ```
 
 | 선택 | 동작 |
 |------|------|
-| 1 | 기존 파일을 `.claude/CLAUDE.md.bak`으로 이동 후 새로 생성 |
-| 2 | 기존 CLAUDE.md 하단에 `---` 구분선 + code-forge 설정 추가 |
-| 3 | 아무것도 하지 않고 종료 |
+| 백업 후 새로 생성 | 기존 파일을 `.claude/CLAUDE.md.bak`으로 이동 후 새로 생성 |
+| 기존 내용과 합치기 | 기존 CLAUDE.md 하단에 `---` 구분선 + code-forge 설정 추가 |
+| 취소 | 아무것도 하지 않고 종료 |
 
-2번 선택 시 기존 내용을 보존하면서 스택/명령어/모듈 참조만 추가한다.
+"기존 내용과 합치기" 선택 시 기존 내용을 보존하면서 스택/명령어/모듈 참조만 추가한다.
 
 ---
 
@@ -532,14 +678,15 @@ n → 스킵, 안내 메시지만 출력
 
 | 상황                          | 대응                                             |
 | ----------------------------- | ------------------------------------------------ |
-| package.json 없음             | 감지 건너뛰고 수동 선택으로 진행                 |
+| package.json 없음             | 프로젝트 유형을 "기타"로 판별, 스택 설정 건너뛰기 제안 |
 | package.json에서 스택 감지 불가 | "감지된 스택이 없습니다" 출력 후 수동 선택       |
 | preset 파일 없음              | 오류 출력 후 알려진 프리셋 목록 안내             |
 | 모듈 SKILL.md 없음            | 경고 출력 후 해당 모듈 참조 제외하고 계속 진행   |
 | profile.json JSON 파싱 실패   | 오류 내용 출력 후 수정 요청                      |
-| CLAUDE.md 이미 존재           | 아래 CLAUDE.md 백업 안내 참조 |
+| CLAUDE.md 이미 존재           | CLAUDE.md 백업 안내 참조 |
 | 전역 profile.json 이미 존재   | 기존 설정 보여주고 덮어쓰기 확인                 |
 | 로컬 + 전역 모두 존재         | 로컬 우선 적용, 전역은 fallback임을 안내         |
+| 커스텀 모듈값 (옵션에 없는 값) | 정상 처리, SKILL.md 참조만 제외                  |
 
 ---
 
