@@ -197,6 +197,24 @@ done
 ✅ Security scan passed (14 agents scanned)
 ```
 
+### Step 7.5: Deep Specialization 완전성 검증 (프로젝트 에이전트만)
+
+`.agents/agents/` 소스의 프로젝트 에이전트에 대해 추가 검증:
+
+1. **base class extends 확인**: `{project}-base.md`의 extends에 domain/policy/context가 포함되는지
+   - 누락 → WARN ("해당 축의 레포 특화 지식 없이 동작합니다. /smith-create-agent --refresh 권장")
+
+2. **domain class 최소 규칙**: Must에 엔티티 관련 규칙 1개 이상
+   - 없음 → WARN ("도메인 분석이 미수행되었습니다")
+
+3. **policy class 최소 규칙**: Must에 정책 관련 규칙 1개 이상
+   - 없음 → WARN ("정책 분석이 미수행되었습니다")
+
+4. **context class 최소 규칙**: Must에 구조 관련 규칙 1개 이상
+   - 없음 → WARN ("컨텍스트 분석이 미수행되었습니다")
+
+5. **Analysis Manifest staleness**: `.analysis-manifest.json` 존재 시 30일 경과 → WARN
+
 ### Step 8: 빌드 매니페스트 생성
 
 `agents/.smith-build-manifest.json`에 빌드 메타데이터를 기록한다.

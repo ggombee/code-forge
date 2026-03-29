@@ -8,6 +8,8 @@ metadata:
 
 # Bug Fix Skill
 
+> **참조:** 원인 분석 시 `knowledge/build-guide.md` (실전 삽질 기록 섹션)
+
 > 버그를 분석하고 2-3가지 해결 옵션을 제시한 후 선택된 방법으로 수정
 
 ---

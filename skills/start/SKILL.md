@@ -6,6 +6,8 @@ category: workflow
 
 # /start — 작업 시작부터 완료까지
 
+> **참조:** 구현 시 `knowledge/build-guide.md`, 완료 후 검증 시 `knowledge/review-guide.md` + `references/phase-guide.md`
+
 MD 파일 또는 자유 텍스트로 작업을 정의하면, 분석 → 디자인 → 구현 → 검증 → 커밋 → PR까지 전체 플로우를 수행한다.
 
 **[즉시 실행]** 이 메시지를 받으면 아래 흐름을 바로 실행하세요.
@@ -451,5 +453,4 @@ Phase 6-7: 자동 실행
 |------|------|-------------|
 | `/done` | 검증+커밋+PR | 이미 구현 끝났을 때 |
 | `/quality` | lint/build 검증 | `--lint-only` 등 부분 검증 |
-| `/commit` | 커밋만 빠르게 | staged 분석 → 커밋 |
 | `/figma-to-code` | Figma 전용 변환 | Emotion 기반 코드 생성 |

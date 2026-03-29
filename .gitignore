@@ -11,3 +11,8 @@ node_modules/
 .env
 .env.*
 .plugin-cache-version
+
+# 개인 파일 (블로그, 프로필)
+docs/blog-*.md
+docs/roadmap.md
+.candidate/profile.md

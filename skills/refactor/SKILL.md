@@ -8,6 +8,8 @@ metadata:
 
 # Refactor Skill
 
+> **참조:** 리팩토링 분석 시 `knowledge/review-guide.md` + `knowledge/build-guide.md` + `references/phase-guide.md`
+
 > 기존 정책을 보호하면서 코드 구조 개선
 
 ---
