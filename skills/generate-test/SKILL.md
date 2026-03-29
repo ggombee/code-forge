@@ -6,6 +6,8 @@ category: implementation
 
 # /generate-test
 
+> **참조:** 테스트 설계 시 `knowledge/build-guide.md` (React/TS 패턴)
+
 프론트엔드 컴포넌트/훅의 테스트 코드를 자동 생성합니다.
 
 ## 사용법

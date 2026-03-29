@@ -11,6 +11,8 @@ permissionMode: bypassPermissions
 maxTurns: 30
 ---
 
+@${CLAUDE_PLUGIN_ROOT}/rules/thinking-model.md
+
 # Analyst Agent
 
 계획 수립 전 요구사항 심층 분석가. 다른 사람이 놓친 것을 발견하는 전략 컨설턴트.

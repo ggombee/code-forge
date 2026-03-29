@@ -1,28 +1,46 @@
 #!/bin/bash
-# lint-fix.sh — Edit/Write 후 자동 린트 수정
-# PostToolUse hook
+# lint-fix.sh — Edit/Write/MultiEdit 후 자동 ESLint --fix + Prettier
+# PostToolUse hook (Edit|Write|MultiEdit)
 
-TOOL_NAME="${CLAUDE_TOOL_NAME:-}"
-FILE_PATH="${CLAUDE_FILE_PATH:-}"
+FILE_PATH="${TOOL_INPUT_FILE_PATH:-}"
+if [ -z "$FILE_PATH" ] && [ -n "$TOOL_INPUT" ]; then
+  FILE_PATH=$(echo "$TOOL_INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//' | sed 's/"$//')
+fi
+[ -z "$FILE_PATH" ] && exit 0
 
-# Edit/Write 도구가 아니면 스킵
-if [[ "$TOOL_NAME" != "Edit" && "$TOOL_NAME" != "Write" ]]; then
-  exit 0
+case "$FILE_PATH" in
+  *.js|*.ts|*.jsx|*.tsx|*.vue|*.css|*.scss|*.json) ;;
+  *) exit 0 ;;
+esac
+
+[ -f "$FILE_PATH" ] || exit 0
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+
+ESLINT_BIN=""
+if [ -f "$PROJECT_ROOT/node_modules/.bin/eslint" ]; then
+  ESLINT_BIN="$PROJECT_ROOT/node_modules/.bin/eslint"
+elif command -v npx &>/dev/null; then
+  for cfg in .eslintrc.js .eslintrc.json .eslintrc.cjs .eslintrc.yml .eslintrc.yaml eslint.config.js eslint.config.mjs eslint.config.ts; do
+    [ -f "$PROJECT_ROOT/$cfg" ] && ESLINT_BIN="npx eslint" && break
+  done
 fi
 
-# .ts/.tsx/.js/.jsx 파일이 아니면 스킵
-if [[ ! "$FILE_PATH" =~ \.(ts|tsx|js|jsx)$ ]]; then
-  exit 0
+if [ -n "$ESLINT_BIN" ]; then
+  $ESLINT_BIN --fix --quiet "$FILE_PATH" 2>/dev/null
+  REMAINING=$($ESLINT_BIN --quiet "$FILE_PATH" 2>&1)
+  [ -n "$REMAINING" ] && echo "$REMAINING" | head -10 >&2
 fi
 
-# package.json이 없으면 스킵
-if [ ! -f "package.json" ]; then
-  exit 0
+PRETTIER_BIN=""
+if [ -f "$PROJECT_ROOT/node_modules/.bin/prettier" ]; then
+  PRETTIER_BIN="$PROJECT_ROOT/node_modules/.bin/prettier"
+elif command -v npx &>/dev/null; then
+  for cfg in .prettierrc .prettierrc.js .prettierrc.json .prettierrc.yml prettier.config.js prettier.config.cjs; do
+    [ -f "$PROJECT_ROOT/$cfg" ] && PRETTIER_BIN="npx prettier" && break
+  done
 fi
 
-# eslint --fix 실행 (존재하면)
-if command -v npx &> /dev/null && [ -f "node_modules/.bin/eslint" ]; then
-  npx eslint --fix "$FILE_PATH" 2>/dev/null
-fi
+[ -n "$PRETTIER_BIN" ] && $PRETTIER_BIN --write --log-level=silent "$FILE_PATH" 2>/dev/null
 
 exit 0

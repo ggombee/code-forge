@@ -73,3 +73,60 @@ fi
 
 # 캐시 버전 갱신
 echo "$NEW_VERSION" > "$CACHE_FILE"
+
+# ─────────────────────────────────────────────
+# 프로젝트 컨텍스트 주입 (Claude additionalContext)
+# ─────────────────────────────────────────────
+
+# 작업 디렉토리 (플러그인이 아닌 사용자 프로젝트 기준)
+WORK_DIR="${CLAUDE_CWD:-$(pwd)}"
+
+echo ""
+echo "=== Project Context ==="
+
+# Git 프로젝트 정보
+if [ -d "$WORK_DIR/.git" ]; then
+  PROJECT_NAME=$(basename "$WORK_DIR")
+  BRANCH=$(git -C "$WORK_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+  UNCOMMITTED_COUNT=$(git -C "$WORK_DIR" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+
+  echo "Project: $PROJECT_NAME"
+  echo "Branch: $BRANCH"
+  echo "Uncommitted files: $UNCOMMITTED_COUNT"
+
+  if [ "$UNCOMMITTED_COUNT" -gt 0 ]; then
+    echo "Changed files (max 10):"
+    git -C "$WORK_DIR" status --porcelain 2>/dev/null | head -10 | while read -r line; do
+      echo "  $line"
+    done
+    if [ "$UNCOMMITTED_COUNT" -gt 10 ]; then
+      echo "  ... and $((UNCOMMITTED_COUNT - 10)) more"
+    fi
+  fi
+else
+  echo "Project: $(basename "$WORK_DIR") (not a git repo)"
+fi
+
+# profile.json 스택 정보
+PROFILE_JSON="$WORK_DIR/.claude/profile.json"
+if [ ! -f "$PROFILE_JSON" ]; then
+  # .agents/ 하위도 탐색
+  PROFILE_JSON="$WORK_DIR/.agents/profile.json"
+fi
+
+if [ -f "$PROFILE_JSON" ]; then
+  echo ""
+  echo "Stack (from profile.json):"
+  # framework, styling, state 필드 파싱 (외부 도구 없이 grep 사용)
+  FRAMEWORK=$(grep -o '"framework": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+  STYLING=$(grep -o '"styling": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+  STATE=$(grep -o '"state": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+  TESTING=$(grep -o '"testing": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+
+  [ -n "$FRAMEWORK" ] && echo "  framework: $FRAMEWORK"
+  [ -n "$STYLING" ]   && echo "  styling: $STYLING"
+  [ -n "$STATE" ]     && echo "  state: $STATE"
+  [ -n "$TESTING" ]   && echo "  testing: $TESTING"
+fi
+
+echo "======================="

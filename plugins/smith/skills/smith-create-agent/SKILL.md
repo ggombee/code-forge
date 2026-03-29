@@ -15,17 +15,54 @@ agent-system: Smith
 
 ## 기본 생성 구조
 
-**최소 5개 파일을 기본으로 생성하되, 프로젝트 성격에 따라 추가 에이전트를 자유롭게 생성한다:**
+**최소 8개 파일을 기본으로 생성하되, 프로젝트 성격에 따라 추가 에이전트를 자유롭게 생성한다:**
 
 ```
 .agents/agents/
-├── {project}-base.md        (class, STATE) ← 프로젝트 공통 규칙
+├── {project}-domain.md      (class, STATE) ← 도메인 모델/용어/플로우
+├── {project}-policy.md      (class, STATE) ← SSOT/금지 영역/규칙
+├── {project}-context.md     (class, STATE) ← 디렉토리 맵/추상화/패턴
+├── {project}-base.md        (class, STATE) ← extends: framework+language+위 3개
 ├── {project}-architect.md   (instance) ← 분석/설계
 ├── {project}-dev.md         (instance) ← 개발/구현
 ├── {project}-reviewer.md    (instance) ← 코드 리뷰
 ├── {project}-tester.md      (instance) ← 테스트 작성
+├── .analysis-manifest.json  ← 분석 메타데이터 (staleness 감지용)
 └── ... 프로젝트에 필요한 만큼 추가
 ```
+
+### Deep Analysis Pipeline (Step 2)
+
+프로젝트 분석을 4축 병렬로 수행한다:
+
+**2-1. 기술 스택 스캔** (기존 유지)
+- package.json, tsconfig.json 등에서 기술 스택 파악
+
+**2-2. 도메인 분석** (신규)
+- 타입 정의, API 라우트, DB 스키마, 상태 관리, README에서 교차 검증
+- 핵심 엔티티, 비즈니스 플로우, 도메인 용어 추출
+- → `{project}-domain.md` 생성
+
+**2-3. 정책 분석** (신규)
+- CLAUDE.md, ESLint, tsconfig, CI, CODEOWNERS에서 추출
+- SSOT 위치, 수정 금지 영역, import 규칙, PR/커밋 규칙
+- → `{project}-policy.md` 생성
+
+**2-4. 컨텍스트 분석** (신규)
+- 디렉토리 트리, import 빈도, shared 파일에서 추론
+- 아키텍처 패턴 (레이어드, DDD, feature-based 등) 자동 분류
+- → `{project}-context.md` 생성
+
+### base class extends 확장
+
+기존: `framework + language`만 extends
+변경: `framework + language + domain + policy + context` extends
+→ instance는 변경 불필요 (투명한 확장)
+
+### --refresh 모드
+
+`.analysis-manifest.json`의 `analyzedAt`으로부터 30일 이상 경과 시 재분석 권장.
+변경된 축만 선택적으로 재분석하고, 사용자 정의 규칙(userDefinedRules)은 보호.
 
 ### 추가 에이전트 예시
 
