@@ -87,16 +87,16 @@ if [ -f "$LOCAL_MD" ]; then
 
   if [ -n "$PROJECT_CF_VERSION" ] && [ "$PROJECT_CF_VERSION" != "$CURRENT_CF_VERSION" ]; then
     echo ""
-    echo "--- code-forge version mismatch ---"
-    echo "Plugin: v${CURRENT_CF_VERSION} | Project: v${PROJECT_CF_VERSION}"
+    echo "--- code-forge updated: v${PROJECT_CF_VERSION} → v${CURRENT_CF_VERSION} ---"
+    echo ""
+    echo "CLAUDE.md와 AGENTS.md를 최신 버전에 맞게 업데이트합니다."
+    echo "사용자에게 알리고 /setup을 실행하세요."
 
-    # Smith 프로젝트 에이전트가 있으면 재컴파일 권장
+    # Smith 프로젝트 에이전트가 있으면 재컴파일도 안내
     if [ -d "$WORK_DIR_CHECK/.agents/agents" ]; then
-      echo "Project agents may use outdated thinking model."
-      echo "Run: /smith-build --project"
+      echo "프로젝트 에이전트도 재컴파일이 필요합니다: /smith-build --project"
     fi
 
-    echo "Run: /setup (to update CLAUDE.md + AGENTS.md)"
     echo "---"
   fi
 fi
