@@ -19,6 +19,7 @@ user-invocable: false
 | `--lint-only`   | 린트(ESLint)만 실행             |
 | `--type-only`   | 타입 체크만 실행                |
 | `--no-fix`      | 자동 수정 없이 오류 목록만 출력 |
+| `--build`       | 빌드 검증까지 포함 (배포 전) |
 
 ---
 
@@ -85,7 +86,25 @@ npx tsc --noEmit
 2. 자동 수정이 가능한 경우 (import 누락, 타입 불일치 등) Edit으로 수정
 3. 수정 후 재확인
 
-## Step 5: 결과 보고
+## Step 5: 빌드 검증 (--build 옵션 또는 배포 전 검증 시)
+
+`--build` 옵션이 있거나, 배포/PR 전 검증 맥락이면 실행. 일반 `/quality` 호출에서는 생략.
+
+```bash
+# package.json scripts에서 build 명령 감지
+npm run build    # 또는 yarn build, pnpm build
+```
+
+**빌드 실패 시:**
+1. 에러 분석 (CSS 모듈, 경로 alias, 환경변수 누락 등)
+2. 자동 수정 가능하면 수정 후 재시도
+3. 수정 불가 시 사용자에게 보고
+
+**금지:**
+- `any` 타입, `@ts-ignore`, `eslint-disable` 남발로 에러 우회
+- build 단계를 생략하고 배포
+
+## Step 6: 결과 보고
 
 ```
 /quality 완료
@@ -93,6 +112,7 @@ npx tsc --noEmit
 포맷 (Prettier): PASS / N개 수정됨
 린트 (ESLint):   PASS / N개 에러 (수동 수정 필요)
 타입 (tsc):      PASS / N개 에러
+빌드 (build):    PASS / SKIP (--build 미지정)
 
 총 자동 수정: N개 파일
 수동 확인 필요: N개 에러

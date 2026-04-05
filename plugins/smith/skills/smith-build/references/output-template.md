@@ -138,21 +138,19 @@ maxTurns: {instance maxTurns}
 {
   "version": "2.0.0",
   "buildTime": "2026-03-17T00:00:00.000Z",
-  "source": "${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/_agents/",
-  "target": "${CLAUDE_PLUGIN_ROOT}/agents/",
+  "source": ".agents/agents/",
+  "target": ".claude/agents/",
   "agents": [
     {
-      "name": "scout",
-      "originalName": "explore",
-      "source": "_agents/explore.md",
-      "renamed": true,
-      "stateChain": ["state/state.md", "state/role/developer.md"],
-      "actChain": ["act/act.md", "act/analysis/explorer.md"],
-      "model": "haiku",
-      "tools": ["Read", "Grep", "Glob", "Bash"],
+      "name": "{project}-dev",
+      "source": ".agents/agents/{project}-dev.md",
+      "stateChain": ["{project}-base.md", "state/role/developer.md"],
+      "actChain": ["act/act.md", "act/dev/implementor.md"],
+      "model": "sonnet",
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob"],
       "permissionMode": "bypassPermissions",
-      "compiledMust": 12,
-      "compiledNever": 5
+      "compiledMust": 18,
+      "compiledNever": 8
     }
   ]
 }

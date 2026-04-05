@@ -84,12 +84,12 @@ claude plugin install code-forge
 
 ### Smith 빌드타임 컴파일
 
-STATE(지식) + ACT(행동) 조합으로 에이전트를 정의하고 컴파일.
-프로젝트 에이전트는 Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵심 규칙이 동작한다.
+프로젝트 전용 에이전트를 STATE(지식) + ACT(행동) 조합으로 정의하고 컴파일.
+Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵심 규칙이 동작한다.
 
-- 인스턴스 소스: `plugins/smith/agents/_agents/`
-- 컴파일 출력: `agents/`
+- 플러그인 에이전트: `agents/` (직접 편집)
 - 프로젝트 전용: `/smith-create-agent` → `.agents/agents/` → `/smith-build --project` → `.claude/agents/`
+- STATE/ACT 부품: `plugins/smith/agents/state/`, `plugins/smith/agents/act/`
 
 ## Hooks
 

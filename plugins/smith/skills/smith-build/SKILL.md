@@ -8,9 +8,11 @@ version: 1.0.0
 
 # Smith Build — Build-Time Compilation
 
-Smith 인스턴스(_agents/*.md)를 정적 .md 파일로 컴파일한다.
+프로젝트 에이전트 인스턴스(.agents/agents/*.md)를 정적 .md 파일로 컴파일한다.
 
 **비유:** TypeScript → tsc → .js 와 같이, Smith 템플릿 → /smith-build → 플랫 .md
+
+> 플러그인 에이전트(`agents/`)는 직접 편집한다. Smith 빌드는 **프로젝트 에이전트 전용**.
 
 ## References
 
@@ -20,9 +22,8 @@ Smith 인스턴스(_agents/*.md)를 정적 .md 파일로 컴파일한다.
 ## 빌드 모드
 
 ```
-/smith-build                  # 전체 빌드: _agents/ → agents/
-/smith-build --validate       # 검증만, 출력 없음
 /smith-build --project        # 프로젝트 에이전트 빌드: .agents/agents/ → .claude/agents/
+/smith-build --validate       # 검증만, 출력 없음
 /smith-build --regenerate     # 수동 편집 보존하며 재빌드
 ```
 
@@ -30,13 +31,6 @@ Smith 인스턴스(_agents/*.md)를 정적 .md 파일로 컴파일한다.
 
 ### Step 1: 소스 파일 수집
 
-**전체 빌드 모드 (기본):**
-```
-소스: ${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/_agents/*.md
-출력: ${CLAUDE_PLUGIN_ROOT}/agents/
-```
-
-**프로젝트 빌드 모드 (--project):**
 ```
 소스: ./.agents/agents/*.md (type: instance만)
 출력: ./.claude/agents/
@@ -271,21 +265,20 @@ done
 
 ### Step 8: 빌드 매니페스트 생성
 
-`agents/.smith-build-manifest.json`에 빌드 메타데이터를 기록한다.
+`.claude/agents/.smith-build-manifest.json`에 빌드 메타데이터를 기록한다.
 
 ```json
 {
   "version": "2.0.0",
   "buildTime": "ISO 8601 타임스탬프",
-  "source": "_agents/ 또는 .agents/agents/",
+  "source": ".agents/agents/",
   "agents": [
     {
-      "name": "scout",
-      "source": "_agents/explore.md",
-      "renamed": true,
-      "stateChain": ["state/state.md", "state/role/developer.md"],
-      "actChain": ["act/act.md", "act/analysis/explorer.md"],
-      "model": "haiku",
+      "name": "{project}-dev",
+      "source": ".agents/agents/{project}-dev.md",
+      "stateChain": ["{project}-base.md", "state/role/developer.md"],
+      "actChain": ["act/act.md", "act/dev/implementor.md"],
+      "model": "sonnet",
       "permissionMode": "bypassPermissions"
     }
   ]

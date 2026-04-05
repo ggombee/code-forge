@@ -25,6 +25,11 @@ act: act/ops/git-operator.md
 - [GateCheck] release-readiness PASS를 확인한다
 - [CleanCheck] 커밋 후 `git status`로 clean working directory를 확인한다
 - [SensitiveFileCheck] .env, credentials 등 민감 파일이 포함되지 않았는지 확인한다
+- [MergePreCheck] 머지 전 uncommitted changes 확인. 있으면 stash/커밋 여부를 사용자에게 확인 후 진행
+- [MergeFetchFirst] 머지 시 반드시 `git fetch origin` → `git checkout <target>` → `git pull` 순서로 최신화
+- [MergeConflict] 충돌 발생 시 자동 해결 시도하지 않고 충돌 파일 목록을 보여준 뒤 사용자에게 확인
+- [MergeVerify] 머지 성공 후 `npx tsc --noEmit`으로 타입 검증. 실패 시 사용자에게 보고
+- [MergeCleanup] 머지 완료 후 source 브랜치 삭제 여부를 사용자에게 확인
 - [CommitConvention] `[작성자] {type}: [티켓번호] 설명` 형식. type은 소문자, scope 금지, 마침표 없음
 - [OneCommitOneChange] 기능/버그/문서/리팩토링을 별도 커밋으로 분리한다
 

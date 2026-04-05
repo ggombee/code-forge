@@ -10,7 +10,6 @@ AI 에이전트가 이 저장소에서 작업할 때 반드시 준수해야 할 
 ```
 code-forge/
 ├── agents/          # 컴파일된 에이전트 .md (직접 수정 금지 — smith-build 사용)
-├── commands/        # 커맨드 (git-merge, pre-deploy)
 ├── docs/            # 설계 원칙, 가이드 문서
 ├── hooks/           # Claude Code 훅 스크립트
 ├── instructions/    # 멀티에이전트 협업 가이드
@@ -34,24 +33,18 @@ code-forge/
 
 ## 에이전트 수정 규칙
 
-**`agents/` 디렉토리를 직접 수정하지 말 것.**
+### 플러그인 에이전트 (`agents/`)
 
-`agents/` 파일은 Smith 빌드 시스템이 컴파일한 출력물이다.
-소스는 `plugins/smith/agents/_agents/`에 있다.
+`agents/` 파일은 직접 편집한다. Smith 빌드 불필요.
 
-에이전트를 수정하려면:
-
-```
-1. plugins/smith/agents/_agents/<agent-name>.md 소스 수정
-2. /smith-build 실행 → agents/ 재컴파일
-```
-
-프로젝트 전용 에이전트를 만들려면:
+### 프로젝트 전용 에이전트
 
 ```
-1. /smith-create-agent → .agents/agents/ 에 생성
+1. /smith-create-agent → .agents/agents/ 에 생성 (STATE+ACT 조합)
 2. /smith-build --project → .claude/agents/ 컴파일
 ```
+
+Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/smith/agents/state/`, `plugins/smith/agents/act/`에 있다.
 
 ---
 
