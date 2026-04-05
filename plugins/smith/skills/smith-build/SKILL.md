@@ -105,6 +105,48 @@ Smith 필드를 Claude Code 네이티브 frontmatter로 변환한다.
 - 전체 도구 목록: `[Read, Write, Edit, Bash, Grep, Glob]`
 - `tools`에 없는 도구를 `disallowedTools`에 추가한다
 
+### Step 4.5: Blueprint 임베딩 (degraded mode 지원)
+
+인스턴스의 STATE 체인에서 `blueprint` 필드가 발견되면, 참조된 규칙 파일의 **핵심 축약본**을 에이전트 본문에 인라인 임베딩한다.
+
+**처리 흐름:**
+
+1. STATE 체인의 모든 class를 순회하며 `blueprint` 필드를 수집한다
+2. 중복 제거 (동일 경로는 1회만 처리)
+3. 각 blueprint 파일에서 핵심 규칙만 추출:
+   - `thinking-model.md` → 불변 제약 5개 + GAVA 루프 요약 (~500자)
+   - `coding-standards.md` → 핵심 원칙 표 + 금지 패턴 목록 (~800자)
+4. 컴파일 출력의 본문에 `## Blueprint` 섹션으로 삽입
+
+**축약 규칙:**
+
+| 원본 파일 | 추출 대상 | 축약 크기 |
+|----------|----------|----------|
+| `thinking-model.md` | `## 불변 제약` 섹션 전문 + `## 작업 루프` 1줄 요약 | ~500자 |
+| `coding-standards.md` | `## 핵심 원칙` 표 + `## 금지 패턴` 목록 | ~800자 |
+
+**출력 예시 (에이전트 본문):**
+
+```markdown
+## Blueprint
+
+> 플러그인 없이도 동작하는 핵심 규칙 (code-forge 사고모델 축약)
+
+### 불변 제약
+1. **읽기 우선** — 수정 전 반드시 Read/Grep 도구를 실행한다
+2. **패턴 준수** — 기존 코드의 구조, 네이밍, 스타일을 따른다
+3. **정책 보존** — 비즈니스 로직을 임의 변경하지 않는다
+4. **최소 변경** — 요청받은 것만 수정한다
+5. **스코프 준수** — 대상 외 파일은 명시 요청 없이 수정하지 않는다
+
+### 작업 루프
+GROUND(맥락 파악) → APPLY(구현) → VERIFY(검증) → ADAPT(실패 시 조정)
+```
+
+**`blueprint` 필드가 없으면 이 단계를 건너뛴다.**
+
+> 이 섹션은 `@${CLAUDE_PLUGIN_ROOT}/rules/...` 참조를 대체하지 않는다. 플러그인이 로드된 상태에서는 `alwaysApply` 규칙이 전문을 적용하고, blueprint는 degraded mode 안전망이다.
+
 ### Step 5: 이름 충돌 검증
 
 Claude Code 빌트인 에이전트와 이름 충돌을 검증한다.
@@ -128,6 +170,15 @@ Claude Code 빌트인 에이전트와 이름 충돌을 검증한다.
 | SHELL-ACCESS | git-operator, researcher | 없음 |
 | EDIT-ONLY | lint-fixer, build-fixer | coding-standards |
 | READ-WRITE-FULL | implementor, deep-executor, assayer, codex | parallel-execution, coding-standards |
+
+**프로젝트 에이전트 (`--project`)의 instruction 참조:**
+
+프로젝트 에이전트는 `@${CLAUDE_PLUGIN_ROOT}/rules/...` 참조 대신 **blueprint 임베딩**을 사용한다. 이를 통해 플러그인 없이도 핵심 규칙이 동작한다.
+
+| 모드 | instruction 참조 | blueprint |
+|------|----------------|-----------|
+| 전체 빌드 (기본) | `@` 참조 유지 | 없음 (플러그인 필수) |
+| 프로젝트 빌드 (`--project`) | `@` 참조 제거 | blueprint 임베딩 (자립형) |
 
 ### Step 7: 보안 패턴 스캔
 
@@ -203,6 +254,9 @@ done
 
 1. **base class extends 확인**: `{project}-base.md`의 extends에 domain/policy/context가 포함되는지
    - 누락 → WARN ("해당 축의 레포 특화 지식 없이 동작합니다. /smith-create-agent --refresh 권장")
+
+1.5. **blueprint 확인**: `{project}-base.md`에 `blueprint` 필드가 있는지
+   - 누락 → WARN ("사고모델 임베딩 없음. degraded mode에서 핵심 규칙이 적용되지 않습니다")
 
 2. **domain class 최소 규칙**: Must에 엔티티 관련 규칙 1개 이상
    - 없음 → WARN ("도메인 분석이 미수행되었습니다")

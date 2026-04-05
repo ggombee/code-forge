@@ -1,7 +1,8 @@
 ---
 name: quality
-description: 포맷(Prettier) → 린트(ESLint) → 타입 체크(tsc) 순서로 실행하고 오류 자동 수정.
+description: 포맷(Prettier) → 린트(ESLint) → 타입 체크(tsc) 순서로 실행하고 오류 자동 수정. 훅(lint-fix.sh, quality-gate.sh)이 자동 커버하지만 --no-fix(확인만)나 프로젝트 전체 검사가 필요할 때 사용.
 category: workflow
+user-invocable: false
 ---
 
 # /quality

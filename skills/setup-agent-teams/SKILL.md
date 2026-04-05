@@ -2,6 +2,7 @@
 name: setup-agent-teams
 description: Agent Teams 환경 설정. Claude Max 전용. TeamCreate/SendMessage/TeamDelete 도구 활성화.
 category: setup
+user-invocable: false
 ---
 
 # /setup-agent-teams

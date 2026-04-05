@@ -276,6 +276,51 @@ Task(subagent_type='implementor', model='sonnet', prompt='리팩토링 실행');
 
 ---
 
+## 에이전트 선택 의사결정 트리
+
+```
+작업이 들어옴
+  │
+  ├─ 분석/리뷰만 필요? (코드 수정 없음)
+  │   ├─ 아키텍처/설계 판단 → architect (opus)
+  │   ├─ PR/코드 품질 검증 → code-reviewer (sonnet)
+  │   ├─ "이 코드 어떻게 개선?" → refactor-advisor (sonnet)
+  │   ├─ 외부 라이브러리 조사 → researcher (sonnet)
+  │   ├─ 요구사항 갭 분석 → analyst (opus)
+  │   └─ 파일/패턴 탐색 → explore (haiku)
+  │
+  ├─ 오류 수정만 필요?
+  │   ├─ ESLint/tsc 오류 → lint-fixer (haiku, 저비용)
+  │   └─ 빌드/컴파일 실패 → build-fixer (sonnet)
+  │
+  ├─ 구현 필요?
+  │   ├─ 계획/명세가 이미 있음 → implementor (sonnet)
+  │   ├─ 탐색부터 자율 수행 → deep-executor (sonnet)
+  │   └─ Codex 리뷰 포함 → codex (sonnet, MCP 필요)
+  │
+  └─ 테스트 필요?
+      ├─ 기존 코드에 테스트 추가 → assayer (generate 모드)
+      └─ 새 기능 TDD 개발 → assayer (tdd 모드)
+```
+
+## 스킬 ↔ 에이전트 매핑
+
+스킬이 내부적으로 어떤 에이전트를 호출하는지:
+
+| 스킬 | 사용 에이전트 | 비고 |
+|------|-------------|------|
+| `/start` | analyst → implementor → code-reviewer → git-operator | 전체 파이프라인 |
+| `/done` | code-reviewer → git-operator | 검증+커밋 |
+| `/bug-fix` | (직접 구현, 에이전트 없음) | 2-3 옵션 제시 후 직접 수정 |
+| `/quality` | lint-fixer → (tsc 직접 실행) | 자동 수정 파이프라인 |
+| `/refactor` | refactor-advisor → assayer → implementor | 분석→보호테스트→구현 |
+| `/generate-test` | assayer (generate 모드) | 스킬이 에이전트의 인터페이스 |
+| `/debate` | (멀티모델 직접 호출) | Agent Teams 사용 시 병렬 |
+| `/research` | researcher | 스킬이 에이전트의 인터페이스 |
+| `/codex` | codex | MCP opt-in |
+
+---
+
 ## 참조 문서
 
 | 문서 | 용도 |

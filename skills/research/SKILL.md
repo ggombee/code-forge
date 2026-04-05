@@ -53,7 +53,7 @@ category: analysis
 | **3. 수집** | 병렬 데이터 수집 (researcher, explorer) | 최소 출처 수 준수 |
 | **4. 갭 분석** | (deep만) 누락 영역 2차 쿼리 | Sequential thinking |
 | **5. 리포트** | 피라미드 원칙: 결론 → 상세 | 출처 URL 필수 |
-| **6. 저장** | `.hypercore/research/[NN].topic_summary.md` | 파일 저장 필수 |
+| **6. 저장** | `.forge/research/[NN].topic_summary.md` | 파일 저장 필수 |
 
 ---
 
@@ -75,9 +75,3 @@ category: analysis
 | 출력 파일 저장 없이 종료 |
 | 최소 출처 수 미달 |
 
----
-
-## 참조
-
-- `instructions/sourcing/reliable-search.md` — 검색 신뢰도 가이드
-- `instructions/context-optimization/redundant-exploration-prevention.md` — 중복 검색 방지

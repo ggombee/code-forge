@@ -22,11 +22,43 @@ profile.json 없음 → Step 1 대화형 온보딩
 ## ARGUMENT 처리
 
 ```
-$ARGUMENTS 없음 → .claude/profile.json 자동 탐색
-
-$ARGUMENTS 있음 → 파일 경로로 인식
-예: /setup .claude/profile.json
+$ARGUMENTS 없음     → .claude/profile.json 자동 탐색
+$ARGUMENTS 있음     → 파일 경로로 인식 (예: /setup .claude/profile.json)
+$ARGUMENTS --profile → 코딩 프로필 생성만 실행 (아래 "코딩 프로필" 섹션 참조)
 ```
+
+---
+
+## 코딩 프로필 (`/setup --profile`)
+
+`/setup --profile` 또는 "코딩 스타일 분석해줘" 요청 시 실행. `/setup` 기본 흐름에서는 묻지 않는다.
+
+**흐름:**
+1. Step 1에서 감지한 스택 정보(또는 package.json 분석)를 기반으로 **분석 카테고리를 동적 선택**
+2. 프로젝트 코드를 실제로 읽고 (주요 디렉토리에서 2-3개 파일 샘플링) 패턴 분석
+3. 결과를 `.claude/coding-profile.md`에 저장
+4. 사용자에게 결과 보여주고 수정 여부 확인
+
+**스택별 분석 카테고리 (동적 선택):**
+
+| 카테고리 | 적용 스택 | 분석 내용 |
+|---------|----------|----------|
+| **추상화 습관** | 모든 스택 | 중복 코드 추출 기준, 함수/모듈 분리 기준 |
+| **모듈/컴포넌트 설계** | React/Vue → 컴포넌트, Python/Go → 모듈/클래스 | 분리 기준, 계층 구조 |
+| **상태/데이터 관리** | React → hooks/Query, 백엔드 → ORM/캐시 | 데이터 흐름 |
+| **타입/스키마** | TS → interface/type, Python → type hints, Go → struct | 엄격도 |
+| **에러 처리** | 모든 스택 | try-catch 전략, 에러 계층 |
+| **네이밍/스타일** | 모든 스택 | 네이밍, early return, 비동기 |
+| **폴더 구조** | 모든 스택 | 기능별/레이어별 |
+| **커밋 스타일** | 모든 스택 | git log 분석 |
+| **테스트 전략** | 모든 스택 | 단위/통합/E2E 비율 |
+| **프레임워크 특화** | 감지된 것만 | Next.js→SSR, Django→view, Go→interface 등 |
+
+**감지 못한 스택이면:** 범용 카테고리(추상화, 에러, 네이밍, 폴더, 커밋)만 분석 + Claude가 코드를 읽고 해당 언어에 맞는 질문 동적 생성
+
+**참조 템플릿:** `${CLAUDE_PLUGIN_ROOT}/.candidate/code-analysis-prompt.md` (React/TS 예시)
+
+**생성 경로:** `.claude/coding-profile.md` (local) 또는 `~/.claude/coding-profile.md` (global)
 
 ---
 
@@ -513,6 +545,46 @@ package.json이 없었으면 각 항목을 직접 물어본다:
 
 ---
 
+## Step 3-2: AGENTS.md 생성 (Codex/멀티툴 호환)
+
+CLAUDE.md와 동일한 경로에 `AGENTS.md`를 생성한다.
+Codex CLI, GitHub Copilot 등 AGENTS.md를 읽는 도구에 사고모델 핵심을 전파한다.
+
+| installTarget | 경로 |
+|--------------|------|
+| `local` | `./AGENTS.md` |
+| `global` | `~/.claude/AGENTS.md` |
+
+기존 AGENTS.md가 있으면 **건드리지 않는다** (사용자 커스텀 존중).
+
+### AGENTS.md 템플릿
+
+```markdown
+# {project.name} AGENTS.md
+
+> 자동 생성: code-forge /setup | CLAUDE.md와 함께 사용
+
+## Working Protocol
+
+모든 코드 작업에 아래 규칙을 따른다:
+
+1. **읽기 우선** — 수정 전 반드시 파일을 읽는다. 기억에서 추론하지 않는다
+2. **패턴 준수** — 기존 코드의 구조, 네이밍, 스타일을 따른다
+3. **정책 보존** — 비즈니스 로직을 임의 변경하지 않는다
+4. **최소 변경** — 요청받은 것만 수정한다
+5. **스코프 준수** — 대상 외 파일은 명시 요청 없이 수정하지 않는다
+
+작업 루프: GROUND(맥락 파악) → APPLY(구현) → VERIFY(검증) → ADAPT(실패 시 조정)
+
+## Project Conventions
+
+Read CLAUDE.md for stack-specific rules, commands, and module references.
+```
+
+**projectType이 "service"가 아닌 경우에도 동일하게 생성한다** (사고모델은 스택 무관).
+
+---
+
 ## Step 4: 결과 요약 출력
 
 ```
@@ -528,6 +600,7 @@ package.json이 없었으면 각 항목을 직접 물어본다:
 
 생성된 파일:
   CLAUDE.md (47줄)
+  AGENTS.md (사고모델 핵심 — Codex/멀티툴 호환)
   .claude/profile.json
 
 참조 모듈 (4개):

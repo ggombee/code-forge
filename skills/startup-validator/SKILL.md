@@ -2,6 +2,7 @@
 name: startup-validator
 description: Peter Thiel 7 Questions + YC PMF + The Mom Test + JTBD로 스타트업 아이디어를 엄격하게 검증. 100점 만점 채점 + 약점 진단 + 개선 로드맵.
 category: analysis
+user-invocable: false
 ---
 
 # Startup Validator Skill
@@ -134,7 +135,7 @@ category: analysis
 | **3** | PMF/JTBD Forces 검증 | Sequential thinking (5) |
 | **4** | 총점 + 등급 + 약점 맵 | Sequential thinking (3) |
 | **5** | 개선 로드맵 | Sequential thinking (3) |
-| **6** | `.hypercore/validation-results/`에 저장 | Write |
+| **6** | `.forge/validation-results/`에 저장 | Write |
 
 ---
 

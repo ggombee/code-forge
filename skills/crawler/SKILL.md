@@ -2,6 +2,7 @@
 name: crawler
 description: Playwright로 웹사이트를 직접 탐색하여 크롤링 흐름 설계. API/네트워크 분석, 문서화, 크롤러 코드 생성.
 category: utility
+user-invocable: false
 ---
 
 # Crawler Skill
@@ -34,7 +35,7 @@ category: utility
 | **1. Session** | 세션 생성 + 페이지 열기 | `playwriter session new` |
 | **2. Explore** | 구조 파악 | `accessibilitySnapshot`, `screenshotWithAccessibilityLabels` |
 | **3. Analyze** | API 인터셉트, 셀렉터 추출 | `page.on('response')`, `getLocatorStringForElement` |
-| **4. Document** | `.hypercore/crawler/[site]/`에 저장 | Write |
+| **4. Document** | `.forge/crawler/[site]/`에 저장 | Write |
 | **5. Code** | 크롤러 코드 생성 | [code-templates.md](rules/code-templates.md) |
 
 ---
@@ -83,7 +84,7 @@ playwriter -s 1 -e "console.log(await getLocatorStringForElement(state.page.loca
 ## 출력 구조
 
 ```
-.hypercore/crawler/[site-name]/
+.forge/crawler/[site-name]/
 ├── ANALYSIS.md      # 사이트 구조
 ├── SELECTORS.md     # DOM 셀렉터
 ├── API.md           # API 엔드포인트
@@ -100,7 +101,7 @@ playwriter -s 1 -e "console.log(await getLocatorStringForElement(state.page.loca
 ✅ accessibilitySnapshot으로 구조 분석
 ✅ API 인터셉션 시도
 ✅ 셀렉터 추출 검증
-✅ .hypercore/crawler/에 문서화
+✅ .forge/crawler/에 문서화
 ✅ 크롤러 코드 생성
 ```
 

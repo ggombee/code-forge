@@ -125,6 +125,36 @@ ACT class에 값이 없으면 상위(`act.md`)의 기본값을 사용한다:
 2. 없으면 사용자에게 추가 여부 질문
 3. 필요한 디렉토리 생성: `.agents/agents/`, `.claude/agents/`
 
+#### 1-2: 기존 에이전트 통합 스캔
+
+`.claude/agents/`에 기존 에이전트 파일이 있으면 통합 흐름을 실행한다:
+
+1. 기존 `.claude/agents/*.md` 파일 목록과 역할(name, description, tools) 추출
+2. 역할 매핑: 기존 에이전트가 dev/reviewer/architect/tester 중 어떤 역할인지 판별
+3. 충돌 감지 결과를 보여주고 사용자에게 선택:
+
+```
+기존 에이전트가 발견되었습니다:
+
+  .claude/agents/my-dev.md       → 개발 역할 (Smith dev와 충돌)
+  .claude/agents/my-reviewer.md  → 리뷰 역할 (Smith reviewer와 충돌)
+  .claude/agents/api-agent.md    → 커스텀 역할 (충돌 없음)
+
+> Smith 에이전트에 기존 규칙 병합 (기존 에이전트의 Must/Never를 Smith에 포함)
+  Smith 에이전트로 교체 (기존 에이전트 → .claude/agents.bak/)
+  공존 (기존 유지 + Smith는 {project}- 접두사로 분리)
+  취소
+```
+
+| 선택 | 동작 |
+|------|------|
+| 병합 | 기존 에이전트의 Must/Never/Persona 분석 → `{project}-policy.md`에 반영 → 기존 파일 `.claude/agents.bak/`으로 백업 |
+| 교체 | 기존 파일 `.claude/agents.bak/`으로 백업 → Smith 에이전트로 대체 |
+| 공존 | 기존 파일 그대로 유지 → Smith 에이전트는 `{project}-` 접두사로 병존 |
+| 취소 | 아무것도 하지 않고 종료 |
+
+기존 에이전트가 없으면 이 단계를 건너뛴다.
+
 ### Step 2: 프로젝트 분석
 
 **설정 파일 스캔:**
@@ -175,6 +205,9 @@ schema: ${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/interface/state-agent.md
 extends:
   - ${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/state/framework/{framework}.md
   - ${CLAUDE_PLUGIN_ROOT}/plugins/smith/agents/state/language/{language}.md
+blueprint:
+  - ${CLAUDE_PLUGIN_ROOT}/rules/thinking-model.md
+  - ${CLAUDE_PLUGIN_ROOT}/rules/coding-standards.md
 ---
 
 ## Persona
@@ -186,6 +219,8 @@ extends:
 ## Never
 - [Key] 프로젝트 공통 금지사항
 ```
+
+> **`blueprint` 필드**: 컴파일 시 축약본이 에이전트 본문에 인라인 임베딩된다. `extends`/`state`와 달리 STATE 체인에 합산되지 않고, 독립된 `## Blueprint` 섹션으로 출력된다. 이를 통해 플러그인 없이도(degraded mode) 사고모델 핵심이 에이전트에 포함된다.
 
 규칙 작성 원칙:
 - 부모 STATE에 이미 있는 규칙은 반복하지 않는다

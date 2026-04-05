@@ -14,8 +14,10 @@ if [ -f "$PROJECT_ROOT/node_modules/.bin/eslint" ]; then
 fi
 
 if [ -f "$PROJECT_ROOT/node_modules/.bin/tsc" ]; then
-  TSC_OUT=$("$PROJECT_ROOT/node_modules/.bin/tsc" --noEmit --pretty false 2>&1 | head -20)
-  [ $? -ne 0 ] && ERRORS="${ERRORS}\n[TypeScript]\n${TSC_OUT}"
+  TSC_OUT=$("$PROJECT_ROOT/node_modules/.bin/tsc" --noEmit --pretty false 2>&1)
+  TSC_EXIT=$?
+  TSC_OUT=$(echo "$TSC_OUT" | head -20)
+  [ $TSC_EXIT -ne 0 ] && ERRORS="${ERRORS}\n[TypeScript]\n${TSC_OUT}"
 fi
 
 # 관련 테스트 파일 탐지 및 실행

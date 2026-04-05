@@ -6,7 +6,7 @@ category: workflow
 
 # /done - 작업 완료 및 PR 생성
 
-> **참조:** 품질 검증 시 `knowledge/review-guide.md` + `references/evaluation.md`
+> **참조:** 품질 검증 시 `rules/review-guide.md`
 
 구현 완료 후 사용합니다. 검증 → 테스트 → 커밋 → PR 생성까지 전체 플로우를 수행합니다.
 

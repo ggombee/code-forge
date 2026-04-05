@@ -58,6 +58,22 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/write-guard.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "pathPattern": "**/SKILL.md",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/skill-dedup.sh"
+          },
+          {
+            "type": "prompt",
+            "prompt": "새 SKILL.md가 생성됩니다. 기존 스킬 목록(~/.code-forge/.existing-skills-cache)과 비교하여 기능이 중복되는 스킬이 있는지 확인하세요. 새 스킬: {{file_path}}. 중복이 있으면 {\"decision\":\"block\",\"reason\":\"기존 [스킬명]과 기능 중복. 통합을 권장합니다.\"}, 없으면 {\"decision\":\"allow\"}로 응답.",
+            "model": "claude-haiku-4-5",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [

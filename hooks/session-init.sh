@@ -75,6 +75,33 @@ fi
 echo "$NEW_VERSION" > "$CACHE_FILE"
 
 # ─────────────────────────────────────────────
+# 프로젝트 에이전트 재컴파일 알림
+# ─────────────────────────────────────────────
+
+WORK_DIR_CHECK="${CLAUDE_CWD:-$(pwd)}"
+LOCAL_MD="$WORK_DIR_CHECK/.claude/code-forge.local.md"
+
+if [ -f "$LOCAL_MD" ]; then
+  PROJECT_CF_VERSION=$(grep -o 'version: *[0-9][0-9.]*' "$LOCAL_MD" | head -1 | grep -o '[0-9][0-9.]*' 2>/dev/null || echo "")
+  CURRENT_CF_VERSION=$(grep -o '"version": *"[^"]*"' "$PLUGIN_JSON" | head -1 | grep -o '[0-9][0-9.]*')
+
+  if [ -n "$PROJECT_CF_VERSION" ] && [ "$PROJECT_CF_VERSION" != "$CURRENT_CF_VERSION" ]; then
+    echo ""
+    echo "--- code-forge version mismatch ---"
+    echo "Plugin: v${CURRENT_CF_VERSION} | Project: v${PROJECT_CF_VERSION}"
+
+    # Smith 프로젝트 에이전트가 있으면 재컴파일 권장
+    if [ -d "$WORK_DIR_CHECK/.agents/agents" ]; then
+      echo "Project agents may use outdated thinking model."
+      echo "Run: /smith-build --project"
+    fi
+
+    echo "Run: /setup (to update CLAUDE.md + AGENTS.md)"
+    echo "---"
+  fi
+fi
+
+# ─────────────────────────────────────────────
 # 프로젝트 컨텍스트 주입 (Claude additionalContext)
 # ─────────────────────────────────────────────
 

@@ -1,13 +1,13 @@
 # Analysis Document Templates
 
-> Standard output structure for `.hypercore/crawler/[site-name]/`.
+> Standard output structure for `.forge/crawler/[site-name]/`.
 
 ---
 
 ## Folder Structure
 
 ```text
-.hypercore/crawler/example-com/
+.forge/crawler/example-com/
 ├── ANALYSIS.md      # Site structure and crawl strategy
 ├── SELECTORS.md     # DOM selector inventory
 ├── API.md           # API endpoint map
