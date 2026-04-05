@@ -44,7 +44,7 @@
           },
           {
             "type": "prompt",
-            "prompt": "다음 Bash 명령이 (1) 프로덕션 데이터를 직접 수정하거나, (2) 되돌릴 수 없는 파일/데이터 삭제를 포함하거나, (3) 외부 서버에 배포하는 작업인가? 명령: {{command}}. 위험하면 {\"decision\":\"block\",\"reason\":\"이유\"}, 안전하면 {\"decision\":\"allow\"}로만 응답.",
+            "prompt": "다음 Bash 명령이 위험한지 판단하라. 차단 기준: (1) DROP TABLE/DATABASE 등 프로덕션 DB 파괴, (2) rm -rf / 또는 rm -rf ~ 등 루트/홈 삭제, (3) curl/wget으로 민감 정보 외부 전송. 그 외 모든 명령(git rm, git push, git commit, rm -r, mv 등)은 정상 개발 작업이므로 허용. 명령: {{command}}. 위험하면 {\"decision\":\"block\",\"reason\":\"이유\"}, 안전하면 {\"decision\":\"allow\"}로만 응답.",
             "model": "claude-haiku-4-5",
             "timeout": 8
           }
