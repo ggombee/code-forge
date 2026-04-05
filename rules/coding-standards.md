@@ -1,12 +1,11 @@
 ---
 paths:
-  - 'apps/**/*.{ts,tsx}'
-  - 'packages/shared/**/*.{ts,tsx}'
+  - '**/*.{ts,tsx,js,jsx}'
 ---
 
 # 코딩 표준 & 모범 사례
 
-> CLAUDE.md, react-nextjs-conventions.md 보완 규칙
+> TypeScript/JavaScript 코딩 표준
 
 ---
 

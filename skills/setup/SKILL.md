@@ -158,7 +158,7 @@ code-forge 설정을 시작합니다.
 
 **감지 규칙 (서비스인 경우):**
 
-| dependency | 추론 모듈 |
+| dependency / 파일 | 추론 모듈 |
 |-----------|----------|
 | `next` | framework: `react-nextjs-pages` 또는 `react-nextjs-app` |
 | `react` (next 없음) | framework: `react-spa` |
@@ -172,6 +172,10 @@ code-forge 설정을 시작합니다.
 | `antd` | design-system: `ant-design` |
 | `jest` | testing: `jest` |
 | `vitest` | testing: `vitest` |
+| `fastapi` in requirements.txt/pyproject.toml | framework: `python-fastapi` |
+| `django` in requirements.txt/pyproject.toml | framework: `python-django` |
+| `express` in package.json | framework: `node-express` |
+| `go.mod` 존재 | framework: `go-standard` |
 
 **추가 감지:**
 
@@ -259,6 +263,7 @@ package.json이 없으면 이 단계를 건너뛰고 1-3으로 직행한다.
 
 > standard — Pages Router + Jotai + Emotion + Jest
   modern-stack — MUI + App Router + Zustand + Tailwind + Vitest
+  backend-api — Node.js Express + TypeScript + Jest
   직접 선택 (감지 결과 기반)
 ```
 
@@ -453,6 +458,10 @@ package.json이 없었으면 각 항목을 직접 물어본다:
 | `framework`      | react-nextjs-pages  | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/react-nextjs-pages/SKILL.md` |
 | `framework`      | react-nextjs-app    | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/react-nextjs-app/SKILL.md` |
 | `framework`      | react-spa           | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/react-spa/SKILL.md` |
+| `framework`      | python-fastapi      | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/python-fastapi/SKILL.md` |
+| `framework`      | python-django       | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/python-django/SKILL.md` |
+| `framework`      | node-express        | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/node-express/SKILL.md` |
+| `framework`      | go-standard         | `${CLAUDE_PLUGIN_ROOT}/modules/frameworks/go-standard/SKILL.md` |
 | `design-system`  | mui                 | `${CLAUDE_PLUGIN_ROOT}/modules/design-systems/mui/SKILL.md` |
 | `design-system`  | ant-design          | `${CLAUDE_PLUGIN_ROOT}/modules/design-systems/ant-design/SKILL.md` |
 | `state`          | jotai-tanstack      | `${CLAUDE_PLUGIN_ROOT}/modules/state/jotai-tanstack/SKILL.md` |

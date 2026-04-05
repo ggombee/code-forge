@@ -1,6 +1,9 @@
 ---
-alwaysApply: true
+paths:
+  - '**/*.{tsx,jsx}'
 ---
+
+<!-- React/TypeScript 프로젝트용 가이드 — React 컴포넌트 파일(tsx, jsx)에만 적용됨 -->
 
 # 구현 가이드
 

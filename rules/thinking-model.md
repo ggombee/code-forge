@@ -1,7 +1,4 @@
 ---
-paths:
-  - 'apps/**/*.{ts,tsx,js,jsx}'
-  - 'packages/shared/**/*.{ts,tsx}'
 alwaysApply: true
 ---
 

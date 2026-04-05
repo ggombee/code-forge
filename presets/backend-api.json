@@ -1,0 +1,8 @@
+{
+    "name": "backend-api",
+    "description": "Node.js Express + TypeScript + Jest",
+    "modules": {
+        "framework": "node-express",
+        "testing": "jest"
+    }
+}
