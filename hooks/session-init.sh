@@ -157,3 +157,64 @@ if [ -f "$PROFILE_JSON" ]; then
 fi
 
 echo "======================="
+
+# ─────────────────────────────────────────────
+# REFLECT flag 감지 (quality-gate.sh 실패 연동)
+# 계약: docs/contracts/state-schema.md §1
+# ─────────────────────────────────────────────
+
+FLAG_FILE="$WORK_DIR/.claude/state/reflect.flag"
+
+# 구버전 경로 migration (.claude/temp/reflect-required.flag → .claude/state/reflect.flag)
+LEGACY_FLAG="$WORK_DIR/.claude/temp/reflect-required.flag"
+if [ -f "$LEGACY_FLAG" ] && [ ! -f "$FLAG_FILE" ]; then
+  mkdir -p "$WORK_DIR/.claude/state" 2>/dev/null
+  mv "$LEGACY_FLAG" "$FLAG_FILE" 2>/dev/null
+fi
+
+if [ -f "$FLAG_FILE" ]; then
+  # 사용자 ack 확인 — 있으면 주입 스킵
+  if grep -q "^ack:" "$FLAG_FILE" 2>/dev/null; then
+    ACK_REASON=$(grep "^ack:" "$FLAG_FILE" | head -1 | sed 's/^ack: *//')
+    echo ""
+    echo "[code-forge] REFLECT flag ack됨: $ACK_REASON"
+  else
+    FLAG_SUMMARY=$(head -15 "$FLAG_FILE" 2>/dev/null || echo "[flag read error]")
+    cat <<REFLECT_EOF
+
+================================================
+[REFLECT REQUIRED] 이전 턴 품질 검증 실패
+thinking-model.md ADAPT 단계를 우선 실행:
+  1. 실패한 파일 Read → 증상 파악
+  2. 근인 분석 → 교정안 수립
+  3. 수정 → quality-gate 재실행
+  4. 통과 시 flag 자동 삭제
+
+우회: rm $FLAG_FILE
+또는 본문에 'ack: <이유>' 추가
+
+--- flag 요약 ---
+$FLAG_SUMMARY
+================================================
+REFLECT_EOF
+  fi
+fi
+
+# quality.jsonl GC (7일 경과 엔트리 정리, 10MB 초과 시 트리밍)
+# 계약: docs/contracts/state-schema.md §2
+JSONL_FILE="$WORK_DIR/.claude/state/quality.jsonl"
+if [ -f "$JSONL_FILE" ]; then
+  SIZE=$(wc -c < "$JSONL_FILE" 2>/dev/null || echo 0)
+  # 10MB = 10485760
+  if [ "$SIZE" -gt 10485760 ]; then
+    # 뒤쪽 절반 유지
+    TOTAL=$(wc -l < "$JSONL_FILE")
+    HALF=$((TOTAL / 2))
+    tail -n "$HALF" "$JSONL_FILE" > "$JSONL_FILE.tmp" && mv "$JSONL_FILE.tmp" "$JSONL_FILE"
+  fi
+  # 7일 경과 GC (best-effort, 포맷 가정)
+  CUTOFF=$(date -u -v-7d +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d '7 days ago' +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
+  if [ -n "$CUTOFF" ]; then
+    awk -v cutoff="$CUTOFF" 'match($0, /"ts":"([^"]+)"/, a) { if (a[1] >= cutoff) print }' "$JSONL_FILE" > "$JSONL_FILE.tmp" 2>/dev/null && mv "$JSONL_FILE.tmp" "$JSONL_FILE"
+  fi
+fi

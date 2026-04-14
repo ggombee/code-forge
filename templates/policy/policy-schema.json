@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Policy Matrix",
+  "description": "페이지/모듈별 정책 매트릭스. 언어/프레임워크 무관. TC의 소스이자 정책 변경 추적 기준.",
+  "type": "object",
+  "required": ["page", "description", "lastUpdated", "affectedFiles", "flows"],
+  "properties": {
+    "page": {
+      "type": "string",
+      "description": "페이지/모듈 식별자 (예: order-detail, user-service, payment-api)"
+    },
+    "description": { "type": "string" },
+    "lastUpdated": { "type": "string", "format": "date" },
+    "sourceDoc": {
+      "type": ["string", "null"],
+      "description": "원본 정책 문서 경로"
+    },
+    "affectedFiles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "이 정책에 영향받는 소스 파일 목록 (프로젝트 루트 기준 상대경로)"
+    },
+    "flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "trigger": { "type": "string" },
+          "api": { "type": "string" },
+          "request": { "type": "object" },
+          "response": { "type": "object" },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "condition": { "type": "string" },
+                "action": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          },
+          "rules": { "type": "array" }
+        }
+      }
+    },
+    "testFiles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "연결된 테스트 파일 목록 (프로젝트 루트 기준)"
+    },
+    "uiRules": {
+      "type": "object",
+      "description": "UI 관련 규칙 (프론트엔드 전용, 선택적)"
+    }
+  }
+}

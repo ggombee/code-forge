@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Policy Config",
+  "description": "프로젝트별 테스트 실행 설정. 언어/프레임워크에 맞게 작성.",
+  "type": "object",
+  "required": ["project", "stack", "testRunner"],
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "프로젝트 이름"
+    },
+    "stack": {
+      "type": "string",
+      "description": "기술 스택 식별자",
+      "examples": ["nextjs", "spring-boot", "nestjs", "django", "fastapi", "go-fiber"]
+    },
+    "testRunner": {
+      "type": "object",
+      "description": "테스트 실행 설정 (카테고리별)",
+      "properties": {
+        "unit": {
+          "type": "object",
+          "properties": {
+            "command": { "type": "string", "description": "유닛 테스트 전체 실행 명령", "examples": ["yarn test", "mvn test", "go test ./...", "pytest"] },
+            "filePattern": { "type": "string", "description": "테스트 파일 패턴", "examples": ["**/__tests__/*.test.ts", "**/*Test.java", "**/*_test.go", "**/test_*.py"] },
+            "runSingle": { "type": "string", "description": "단일 파일/패턴 실행. {basename}, {file} 플레이스홀더 사용", "examples": ["yarn test -- --testPathPattern=\"{basename}\"", "mvn test -Dtest={basename}", "go test -run {basename}", "pytest {file}"] }
+          },
+          "required": ["command", "runSingle"]
+        },
+        "e2e": {
+          "type": "object",
+          "properties": {
+            "command": { "type": "string", "examples": ["npx playwright test", "npx cypress run"] },
+            "filePattern": { "type": "string" },
+            "runSingle": { "type": "string" }
+          }
+        },
+        "integration": {
+          "type": "object",
+          "description": "통합 테스트 (백엔드 API 테스트 등)",
+          "properties": {
+            "command": { "type": "string", "examples": ["mvn verify -Pintegration", "go test -tags=integration ./..."] },
+            "runSingle": { "type": "string" }
+          }
+        }
+      },
+      "required": ["unit"]
+    },
+    "build": {
+      "type": "object",
+      "properties": {
+        "command": { "type": "string", "examples": ["yarn build", "mvn package", "go build ./...", "cargo build"] },
+        "typeCheck": { "type": "string", "examples": ["npx tsc --noEmit", "mvn compile", "mypy .", "cargo check"] }
+      }
+    },
+    "design": {
+      "type": "object",
+      "description": "디자인 QA 설정 (프론트엔드 전용, 선택적)",
+      "properties": {
+        "tolerance": { "type": "object" },
+        "tokenSystem": { "type": "string" },
+        "figmaFileKey": { "type": "string" }
+      }
+    }
+  }
+}
