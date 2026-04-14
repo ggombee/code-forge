@@ -159,6 +159,28 @@ fi
 echo "======================="
 
 # ─────────────────────────────────────────────
+# notepad.md 주입 (세션 간 작업 메모, 옵션)
+# 계약: docs/contracts/state-schema.md §3
+# ─────────────────────────────────────────────
+
+NOTEPAD_FILE="$WORK_DIR/.claude/state/notepad.md"
+if [ -f "$NOTEPAD_FILE" ]; then
+  NOTEPAD_SIZE=$(wc -l < "$NOTEPAD_FILE" 2>/dev/null || echo 0)
+  if [ "$NOTEPAD_SIZE" -gt 0 ] && [ "$NOTEPAD_SIZE" -le 100 ]; then
+    echo ""
+    echo "=== Session Notepad (.claude/state/notepad.md) ==="
+    cat "$NOTEPAD_FILE"
+    echo "=== /Notepad ==="
+  elif [ "$NOTEPAD_SIZE" -gt 100 ]; then
+    echo ""
+    echo "[code-forge] notepad.md ${NOTEPAD_SIZE}줄 초과 — 앞 100줄만 주입"
+    echo "=== Session Notepad (truncated) ==="
+    head -100 "$NOTEPAD_FILE"
+    echo "=== /Notepad ==="
+  fi
+fi
+
+# ─────────────────────────────────────────────
 # REFLECT flag 감지 (quality-gate.sh 실패 연동)
 # 계약: docs/contracts/state-schema.md §1
 # ─────────────────────────────────────────────

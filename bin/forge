@@ -1,0 +1,121 @@
+#!/bin/bash
+# forge — code-forge 플러그인 CLI 진입점
+# Surface contract: docs/contracts/state-schema.md
+#
+# Usage:
+#   forge status [--json]   — 현재 상태 요약 (.claude/state/ + usage + quality)
+#   forge version           — 플러그인 버전
+#   forge help              — 도움말
+
+set -uo pipefail
+
+CMD="${1:-help}"
+shift 2>/dev/null || true
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+STATE_DIR="$PROJECT_ROOT/.claude/state"
+USAGE_LOG="$HOME/.code-forge/usage.jsonl"
+
+case "$CMD" in
+  status)
+    FORMAT="text"
+    [ "${1:-}" = "--json" ] && FORMAT="json"
+
+    # 데이터 수집
+    REFLECT_ACTIVE=false
+    REFLECT_TS=""
+    REFLECT_BLOCKS=""
+    if [ -f "$STATE_DIR/reflect.flag" ]; then
+      REFLECT_ACTIVE=true
+      REFLECT_TS=$(grep "^timestamp:" "$STATE_DIR/reflect.flag" | sed 's/^timestamp: *//' | head -1)
+      REFLECT_BLOCKS=$(awk '/^failed_blocks:/{flag=1;next}/^[a-z]/{flag=0}flag{sub(/^  - /,"");printf "%s ",$0}' "$STATE_DIR/reflect.flag" | sed 's/ $//')
+    fi
+
+    QUALITY_COUNT=0
+    QUALITY_PASS=0
+    QUALITY_WARN=0
+    QUALITY_FAIL=0
+    if [ -f "$STATE_DIR/quality.jsonl" ]; then
+      QUALITY_COUNT=$(wc -l < "$STATE_DIR/quality.jsonl" 2>/dev/null | tr -d ' ')
+      QUALITY_PASS=$(grep -c '"status":"pass"' "$STATE_DIR/quality.jsonl" 2>/dev/null || echo 0)
+      QUALITY_WARN=$(grep -c '"status":"warn"' "$STATE_DIR/quality.jsonl" 2>/dev/null || echo 0)
+      QUALITY_FAIL=$(grep -c '"status":"fail"' "$STATE_DIR/quality.jsonl" 2>/dev/null || echo 0)
+    fi
+
+    NOTEPAD_LINES=0
+    [ -f "$STATE_DIR/notepad.md" ] && NOTEPAD_LINES=$(wc -l < "$STATE_DIR/notepad.md" | tr -d ' ')
+
+    DECISIONS_COUNT=0
+    [ -f "$STATE_DIR/decisions.md" ] && DECISIONS_COUNT=$(grep -c '^## ' "$STATE_DIR/decisions.md" 2>/dev/null || echo 0)
+
+    USAGE_TOTAL=0
+    [ -f "$USAGE_LOG" ] && USAGE_TOTAL=$(wc -l < "$USAGE_LOG" | tr -d ' ')
+
+    # 버전
+    VERSION=$(grep -o '"version": *"[^"]*"' "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/.claude-plugin/plugin.json" 2>/dev/null | head -1 | grep -o '"[^"]*"$' | tr -d '"')
+
+    if [ "$FORMAT" = "json" ]; then
+      # Schema v1 준수 — state-schema.md 참조
+      cat <<JSON
+{
+  "schema_version": "1",
+  "plugin_version": "${VERSION:-unknown}",
+  "project": "$(basename "$PROJECT_ROOT")",
+  "state": {
+    "reflect_active": $REFLECT_ACTIVE,
+    "reflect_timestamp": "$REFLECT_TS",
+    "reflect_blocks": "$REFLECT_BLOCKS",
+    "quality_events": $QUALITY_COUNT,
+    "quality_pass": $QUALITY_PASS,
+    "quality_warn": $QUALITY_WARN,
+    "quality_fail": $QUALITY_FAIL,
+    "notepad_lines": $NOTEPAD_LINES,
+    "decisions_count": $DECISIONS_COUNT
+  },
+  "usage": {
+    "total_events": $USAGE_TOTAL
+  }
+}
+JSON
+    else
+      echo "=== code-forge status (v${VERSION:-unknown}) ==="
+      echo "project: $(basename "$PROJECT_ROOT")"
+      echo ""
+      if $REFLECT_ACTIVE; then
+        echo "⚠️  REFLECT FLAG ACTIVE"
+        echo "   timestamp: $REFLECT_TS"
+        echo "   failed_blocks: $REFLECT_BLOCKS"
+      else
+        echo "✅ no reflect flag"
+      fi
+      echo ""
+      echo "Quality events: $QUALITY_COUNT total (pass:$QUALITY_PASS warn:$QUALITY_WARN fail:$QUALITY_FAIL)"
+      echo "Notepad: $NOTEPAD_LINES lines"
+      echo "Decisions: $DECISIONS_COUNT entries"
+      echo "Usage log: $USAGE_TOTAL events"
+    fi
+    ;;
+
+  version)
+    grep -o '"version": *"[^"]*"' "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/.claude-plugin/plugin.json" 2>/dev/null | head -1 | grep -o '"[^"]*"$' | tr -d '"'
+    ;;
+
+  help|--help|-h)
+    cat <<HELP
+forge — code-forge 플러그인 CLI
+
+Usage:
+  forge status [--json]   현재 상태 요약
+  forge version           플러그인 버전
+  forge help              이 메시지
+
+Contract: docs/contracts/state-schema.md
+HELP
+    ;;
+
+  *)
+    echo "unknown command: $CMD" >&2
+    echo "Run 'forge help' for usage" >&2
+    exit 1
+    ;;
+esac
