@@ -1,0 +1,93 @@
+name: Plugin Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck hooks
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: hooks/
+          severity: warning
+
+      - name: ShellCheck bin
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: bin/
+          severity: warning
+
+      - name: Validate JSON files
+        run: |
+          for f in .claude-plugin/plugin.json hooks/hooks.json templates/policy/*.json; do
+            echo "Validating $f..."
+            python3 -m json.tool "$f" > /dev/null || { echo "INVALID: $f"; exit 1; }
+          done
+          echo "All JSON valid"
+
+      - name: Check SKILL.md frontmatter
+        run: |
+          ERRORS=0
+          for dir in skills/*/; do
+            skill_name=$(basename "$dir")
+            skill_file="$dir/SKILL.md"
+            [ -f "$skill_file" ] || { echo "MISSING: $skill_file"; ERRORS=$((ERRORS+1)); continue; }
+            
+            # frontmatter name vs directory name
+            fm_name=$(grep '^name:' "$skill_file" | head -1 | sed 's/^name: *//')
+            if [ "$fm_name" != "$skill_name" ]; then
+              echo "MISMATCH: $skill_name/ has name: $fm_name"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          [ $ERRORS -eq 0 ] && echo "All SKILL.md frontmatter OK ($( ls -d skills/*/ | wc -l ) skills)"
+          exit $ERRORS
+
+      - name: Check broken @references
+        run: |
+          ERRORS=0
+          # Extract @refs from skills and rules
+          refs=$(grep -rhoE 'references/[a-z-]+\.md' skills/ rules/ 2>/dev/null | sort -u)
+          for ref in $refs; do
+            if [ ! -f "$ref" ]; then
+              echo "BROKEN REF: $ref"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          [ $ERRORS -eq 0 ] && echo "All @references resolved"
+          exit $ERRORS
+
+      - name: Verify hooks.json references
+        run: |
+          ERRORS=0
+          # Extract hook commands from hooks.json
+          cmds=$(grep -oE 'hooks/[a-z-]+\.sh' hooks/hooks.json | sort -u)
+          for cmd in $cmds; do
+            if [ ! -f "$cmd" ]; then
+              echo "MISSING HOOK: $cmd"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          [ $ERRORS -eq 0 ] && echo "All hooks.json references exist"
+          exit $ERRORS
+
+      - name: Agent definition check
+        run: |
+          ERRORS=0
+          for agent in agents/*.md; do
+            name=$(basename "$agent" .md)
+            # Check required frontmatter
+            if ! grep -q '^model:' "$agent"; then
+              echo "MISSING model: $agent"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          [ $ERRORS -eq 0 ] && echo "All agent definitions OK ($(ls agents/*.md | wc -l) agents)"
+          exit $ERRORS
