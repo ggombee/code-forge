@@ -37,6 +37,7 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
+        "if": "Bash(rm *) || Bash(git push *) || Bash(git reset *) || Bash(git checkout *) || Bash(docker *) || Bash(kubectl *)",
         "hooks": [
           {
             "type": "command",
@@ -94,6 +95,16 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact.sh"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[code-forge] compact 완료. notepad/state 복원 확인하세요.' >&2"
           }
         ]
       }

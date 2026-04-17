@@ -76,6 +76,16 @@
 
 Anthropic이 새 모델 출시 시 이 파일은 **변경 불필요**. 티어 이름(Opus/Sonnet/Haiku)이 유지되는 한 동작.
 
+### 현재 모델 (2026-04-17 기준)
+
+| 티어 | 최신 모델 | 비고 |
+|-----|---------|-----|
+| **Opus** | claude-opus-4-7 | xhigh effort 지원. 2026-04-16 출시 |
+| **Sonnet** | claude-sonnet-4-6 | 기본 코딩 모델 |
+| **Haiku** | claude-haiku-4-5 | 경량 탐색용 |
+
+**폐기 예정**: `claude-sonnet-4-20250514`, `claude-opus-4-20250514` → **2026-06-15** 종료. 버전 고정 ID 사용 금지.
+
 모델 ID 매핑은 Claude Code `settings.json` 또는 `.claude/profile.json`에서:
 ```json
 {

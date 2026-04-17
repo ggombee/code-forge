@@ -244,7 +244,7 @@ pm2 startup
 
 - `@../../references/forge-bot-integration.md` — FORGE_OUTPUT=json 프로토콜 스펙
 - `@../../docs/contracts/state-schema.md` — 세션 간 상태 파일 계약
-- `@../../plans/mossy-marinating-sun.md` (로컬) — 원격 개발 환경 전체 계획
+- 원격 개발 환경 전체 계획은 사용자 로컬 plan 파일 참고
 
 ---
 
