@@ -20,20 +20,24 @@
 scope_type_check() {
   local PLAN_FILE="$1"
   local CHANGED_FILES="$2"
-  local PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+  local PROJECT_ROOT
+  PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
   [ ! -f "$PLAN_FILE" ] && return 0
 
   # [type:tag] 패턴이 있는 줄만 추출
-  local TAGGED_FILES=$(grep -E '\[.+:.+\]' "$PLAN_FILE" 2>/dev/null)
+  local TAGGED_FILES
+  TAGGED_FILES=$(grep -E '\[.+:.+\]' "$PLAN_FILE" 2>/dev/null)
   [ -z "$TAGGED_FILES" ] && return 0
 
   local VIOLATIONS=""
 
   while IFS= read -r line; do
     # "- src/order/components/OrderCard.tsx [refactor:no-style]" 형식 파싱
-    local FILE=$(echo "$line" | sed 's/^- //' | sed 's/ \[.*$//')
-    local TAG=$(echo "$line" | grep -oE '\[[^]]+\]' | tr -d '[]')
+    local FILE
+    local TAG
+    FILE=$(echo "$line" | sed 's/^- //' | sed 's/ \[.*$//')
+    TAG=$(echo "$line" | grep -oE '\[[^]]+\]' | tr -d '[]')
 
     [ -z "$FILE" ] || [ -z "$TAG" ] && continue
 
@@ -41,12 +45,14 @@ scope_type_check() {
     echo "$CHANGED_FILES" | grep -q "$FILE" || continue
 
     # 태그별 검증
-    local DIFF=$(git diff HEAD -- "$PROJECT_ROOT/$FILE" 2>/dev/null | grep '^+' | grep -v '^+++')
+    local DIFF
+    DIFF=$(git diff HEAD -- "$PROJECT_ROOT/$FILE" 2>/dev/null | grep '^+' | grep -v '^+++')
 
     case "$TAG" in
       refactor:no-style|*:no-style)
         # variant, fontSize, color, padding, margin 변경 감지
-        local STYLE_CHANGES=$(echo "$DIFF" | grep -iE '(variant|fontSize|fontWeight|color|padding|margin|gap|size)[=:"\x27]' | head -5)
+        local STYLE_CHANGES
+        STYLE_CHANGES=$(echo "$DIFF" | grep -iE '(variant|fontSize|fontWeight|color|padding|margin|gap|size)[=:"\x27]' | head -5)
         if [ -n "$STYLE_CHANGES" ]; then
           VIOLATIONS="${VIOLATIONS}\n  [$TAG] $FILE: 스타일 값 변경 감지"
           VIOLATIONS="${VIOLATIONS}\n    $(echo "$STYLE_CHANGES" | head -3 | sed 's/^/    /')"
@@ -55,7 +61,8 @@ scope_type_check() {
 
       *:no-new-deps)
         # 새 import 추가 감지
-        local NEW_IMPORTS=$(echo "$DIFF" | grep -E '^\+import ' | head -5)
+        local NEW_IMPORTS
+        NEW_IMPORTS=$(echo "$DIFF" | grep -E '^\+import ' | head -5)
         if [ -n "$NEW_IMPORTS" ]; then
           VIOLATIONS="${VIOLATIONS}\n  [$TAG] $FILE: 새 import 추가 감지"
           VIOLATIONS="${VIOLATIONS}\n    $(echo "$NEW_IMPORTS" | head -3 | sed 's/^/    /')"
@@ -64,7 +71,8 @@ scope_type_check() {
 
       *:ui-only)
         # 로직 변경 감지 (if/else/switch/return/throw/await)
-        local LOGIC_CHANGES=$(echo "$DIFF" | grep -E '^\+.*(if\s*\(|else\s|switch\s*\(|return\s|throw\s|await\s)' | head -5)
+        local LOGIC_CHANGES
+        LOGIC_CHANGES=$(echo "$DIFF" | grep -E '^\+.*(if\s*\(|else\s|switch\s*\(|return\s|throw\s|await\s)' | head -5)
         if [ -n "$LOGIC_CHANGES" ]; then
           VIOLATIONS="${VIOLATIONS}\n  [$TAG] $FILE: 로직 변경 감지 (ui-only 위반)"
           VIOLATIONS="${VIOLATIONS}\n    $(echo "$LOGIC_CHANGES" | head -3 | sed 's/^/    /')"
