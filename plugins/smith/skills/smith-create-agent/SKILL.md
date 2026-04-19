@@ -9,6 +9,15 @@ agent-system: Smith
 
 프로젝트를 분석하고 Smith 2.0 에이전트 정의 파일을 생성하는 스킬.
 
+## 호출 경로
+
+| 경로 | 동작 |
+|------|------|
+| 사용자 직접 (`/code-forge:smith-create-agent`) | Step 1부터 풀 실행 — 프로젝트 분석 + 대화형 확인 |
+| `/code-forge:setup`에서 위임 호출 (orchestrator) | **Step 1 스킵** — `.claude/profile.json`이 이미 Step 5에서 생성됐으므로 재사용. 즉시 Step 2 Deep Analysis부터 시작 |
+
+**위임 감지 방법**: `.claude/profile.json`이 현재 턴에 이미 존재하면 setup으로부터 위임된 호출로 간주한다. 사용자 재확인 질문을 생략하고 분석/생성 파이프라인으로 직행한다.
+
 ## References
 
 - `references/subagent-spec.md` — Claude Code subagent frontmatter 필드 전체 규격
@@ -283,7 +292,7 @@ skills:
 
 ### Step 5: 빌드타임 컴파일
 
-`/smith-build --project` 를 실행하여 `.agents/agents/`의 Smith 인스턴스를 `.claude/agents/`에 컴파일한다.
+`/code-forge:smith-build --project` 를 실행하여 `.agents/agents/`의 Smith 인스턴스를 `.claude/agents/`에 컴파일한다.
 
 1. `.agents/agents/`의 `type: instance` 파일을 대상으로 Smith 빌드 수행
 2. STATE 체인 해석 → ACT 체인 해석 → 네이티브 frontmatter 매핑
@@ -294,8 +303,8 @@ skills:
 
 - 생성된 파일 목록
 - 컴파일된 에이전트가 `.claude/agents/`에 위치하여 즉시 사용 가능
-- 규칙 수정 → `.agents/agents/{project}-*.md` 직접 편집 후 `/smith-build --project` 재실행
-- 역할 추가 → `/smith-create-agent {역할}` 으로 추가 생성
+- 규칙 수정 → `.agents/agents/{project}-*.md` 직접 편집 후 `/code-forge:smith-build --project` 재실행
+- 역할 추가 → `/code-forge:smith-create-agent {역할}` 으로 추가 생성
 
 ## 기존 에이전트 수정
 

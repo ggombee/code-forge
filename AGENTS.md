@@ -40,8 +40,8 @@ code-forge/
 ### 프로젝트 전용 에이전트
 
 ```
-1. /smith-create-agent → .agents/agents/ 에 생성 (STATE+ACT 조합)
-2. /smith-build --project → .claude/agents/ 컴파일
+1. /code-forge:smith-create-agent → .agents/agents/ 에 생성 (STATE+ACT 조합, setup에서 자동 호출됨)
+2. /code-forge:smith-build --project → .claude/agents/ 컴파일
 ```
 
 Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/smith/agents/state/`, `plugins/smith/agents/act/`에 있다.

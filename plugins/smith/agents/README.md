@@ -242,8 +242,8 @@ refactorer → test-runner → reviewer
 
 | 스킬 | 용도 |
 |------|------|
-| `/smith-build` | Smith 인스턴스를 정적 .md로 컴파일 (빌드타임 컴파일) |
-| `/smith-create-agent` | 프로젝트를 분석하여 instance 에이전트 생성 → 자동 빌드 |
+| `/code-forge:smith-build` | Smith 인스턴스를 정적 .md로 컴파일 (빌드타임 컴파일) |
+| `/code-forge:smith-create-agent` | 프로젝트를 분석하여 instance 에이전트 생성 → 자동 빌드 (setup에서 자동 호출됨) |
 
 ---
 

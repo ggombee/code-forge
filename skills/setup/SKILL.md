@@ -637,90 +637,69 @@ plugins:
 ```
 
 - `version`: 이 프로젝트에 적용된 code-forge 버전. 플러그인 업데이트 후 `/setup` 재실행 시 버전 차이를 감지하여 CLAUDE.md를 재생성한다.
-- `plugins.smith`: `/smith-setup`에서 확장한다. 초기값은 `enabled: false`.
+- `plugins.smith`: `/code-forge:smith-setup`에서 확장한다. 초기값은 `enabled: false`.
 
-## Step 6: 기능 선택 (옵셔널)
+## Step 6: Smith 활성화 여부
 
-스택 설정 완료 후, code-forge의 옵셔널 기능을 대화형으로 설정한다.
-**하나씩 순차적으로 묻는다. 한 번에 모두 보여주지 않는다.**
-
-> 나중에 변경: `/smith-setup` (Smith on/off), 또는 `code-forge.local.md` 직접 수정
-
-### 6-1. Smith
+스택 설정 완료 후, 프로젝트 전용 에이전트 생성 여부만 묻는다.
+**Whetstone/Bellows는 묻지 않고 기본값으로 세팅** — 나중에 `code-forge.local.md`에서 직접 편집 가능.
 
 ```
-[1/3] Smith (에이전트 빌드 시스템)
-프로젝트에 최적화된 전용 에이전트를 만들 수 있습니다.
+Smith (프로젝트 전용 에이전트)
+프로젝트를 분석하여 레포 맞춤 에이전트를 자동 생성합니다.
 
-> 사용
+> 사용 (권장)
   사용 안 함
 ```
 
-→ 응답을 받은 후 다음으로 넘어간다.
+### 설정 결과 저장
 
-### 6-2. Whetstone
-
-```
-[2/3] Whetstone (코딩 연습)
-/practice로 코딩 면접 시뮬레이션을 할 수 있습니다.
-
-> 사용
-  사용 안 함
-```
-
-### 6-3. Bellows
-
-```
-[3/3] Bellows (사용량 로깅)
-어떤 에이전트/스킬을 얼마나 쓰는지 로컬 로그를 남깁니다.
-
-  사용
-> 사용 안 함
-```
-
-Bellows는 기본값이 "사용 안 함"이다.
-
-### 설정 결과
-
-설정 결과를 `code-forge.local.md`에 저장:
+응답에 따라 `code-forge.local.md`에 저장:
 
 ```yaml
 plugins:
   smith:
-    enabled: true    # 사용자 선택 반영
+    enabled: true     # 사용자 선택 반영
   whetstone:
-    enabled: true
+    enabled: false    # 기본 off (별도 레포, 원하면 직접 true로)
   bellows:
-    enabled: false
+    enabled: true     # 기본 on (로컬 사용량 로깅, $HOME/.code-forge/usage.jsonl)
 ```
 
-### Smith를 켠 경우
+## Step 7: Smith 자동 호출 (orchestrator)
+
+Smith가 활성화된 경우 **setup 스킬 내부에서 즉시 다음 서브 스킬을 실행**한다.
+사용자에게 추가 질문하지 않는다. 사용자가 Step 6에서 "사용"을 선택한 것이 곧 실행 동의다.
+
+### Smith enabled = true인 경우
+
+**[즉시 실행] Skill 도구로 `code-forge:smith-create-agent`를 호출한다.**
+
+- 호출 전 안내 1줄: `Smith 에이전트를 생성합니다...`
+- smith-create-agent는 이미 생성된 `profile.json`을 재사용 (Step 5 결과물)
+- 생성 완료 후 setup으로 복귀해 Step 8 요약 출력
+- 호출이 실패하면 안내 1줄만 출력하고 setup 전체는 성공 처리:
+  ```
+  Smith 에이전트 생성 중 오류. 수동으로 /code-forge:smith-create-agent 재시도하세요.
+  ```
+
+### Smith enabled = false인 경우
+
+다음 안내만 출력하고 Step 8로 진행:
 
 ```
-Smith가 활성화되었습니다.
-
-지금 바로 프로젝트 전용 에이전트를 만들까요?
-
-> /smith-create-agent 실행
-  나중에
+(나중에 Smith를 쓰려면 /code-forge:smith-create-agent 실행)
 ```
 
-→ "/smith-create-agent 실행" 선택 시: 자동 호출 (프로젝트 분석 → 에이전트 생성 → 빌드)
-→ "나중에" 선택 시: 스킵
-
-```
-(나중에 하려면 /smith-create-agent를 실행하세요)
-```
-
-### 설정 완료 안내
+## Step 8: 설정 완료 안내
 
 ```
 설정이 완료되었습니다.
 
 이 설정은 code-forge.local.md에 저장됩니다.
-개별 프로젝트에서 나중에 변경하려면:
-  /smith-setup        → Smith(에이전트 빌드) on/off
-  code-forge.local.md → 직접 편집도 가능
+나중에 변경하려면:
+  /code-forge:smith-setup    → Smith on/off
+  code-forge.local.md        → 직접 편집 (whetstone/bellows 토글)
 ```
 
 ---

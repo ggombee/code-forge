@@ -94,7 +94,7 @@ if [ -f "$LOCAL_MD" ]; then
 
     # Smith 프로젝트 에이전트가 있으면 재컴파일도 안내
     if [ -d "$WORK_DIR_CHECK/.agents/agents" ]; then
-      echo "프로젝트 에이전트도 재컴파일이 필요합니다: /smith-build --project"
+      echo "프로젝트 에이전트도 재컴파일이 필요합니다: /code-forge:smith-build --project"
     fi
 
     echo "---"

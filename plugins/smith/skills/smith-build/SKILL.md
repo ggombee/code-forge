@@ -10,7 +10,7 @@ version: 1.0.0
 
 프로젝트 에이전트 인스턴스(.agents/agents/*.md)를 정적 .md 파일로 컴파일한다.
 
-**비유:** TypeScript → tsc → .js 와 같이, Smith 템플릿 → /smith-build → 플랫 .md
+**비유:** TypeScript → tsc → .js 와 같이, Smith 템플릿 → /code-forge:smith-build → 플랫 .md
 
 > 플러그인 에이전트(`agents/`)는 직접 편집한다. Smith 빌드는 **프로젝트 에이전트 전용**.
 
@@ -22,9 +22,9 @@ version: 1.0.0
 ## 빌드 모드
 
 ```
-/smith-build --project        # 프로젝트 에이전트 빌드: .agents/agents/ → .claude/agents/
-/smith-build --validate       # 검증만, 출력 없음
-/smith-build --regenerate     # 수동 편집 보존하며 재빌드
+/code-forge:smith-build --project        # 프로젝트 에이전트 빌드: .agents/agents/ → .claude/agents/
+/code-forge:smith-build --validate       # 검증만, 출력 없음
+/code-forge:smith-build --regenerate     # 수동 편집 보존하며 재빌드
 ```
 
 ## Pipeline
@@ -247,7 +247,7 @@ done
 `.agents/agents/` 소스의 프로젝트 에이전트에 대해 추가 검증:
 
 1. **base class extends 확인**: `{project}-base.md`의 extends에 domain/policy/context가 포함되는지
-   - 누락 → WARN ("해당 축의 레포 특화 지식 없이 동작합니다. /smith-create-agent --refresh 권장")
+   - 누락 → WARN ("해당 축의 레포 특화 지식 없이 동작합니다. /code-forge:smith-create-agent --refresh 권장")
 
 1.5. **blueprint 확인**: `{project}-base.md`에 `blueprint` 필드가 있는지
    - 누락 → WARN ("사고모델 임베딩 없음. degraded mode에서 핵심 규칙이 적용되지 않습니다")

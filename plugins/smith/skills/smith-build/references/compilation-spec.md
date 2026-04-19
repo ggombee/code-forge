@@ -1,6 +1,6 @@
 # Smith Compilation Specification
 
-smith-rules.md에서 추출한 컴파일 시맨틱 정의. /smith-build 스킬의 참조 문서.
+smith-rules.md에서 추출한 컴파일 시맨틱 정의. /code-forge:smith-build 스킬의 참조 문서.
 
 ---
 

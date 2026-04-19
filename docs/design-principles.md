@@ -70,7 +70,7 @@
 
 - **무소음 원칙**: session-init.sh는 버전 일치 시 아무 출력 없음. 불일치 시에만 한 줄 알림
 - **자동 동기화**: 플러그인 업데이트 후 다음 세션에서 CLAUDE.md 자동 재생성
-- **Smith 온보딩**: /smith-create-agent가 내부적으로 /smith-build + /smith-verify를 자동 호출
+- **Smith 온보딩**: /code-forge:setup이 Smith on 시 /code-forge:smith-create-agent를 자동 호출하며, 그 내부에서 /code-forge:smith-build를 자동 호출
 - **hooks**: 사용자가 인지하지 못하는 사이에 자동 lint 수정, 위험 명령 차단
 
 ---

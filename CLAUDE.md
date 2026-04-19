@@ -33,8 +33,8 @@ claude plugin install code-forge
 
 1. `/setup` → 스택 감지 → CLAUDE.md + AGENTS.md 자동 생성
 2. 스택에 맞는 모듈(컨벤션)이 에이전트에 주입
-3. `/smith-create-agent` → 프로젝트 전용 에이전트에 사고모델(Blueprint) 임베딩
-4. `/setup --profile` → 프로젝트 코딩 스타일 분석 → `.claude/coding-profile.md` 생성
+3. `/code-forge:smith-create-agent` → 프로젝트 전용 에이전트에 사고모델(Blueprint) 임베딩 (setup에서 자동 호출됨)
+4. `/code-forge:setup --profile` → 프로젝트 코딩 스타일 분석 → `.claude/coding-profile.md` 생성
 
 ## 핵심 워크플로우
 
@@ -88,7 +88,7 @@ claude plugin install code-forge
 Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵심 규칙이 동작한다.
 
 - 플러그인 에이전트: `agents/` (직접 편집)
-- 프로젝트 전용: `/smith-create-agent` → `.agents/agents/` → `/smith-build --project` → `.claude/agents/`
+- 프로젝트 전용: `/code-forge:smith-create-agent` → `.agents/agents/` → `/code-forge:smith-build --project` → `.claude/agents/`
 - STATE/ACT 부품: `plugins/smith/agents/state/`, `plugins/smith/agents/act/`
 
 ## Hooks

@@ -109,8 +109,8 @@ Agents are defined by splitting STATE (what the agent knows) and ACT (what the a
 Project agents embed the thinking model (Blueprint) inline, so core rules work even without the plugin.
 
 ```
-/smith-create-agent    # analyze project → auto-generate a custom agent
-/smith-build           # manual build
+/code-forge:smith-create-agent    # analyze project → auto-generate a custom agent (auto-triggered by setup)
+/code-forge:smith-build           # manual build
 ```
 
 ---
