@@ -1,6 +1,6 @@
 {
   "name": "code-forge",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "프로젝트 스택에 맞는 에이전트, 스킬, 컨벤션을 조합하는 Claude Code 플러그인. Smith(Agent Smith System) 지원.",
   "author": {
     "name": "ggombee"
