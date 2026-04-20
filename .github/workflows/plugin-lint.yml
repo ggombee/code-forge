@@ -53,14 +53,17 @@ jobs:
       - name: Check broken @references
         run: |
           ERRORS=0
-          # Extract @refs from skills and rules
-          refs=$(grep -rhoE 'references/[a-z-]+\.md' skills/ rules/ 2>/dev/null | sort -u)
-          for ref in $refs; do
-            if [ ! -f "$ref" ]; then
-              echo "BROKEN REF: $ref"
-              ERRORS=$((ERRORS+1))
-            fi
-          done
+          # SKILL.md의 references/xxx.md는 그 SKILL.md 디렉터리 기준 상대경로.
+          # 각 파일을 순회하며 해당 디렉터리에서 참조 해결 여부 확인.
+          while IFS= read -r md; do
+            dir=$(dirname "$md")
+            for ref in $(grep -oE 'references/[a-z-]+\.md' "$md" 2>/dev/null | sort -u); do
+              if [ ! -f "$dir/$ref" ] && [ ! -f "$ref" ]; then
+                echo "BROKEN REF: $md -> $ref"
+                ERRORS=$((ERRORS+1))
+              fi
+            done
+          done < <(find skills/ rules/ -name '*.md' 2>/dev/null)
           [ $ERRORS -eq 0 ] && echo "All @references resolved"
           exit $ERRORS
 
