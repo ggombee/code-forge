@@ -104,9 +104,13 @@ fi
 # ─────────────────────────────────────────────
 # 프로젝트 컨텍스트 주입 (Claude additionalContext)
 # ─────────────────────────────────────────────
+# 디폴트: full — git changed files + stack 정보까지 (현행 유지)
+# brief 모드 (opt-in): FORGE_INIT_BRIEF=1 시 project + branch + uncommitted count만
+# (2026-05-17 redesign G2: opt-in brief 추가, 정보 자체는 보존)
 
 # 작업 디렉토리 (플러그인이 아닌 사용자 프로젝트 기준)
 WORK_DIR="${CLAUDE_CWD:-$(pwd)}"
+FORGE_BRIEF="${FORGE_INIT_BRIEF:-0}"
 
 echo ""
 echo "=== Project Context ==="
@@ -121,7 +125,7 @@ if [ -d "$WORK_DIR/.git" ]; then
   echo "Branch: $BRANCH"
   echo "Uncommitted files: $UNCOMMITTED_COUNT"
 
-  if [ "$UNCOMMITTED_COUNT" -gt 0 ]; then
+  if [ "$UNCOMMITTED_COUNT" -gt 0 ] && [ "$FORGE_BRIEF" != "1" ]; then
     echo "Changed files (max 10):"
     git -C "$WORK_DIR" status --porcelain 2>/dev/null | head -10 | while read -r line; do
       echo "  $line"
@@ -134,26 +138,28 @@ else
   echo "Project: $(basename "$WORK_DIR") (not a git repo)"
 fi
 
-# profile.json 스택 정보
-PROFILE_JSON="$WORK_DIR/.claude/profile.json"
-if [ ! -f "$PROFILE_JSON" ]; then
-  # .agents/ 하위도 탐색
-  PROFILE_JSON="$WORK_DIR/.agents/profile.json"
-fi
+# profile.json 스택 정보 (brief 모드에서 스킵 — `/start` 진입 시 lazy load)
+if [ "$FORGE_BRIEF" != "1" ]; then
+  PROFILE_JSON="$WORK_DIR/.claude/profile.json"
+  if [ ! -f "$PROFILE_JSON" ]; then
+    # .agents/ 하위도 탐색
+    PROFILE_JSON="$WORK_DIR/.agents/profile.json"
+  fi
 
-if [ -f "$PROFILE_JSON" ]; then
-  echo ""
-  echo "Stack (from profile.json):"
-  # framework, styling, state 필드 파싱 (외부 도구 없이 grep 사용)
-  FRAMEWORK=$(grep -o '"framework": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
-  STYLING=$(grep -o '"styling": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
-  STATE=$(grep -o '"state": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
-  TESTING=$(grep -o '"testing": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+  if [ -f "$PROFILE_JSON" ]; then
+    echo ""
+    echo "Stack (from profile.json):"
+    # framework, styling, state 필드 파싱 (외부 도구 없이 grep 사용)
+    FRAMEWORK=$(grep -o '"framework": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+    STYLING=$(grep -o '"styling": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+    STATE=$(grep -o '"state": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
+    TESTING=$(grep -o '"testing": *"[^"]*"' "$PROFILE_JSON" | grep -o '"[^"]*"$' | tr -d '"' 2>/dev/null || echo "")
 
-  [ -n "$FRAMEWORK" ] && echo "  framework: $FRAMEWORK"
-  [ -n "$STYLING" ]   && echo "  styling: $STYLING"
-  [ -n "$STATE" ]     && echo "  state: $STATE"
-  [ -n "$TESTING" ]   && echo "  testing: $TESTING"
+    [ -n "$FRAMEWORK" ] && echo "  framework: $FRAMEWORK"
+    [ -n "$STYLING" ]   && echo "  styling: $STYLING"
+    [ -n "$STATE" ]     && echo "  state: $STATE"
+    [ -n "$TESTING" ]   && echo "  testing: $TESTING"
+  fi
 fi
 
 echo "======================="
@@ -177,6 +183,29 @@ if [ -f "$NOTEPAD_FILE" ]; then
     echo "=== Session Notepad (truncated) ==="
     head -100 "$NOTEPAD_FILE"
     echo "=== /Notepad ==="
+  fi
+fi
+
+# ─────────────────────────────────────────────
+# progress.md 주입 (작업 이어가기, brief 모드에서도 출력)
+# 계약: docs/contracts/state-schema.md §4 (2026-05-17 redesign G3 신설)
+# /start 스킬이 작업 시작 시 자동 write. 세션 끊겨도 다음 세션이 이어 받음.
+# ─────────────────────────────────────────────
+
+PROGRESS_FILE="$WORK_DIR/.claude/state/progress.md"
+if [ -f "$PROGRESS_FILE" ]; then
+  PROGRESS_SIZE=$(wc -l < "$PROGRESS_FILE" 2>/dev/null || echo 0)
+  if [ "$PROGRESS_SIZE" -gt 0 ] && [ "$PROGRESS_SIZE" -le 80 ]; then
+    echo ""
+    echo "=== Active Progress (.claude/state/progress.md) ==="
+    cat "$PROGRESS_FILE"
+    echo "=== /Progress ==="
+  elif [ "$PROGRESS_SIZE" -gt 80 ]; then
+    echo ""
+    echo "[code-forge] progress.md ${PROGRESS_SIZE}줄 — 마지막 80줄만 주입 (가장 최근 작업)"
+    echo "=== Active Progress (tail 80) ==="
+    tail -80 "$PROGRESS_FILE"
+    echo "=== /Progress ==="
   fi
 fi
 

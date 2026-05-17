@@ -161,6 +161,40 @@ failed_files:
 
 ---
 
+### 5. `progress.md` (작업 이어가기, 2026-05-17 redesign G3 신설)
+
+**목적**: 작업 중간에 세션이 끊겨도 다음 세션이 이어 받을 수 있게. Hermes Agent의 "cross-session recall" 정신.
+
+**쓰는 자**: `/start` 스킬이 Phase 3 분석 완료 시 + Phase 4 시작 시 + Phase 5 통과 시 + 체크포인트 A/B 통과 시 자동 append.
+
+**읽는 자**: `session-init.sh`가 매 세션 시작 시 tail 80줄 주입. 80줄 이하면 전체.
+
+**포맷**:
+```markdown
+## TICKET-123 — 2026-05-17T10:23
+
+**phase**: APPLY (Phase 4)
+**files touched**: [src/feature/list.tsx, src/api/list.ts]
+**next**: assayer 테스트 생성 → Phase 5 검증
+
+---
+
+## TICKET-456 — 2026-05-17T14:10
+
+**phase**: VERIFY (Phase 5)
+**files touched**: [src/auth/signup.tsx]
+**next**: 사용자 검수 대기. 95% 적중률 통과 후 PR.
+```
+
+**GC**:
+- 한 ticket 완료 (Phase 7 통과 + PR merge) 시 해당 블록 자동 삭제 (선택적).
+- 80줄 초과 시 session-init이 마지막 80줄만 주입.
+- 사용자가 수동으로 정리 가능 — `progress.md`는 자유롭게 편집 OK.
+
+**forge-hearth 연동**: 다중 프로젝트 dashboard는 각 repo의 `progress.md`를 stitch해서 "현재 진행 중인 ticket 한 줄 요약" 표시.
+
+---
+
 ## 외부 도구 연동 규약
 
 forge-glow 같은 외부 도구는 **파일 경로 직독 금지**. 대신 아래 surface 사용:

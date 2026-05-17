@@ -146,15 +146,17 @@ Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/s
 
 ---
 
-## 규칙 (alwaysApply)
+## 규칙
 
-| 파일 | 적용 범위 |
-|------|----------|
-| `rules/thinking-model.md` | GROUND→APPLY→VERIFY→ADAPT 루프. 불변 제약 5가지. 가정 분류(A/B/C). |
-| `rules/coding-standards.md` | 코딩 표준, 네이밍, 금지 패턴, import 순서 |
-| `rules/build-guide.md` | React 패턴, Hook 규칙, TypeScript 패턴 |
-| `rules/review-guide.md` | 설계 철학, 안티패턴, 성능 최적화 |
-| `rules/candidate-profile.md` | 프로젝트 코딩 프로필 참조 규칙 |
+(2026-05-17 redesign G2: 실제 frontmatter와 일치하도록 표 분류 정정)
+
+| 파일 | 적재 시점 | 적용 범위 |
+|------|---|----------|
+| `rules/thinking-model.md` | **alwaysApply** | GROUND→APPLY→VERIFY→ADAPT 루프. 불변 제약 5가지. 가정 분류(A/B/C). |
+| `rules/candidate-profile.md` | **alwaysApply** | 프로젝트 코딩 프로필 (.candidate/profile.md) 참조 규칙 |
+| `rules/coding-standards.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 코딩 표준, 네이밍, 금지 패턴, import 순서 |
+| `rules/build-guide.md` | path-scoped (`*.{tsx,jsx}`) | React 패턴, Hook 규칙, TypeScript 패턴 |
+| `rules/review-guide.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 설계 철학, 안티패턴, 성능 최적화 |
 
 ---
 

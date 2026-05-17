@@ -221,6 +221,28 @@ Task(subagent_type = 'Plan', model = 'opus', prompt = `
 - {테스트 전략}
 ```
 
+### 3-5. progress.md append (작업 이어가기 등록, 2026-05-17 redesign G3 신설)
+
+체크포인트 A 진행 전, `.claude/state/progress.md`에 ticket entry append. 세션 끊겨도 다음 세션이 `session-init.sh`로 자동 복원.
+
+```bash
+mkdir -p .claude/state
+cat >> .claude/state/progress.md <<EOF
+
+## {ticket-id 또는 작업 제목} — $(date -u +%FT%H:%MZ)
+
+**phase**: ANALYZE (Phase 3 완료, 체크포인트 A 대기)
+**files (예정)**: [{변경 파일 목록 — 위 §3-4의 변경 파일}]
+**next**: 사용자 승인 후 Phase 4 구현 → Phase 5 검증
+
+EOF
+```
+
+이후 Phase 4 시작 / Phase 5 통과 / Phase 6 커밋 시점에도 같은 형식으로 한 줄 update.
+한 ticket 종료 (Phase 7 완료) 시 해당 블록 정리 (선택적 — 사용자 자유).
+
+계약: `docs/contracts/state-schema.md` §5.
+
 ---
 
 ## 진행 방식: 자동 + 확인 질문
