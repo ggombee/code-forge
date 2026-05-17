@@ -162,43 +162,19 @@ Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵�
 | `/startup-validator` | 새 서비스 아이디어 검증 |
 | `/gemini` | Gemini CLI 래퍼 |
 
-### v4.0 폐지 스킬 (규칙/훅으로 흡수)
+### v4.0 폐지 스킬 / 모듈 17개 / 프리셋 3개
 
-| 폐지 | 대체 |
-|------|------|
-| `/done` | `/start` + 시스템 프롬프트 커밋 절차 |
-| `/quality` | hooks(lint-fix.sh + quality-gate.sh) 자동 실행 |
-| `/bug-fix` | `thinking-model.md` GROUND "버그 수정 시 2-3 옵션 제시" 규칙 |
-| `/refactor` | `thinking-model.md` GROUND "정책 보호 테스트 먼저" 규칙 |
+→ [`docs/CATALOG.md`](docs/CATALOG.md) (정적 카탈로그, 매 세션 자동 주입 X)
 
-## 모듈 (17개)
+## 상세 규칙
 
-| 카테고리 | 모듈 |
-|---------|------|
-| Framework (Frontend) | `react-nextjs-pages`, `react-nextjs-app`, `react-spa` |
-| Framework (Backend) | `python-fastapi`, `python-django`, `node-express`, `go-standard` |
-| Design System | `mui`, `ant-design` |
-| State | `jotai-tanstack`, `zustand-tanstack`, `redux-rtk` |
-| Styling | `emotion`, `tailwind`, `styled-components` |
-| Testing | `jest`, `vitest` |
-
-## 프리셋
-
-| 프리셋 | 조합 |
-|--------|------|
-| `standard` | Pages Router + Jotai + Emotion + Jest |
-| `modern-stack` | MUI + App Router + Zustand + Tailwind + Vitest |
-| `backend-api` | Node.js Express + Jest |
-
-## 상세 규칙 (alwaysApply)
-
-| 규칙 | 핵심 |
-|------|------|
-| `rules/thinking-model.md` | GROUND→APPLY→VERIFY→ADAPT 루프. 불변 제약 5가지. 가정 분류(A/B/C). |
-| `rules/coding-standards.md` | 코딩 표준, 네이밍, 금지 패턴, import 순서 |
-| `rules/build-guide.md` | React 패턴, Hook 규칙, TypeScript 패턴 |
-| `rules/review-guide.md` | 설계 철학, 안티패턴, 성능 최적화 |
-| `rules/candidate-profile.md` | 프로젝트 코딩 프로필 참조 규칙 |
+| 규칙 | 적재 시점 | 핵심 |
+|------|---|------|
+| `rules/thinking-model.md` | **alwaysApply** | GROUND→APPLY→VERIFY→ADAPT 루프. 불변 제약 5가지. 가정 분류(A/B/C). |
+| `rules/candidate-profile.md` | **alwaysApply** | 프로젝트 코딩 프로필 (.candidate/profile.md) 참조 규칙 |
+| `rules/coding-standards.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 코딩 표준, 네이밍, 금지 패턴, import 순서 |
+| `rules/build-guide.md` | path-scoped (`*.{tsx,jsx}`) | React 패턴, Hook 규칙, TypeScript 패턴 |
+| `rules/review-guide.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 설계 철학, 안티패턴, 성능 최적화 (2026-05-17: alwaysApply → path-scoped) |
 
 ## 멀티에이전트 협업
 

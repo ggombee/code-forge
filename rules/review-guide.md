@@ -1,10 +1,12 @@
 ---
-alwaysApply: true
+paths:
+  - '**/*.{ts,tsx,js,jsx}'
 ---
 
 # 리뷰/리팩토링 가이드
 
 Phase 2(리팩토링/리뷰) 시 참조. 설계 철학, 안티패턴, 성능, 평가 기준 통합.
+(2026-05-17 redesign: alwaysApply → path-scoped — 914줄이 매 세션 자동 적재되던 부담 제거. JS/TS 파일 편집 시에만 발화.)
 
 ---
 
