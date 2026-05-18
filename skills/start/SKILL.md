@@ -43,6 +43,24 @@ MD 파일 또는 자유 텍스트로 작업을 정의하면, 분석 → 디자�
 
 ---
 
+## Flow CLI 자동 호출 계약 (2026-05-19 redesign G5)
+
+`/start`는 각 Phase에서 [flow-toolkit](https://github.com/ggombee/flow-toolkit)의 `flow` CLI를 자동 호출하여 5-family 통합을 완성한다. `command -v flow` 실패 시 graceful skip (해당 Phase 본 작업은 정상 진행, flow 호출만 스킵).
+
+| Phase | flow 명령 | 효과 |
+|---|---|---|
+| 1 (티켓 ID 감지) | `flow workflow start <ticket> --json` | `~/.flow/projects/{repo}/workflows/{id}/state.json` 생성. Codex/Cursor 이어받기 기반 |
+| 1-2 (BE URL 감지) | `flow spec capture <URL> --redact --json` | `.policy/api-specs/{endpoint}.md` 생성. type 정의 전 응답 우선 |
+| 3 (정책 매트릭스) | `flow tc select <ticket> --json` 또는 `flow policy diff <ticket>` | 영향 TC + 변경 컴포넌트 자동 식별 |
+| 5 (검증) | `flow run report` + `flow tc verify --stale` + `flow policy lint` | 사이클 결과 + 메타데이터 stale 검증 |
+| 7 (회고) | `flow retro` | 3회+ 반복 패턴 감지 → rule 후보 (G6에서 자동 PR draft 예정) |
+
+자연어 입력에 티켓 ID 패턴(`[A-Z]+-\d+`) 매칭 시 `hooks/auto-flow-trigger.sh` (UserPromptSubmit hook)가 모델 자율 의존 없이 `flow workflow start` / `flow tc select` 강제 호출.
+
+계약: [`docs/contracts/INTEGRATION.md` §4](../../docs/contracts/INTEGRATION.md), [auto-trigger.md](../../../flow-toolkit/packages/flow-rules/docs/auto-trigger.md).
+
+---
+
 ## Phase 1: 입력 분석
 
 ### 1-1. 입력 판별
@@ -284,6 +302,21 @@ Phase 6-7 → 자동 실행 (커밋+PR+보고)
 
 구현 완료 후 **자동으로** 검증을 시작한다. 사용자 확인 불필요.
 
+### 5-0. flow CLI 자동 호출 (redesign G5, 2026-05-19)
+
+빌드/린트/타입 검증 전후로 flow-toolkit의 사이클 보고 + 메타데이터 검증을 명시 호출 (위 §"Flow CLI 자동 호출 계약" 참조):
+
+```bash
+# flow CLI 설치 시에만 실행. 미설치 환경 graceful skip.
+if command -v flow >/dev/null 2>&1; then
+  flow run report --cycle "$CYCLE" 2>/dev/null || true       # 사이클 결과 → .policy/runs/{cycle}/report.md
+  flow tc verify --stale --json 2>/dev/null || true         # affects.components 메타데이터 stale 확인
+  flow policy lint --json 2>/dev/null || true               # .policy/*.json schema 검증
+fi
+```
+
+→ `.policy/` 디렉토리 없는 프로젝트는 flow가 알아서 스킵. 작업 정보 손실 없음.
+
 ### 5-1. 변경 내용 분석
 
 ```bash
@@ -449,6 +482,18 @@ EOF
 ### PR
 - {PR URL}
 ```
+
+### 7-1. flow retro 자동 호출 (redesign G5, 2026-05-19)
+
+작업 사이클 종료 시 회고 사이클 자동 누적. 3회+ 반복 incident는 rule 후보로 (G6 H1 차용 예정):
+
+```bash
+if command -v flow >/dev/null 2>&1; then
+  flow retro --json 2>/dev/null || true   # .policy/feedback/ 누적 → 패턴 후보
+fi
+```
+
+→ feedback 디렉토리 없으면 graceful skip.
 
 ---
 

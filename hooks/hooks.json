@@ -130,6 +130,16 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/auto-flow-trigger.sh"
+          }
+        ]
+      }
     ]
   }
 }
