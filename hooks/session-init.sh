@@ -200,12 +200,23 @@ if [ -f "$PROGRESS_FILE" ]; then
     echo "=== Active Progress (.claude/state/progress.md) ==="
     cat "$PROGRESS_FILE"
     echo "=== /Progress ==="
+    # 미결 질문(⚠️) 카운트 — 사용자 인지 강화 (2026-05-20 G3.5)
+    PENDING_Q=$(grep -c '⚠️' "$PROGRESS_FILE" 2>/dev/null || echo 0)
+    [ "${PENDING_Q:-0}" -gt 0 ] && echo "[code-forge] ⚠️  미결 질문 ${PENDING_Q}개 — 답변 시 다음 작업 사이클 진입"
   elif [ "$PROGRESS_SIZE" -gt 80 ]; then
     echo ""
     echo "[code-forge] progress.md ${PROGRESS_SIZE}줄 — 마지막 80줄만 주입 (가장 최근 작업)"
     echo "=== Active Progress (tail 80) ==="
     tail -80 "$PROGRESS_FILE"
     echo "=== /Progress ==="
+    PENDING_Q=$(grep -c '⚠️' "$PROGRESS_FILE" 2>/dev/null || echo 0)
+    [ "${PENDING_Q:-0}" -gt 0 ] && echo "[code-forge] ⚠️  전체 progress.md에 미결 질문 ${PENDING_Q}개 — \`grep '⚠️' .claude/state/progress.md\` 로 확인"
+  fi
+else
+  # progress.md 없음 — 정상 상태, 짧은 안내 (2026-05-20 G3.5b)
+  if [ -d "$WORK_DIR/.git" ]; then
+    echo ""
+    echo "[code-forge] 진행 중인 작업 없음 — \`/start <ticket>\` 으로 시작 시 .claude/state/progress.md 자동 생성"
   fi
 fi
 

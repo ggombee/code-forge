@@ -87,8 +87,26 @@ maxTurns: 30
 | **의도 분석** | 리터럴 요청 vs 실제 의도 구분 |
 | **기존 패턴 준수** | 프로젝트의 기존 컨벤션과 패턴을 파악하여 보고 |
 | **일관된 용어** | 프로젝트에서 사용하는 용어를 그대로 사용 |
+| **함수/심볼 추적** (2026-05-20 G4) | 함수/심볼 검색 시 시그니처 + 호출자(callers) + 피호출자(callees) 1줄씩 함께 보고 |
+| **테스트 경로 동반** (2026-05-20 G4) | 코드 파일 발견 시 같은 디렉토리 또는 `__tests__/`, `*.test.*`, `*.spec.*` 패턴 테스트 함께 표시 |
 
 </required>
+
+---
+
+<symbol_tracking>
+
+함수/심볼 추적 시 (Aider repo-map 정신 부분 차용, 2026-05-20 G4):
+
+1. **시그니처**: `Grep -A 1 "function foo|const foo = "` 로 입력 타입 + 반환 타입 1줄 추출
+2. **호출자(callers)**: `Grep "foo\(" --include='*.{ts,tsx,js,jsx}' | head -5` — 어디서 부르는가
+3. **피호출자(callees)**: 함수 본문 안 다른 함수 호출 1-3개 (가장 중요한 것만)
+4. **테스트**: `Glob "**/{foo,foo.test,foo.spec}.{ts,tsx,js,jsx}"` 매칭
+5. **ctags 옵션**: PATH에 `ctags` 있으면 `ctags -x file.ts | grep "^foo"` 로 정의 위치 정확히 (없으면 grep fallback OK)
+
+→ 출력 시 함수당 ~5줄로 압축. 후속 에이전트(analyst/implementor)가 재해석할 필요 없게.
+
+</symbol_tracking>
 
 ---
 
@@ -134,9 +152,15 @@ Bash(command='git log --oneline -5 -- apps/{앱이름}/src/');
 
 ## 발견한 파일
 
-| 경로 | 역할 |
-|------|------|
-| /absolute/path/to/file.ts | 설명 |
+| 경로 | 역할 | 관련 테스트 |
+|------|------|--------|
+| /absolute/path/to/file.ts | 설명 | /absolute/path/to/__tests__/file.test.ts |
+
+## 함수/심볼 추적 (의도가 함수 추적일 때 — 2026-05-20 G4)
+
+| 함수 | 시그니처 | 호출자 (1-2) | 피호출자 (1-2) |
+|------|---------|--------|--------|
+| foo() | (a: string) => number | file.ts:23, bar.ts:45 | parseId(), format() |
 
 ## 직접 답변
 
@@ -149,5 +173,7 @@ Bash(command='git log --oneline -5 -- apps/{앱이름}/src/');
 
 </search_results>
 ```
+
+→ 함수/심볼 추적 표는 **의도가 함수 추적일 때만**. 단순 파일 위치 검색은 발견한 파일 표만으로 충분.
 
 </output>

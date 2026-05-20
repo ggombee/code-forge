@@ -239,10 +239,11 @@ Task(subagent_type = 'Plan', model = 'opus', prompt = `
 - {테스트 전략}
 ```
 
-### 3-5. progress.md append (작업 이어가기 등록, 2026-05-17 redesign G3 신설)
+### 3-5. progress.md append (작업 이어가기 + 의사결정 누적, 2026-05-17 redesign G3, 2026-05-20 G3.5 확장)
 
 체크포인트 A 진행 전, `.claude/state/progress.md`에 ticket entry append. 세션 끊겨도 다음 세션이 `session-init.sh`로 자동 복원.
 
+**기본 (항상 기록)**:
 ```bash
 mkdir -p .claude/state
 cat >> .claude/state/progress.md <<EOF
@@ -256,8 +257,25 @@ cat >> .claude/state/progress.md <<EOF
 EOF
 ```
 
-이후 Phase 4 시작 / Phase 5 통과 / Phase 6 커밋 시점에도 같은 형식으로 한 줄 update.
-한 ticket 종료 (Phase 7 완료) 시 해당 블록 정리 (선택적 — 사용자 자유).
+**옵션 (모호함 발견 시에만 추가 append)** — implementation-notes 패턴:
+
+```markdown
+### 설계 결정
+- {명세가 모호해서 자율 판단한 사항 + 이유}
+
+### 편차
+- {의도적으로 명세 안 따른 부분 + 이유}
+
+### 트레이드오프
+- {고려한 대안들 + 현재 방식 선택 이유}
+
+### 미결 질문 ⚠️
+- {사용자 답변/확인 필요한 사항}
+```
+
+→ 4섹션 모두 **옵션**. LOW 복잡도 작업은 phase만 기록, 4섹션 스킵.
+→ 미결 질문은 `⚠️` 마커로 — session-init이 노출 시 사용자가 즉시 인지.
+→ 이후 Phase 4 시작 / Phase 5 통과 / Phase 6 커밋 시점에도 phase 한 줄 update.
 
 계약: `docs/contracts/state-schema.md` §5.
 
@@ -494,6 +512,36 @@ fi
 ```
 
 → feedback 디렉토리 없으면 graceful skip.
+
+### 7-2. progress.md 정리 prompt (redesign G3.5c, 2026-05-20)
+
+작업 완료 시 사용자에게 progress.md 정리 의향 묻기. 자동 archive로 히스토리 보존 + 활성 진행 목록 깨끗 유지.
+
+**모델 행동**:
+1. `.claude/state/progress.md`에 현 ticket 블록 존재 확인.
+2. 존재 시 사용자에게 자연어로 prompt:
+
+> 🎯 **{ticket-id}** 완료. progress.md에서 정리할까요?
+> - Yes: 해당 블록을 `.claude/state/progress-archive.md`로 이동 (히스토리 보존)
+> - No: progress.md에 그대로 유지 (나중에 다시 참조 가능)
+
+3. **Yes**:
+   ```bash
+   mkdir -p .claude/state
+   # 1. archive에 append (히스토리)
+   awk -v t="{ticket-id}" 'BEGIN{p=0} /^## /{p=($0 ~ t)} p' \
+     .claude/state/progress.md >> .claude/state/progress-archive.md
+   # 2. progress.md에서 제거 (다음 동급 헤더까지)
+   awk -v t="{ticket-id}" 'BEGIN{skip=0} /^## /{skip=($0 ~ t)} !skip' \
+     .claude/state/progress.md > /tmp/progress.tmp && \
+     mv /tmp/progress.tmp .claude/state/progress.md
+   ```
+4. **No**: 스킵.
+
+**원칙**:
+- 사용자 명시 동의 후에만 정리 (자동 삭제 금지 — 정보 보존 가이드라인).
+- archive 파일은 GC 안 함 — 완전 히스토리.
+- 미결 질문(`⚠️`)이 남아있는 ticket은 prompt 시 **경고 추가**: "미결 질문 N개 있음 — 정리 전 확인하세요".
 
 ---
 

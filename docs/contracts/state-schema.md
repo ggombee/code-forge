@@ -161,37 +161,59 @@ failed_files:
 
 ---
 
-### 5. `progress.md` (작업 이어가기, 2026-05-17 redesign G3 신설)
+### 5. `progress.md` (작업 이어가기 + 의사결정 누적, 2026-05-17 redesign G3 신설, 2026-05-20 G3.5 확장)
 
-**목적**: 작업 중간에 세션이 끊겨도 다음 세션이 이어 받을 수 있게. Hermes Agent의 "cross-session recall" 정신.
+**목적**: 작업 중간에 세션이 끊겨도 다음 세션이 이어 받을 수 있게 (cross-session recall) + 모호함 → 자율 판단을 투명하게 기록 (implementation-notes 패턴, Anthropic 개발자 공유 프롬프트 차용).
 
 **쓰는 자**: `/start` 스킬이 Phase 3 분석 완료 시 + Phase 4 시작 시 + Phase 5 통과 시 + 체크포인트 A/B 통과 시 자동 append.
 
 **읽는 자**: `session-init.sh`가 매 세션 시작 시 tail 80줄 주입. 80줄 이하면 전체.
 
-**포맷**:
+**포맷** (4섹션은 모두 옵션 — 모호함 발견 시에만 기록):
+
 ```markdown
-## TICKET-123 — 2026-05-17T10:23
+## TICKET-123 — 2026-05-20T10:23
 
 **phase**: APPLY (Phase 4)
 **files touched**: [src/feature/list.tsx, src/api/list.ts]
 **next**: assayer 테스트 생성 → Phase 5 검증
 
+### 설계 결정 (모호함 → 자율 판단, 옵션)
+- pagination default size: 명세 모호 → 기존 Order 모듈 패턴 따라 20으로 선택
+
+### 편차 (의도적으로 명세 안 따른 부분, 옵션)
+- 명세는 1 API 호출, 실제 2 호출로 분리. 이유: 캐시 효율.
+
+### 트레이드오프 (대안 + 선택 이유, 옵션)
+- API 합치기 vs 분리 — 분리 선택 (캐시 효율 > 로딩 속도)
+
+### 미결 질문 ⚠️ (사용자 답변 요청, 옵션)
+- BE에 region 필드 없을 때 fallback 'unknown' OK?
+- pagination 기본값 20 — 디자인 시안에 명시 없음, 확인 필요
+
 ---
 
-## TICKET-456 — 2026-05-17T14:10
-
+## TICKET-456 — 2026-05-20T14:10
 **phase**: VERIFY (Phase 5)
 **files touched**: [src/auth/signup.tsx]
-**next**: 사용자 검수 대기. 95% 적중률 통과 후 PR.
+**next**: 사용자 검수 대기 — 95% 적중률 통과 후 PR
+(4섹션 — 이번 작업은 모호함 없어 스킵)
 ```
 
-**GC**:
-- 한 ticket 완료 (Phase 7 통과 + PR merge) 시 해당 블록 자동 삭제 (선택적).
-- 80줄 초과 시 session-init이 마지막 80줄만 주입.
-- 사용자가 수동으로 정리 가능 — `progress.md`는 자유롭게 편집 OK.
+**원칙**:
+- **4섹션 모두 옵션**. 작은 작업(LOW 복잡도)은 phase/files/next만으로 충분.
+- 미결 질문은 `⚠️` 마커 — session-init이 노출 시 시각 강조 (사용자 즉시 인지).
+- 의사결정은 "왜 이렇게 했지?" 미래 추적용 — PR description에 첨부 가능.
 
-**forge-hearth 연동**: 다중 프로젝트 dashboard는 각 repo의 `progress.md`를 stitch해서 "현재 진행 중인 ticket 한 줄 요약" 표시.
+**GC** (2026-05-20 G3.5c 정리 프로세스 추가):
+- `/start` Phase 7 (완료 보고) 종료 시 사용자에게 "이 ticket 완료. progress.md에서 정리할까요?" prompt.
+- Yes: 해당 블록을 `.claude/state/progress-archive.md`로 이동 (히스토리 보존).
+- No: 그대로 유지 (사용자 자유).
+- 80줄 초과 시 session-init이 마지막 80줄만 주입 — 마지막 ticket의 의사결정이 가장 중요.
+
+**forge-hearth 연동**: 다중 프로젝트 dashboard는 각 repo의 `progress.md`를 stitch해서 "현재 진행 중인 ticket + 미결 질문 1줄 요약" 표시. **미결 질문 있는 ticket은 우선 표시**.
+
+**Hermes H2 (G7) 연결**: 사용자가 미결 질문에 반복적으로 같은 답 패턴 보이면 → `coding-practice/.candidate/profile.md` 자동 누적 후보 (G7 작업).
 
 ---
 
