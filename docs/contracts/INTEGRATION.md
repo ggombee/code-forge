@@ -217,6 +217,53 @@ statusLine   Python TUI                tmux 하단바
 
 ---
 
+## 11. Forge Voice — 음성 진입점 (2026-06-08 redesign G9)
+
+손목 부상/RSI 사용자가 family를 그대로 음성으로 쓸 수 있게. **code-forge의 확장** (별도 도구 X — 동일 family).
+
+### 진입 회로
+
+```
+[음성] → 단축키 ⌘⇧Space (Hammerspoon)
+  ↓
+forge-voice.sh — sox 녹음 → whisper.cpp (local) → 텍스트
+  ↓
+pbcopy + cliclick → Claude Code prompt 창 자동 paste
+  ↓
+UserPromptSubmit hook (auto-flow-trigger.sh) — 음성 친화 정규식
+  티켓 ID 매칭 (case-insensitive, 공백/하이픈 모두 흡수)
+  ↓
+flow tc select <ticket> 강제 호출 (모델 자율 의존 0)
+  ↓
+/start 진입 → 5-family 작동 → forge-glow HUD 표시
+```
+
+### 구성 (code-forge 내부 — 별도 repo 아님)
+
+| 위치 | 역할 |
+|---|---|
+| `tools/forge-voice.sh` | 코어 STT 엔진 (sox + whisper.cpp 래퍼) |
+| `tools/forge-voice.lua` | Hammerspoon 단축키 hook |
+| `skills/voice/SKILL.md` | `/voice` 진입점 — 셋업/관리/진단 |
+| `docs/voice-input.md` | 상세 가이드 + 트러블슈팅 |
+| `hooks/auto-flow-trigger.sh` | 음성 친화 티켓 ID 매칭 (G9c 확장) |
+
+### 의존성 (모두 무료 오픈소스)
+
+- whisper.cpp (local Whisper, Metal 가속)
+- sox (마이크 녹음)
+- Hammerspoon (단축키 hook)
+- cliclick (옵션, 자동 paste)
+
+→ 셋업: `/voice setup` 1회.
+→ 사용: `⌘⇧Space` 토글 또는 `⌘⇧.` silence detection.
+
+### Hermes Agent와의 관계
+
+Hermes는 Telegram/WhatsApp gateway로 voice memo transcription 제공. Forge Voice는 **로컬 macOS 통합** 우선 — 폰 음성 메모는 향후 G7 (Hermes H6 single gateway) 작업으로.
+
+---
+
 ## 9. 참고 문서
 
 - code-forge: [`README.md`](../../README.md), [`CLAUDE.md`](../../CLAUDE.md), [`docs/contracts/state-schema.md`](state-schema.md)

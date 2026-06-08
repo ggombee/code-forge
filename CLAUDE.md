@@ -135,7 +135,7 @@ Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵�
 
 외부 도구는 파일 직독 금지. `bin/forge status --json` surface 경유 (Phase H 예정).
 
-## 스킬 (19개 — v4.1)
+## 스킬 (20개 — v4.2, 2026-06-08 /voice 추가)
 
 ### 핵심 워크플로우 (사용자 직접 호출)
 
@@ -149,6 +149,7 @@ Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵�
 | `/research` | 구조화된 리서치 |
 | `/setup` | 스택 감지 + CLAUDE.md + AGENTS.md 생성 |
 | `/codex` | Codex 페어 프로그래밍 |
+| `/voice` | **Forge Voice** — 손목 보호 음성 입력 셋업/관리 (whisper.cpp + Hammerspoon). 자세한 건 `docs/voice-input.md` |
 
 ### 자동 호출 스킬 (user-invocable: false)
 

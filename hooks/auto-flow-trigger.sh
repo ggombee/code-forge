@@ -31,10 +31,13 @@ fi
 [ -z "$PROMPT" ] && exit 0
 
 # 티켓 ID 정규식 (대문자 알파벳 + 하이픈 + 숫자 1자리 이상)
-# 예: PROJ-123, ABC-4567, FEAT-1
-TICKET=$(echo "$PROMPT" | grep -oE '\b[A-Z]{2,}-[0-9]+\b' | head -1)
+# 음성 친화 (2026-06-08 G9c): case-insensitive + 공백 fallback
+#   예: PROJ-123, proj-123, PROJ 123, Proj 123 (Whisper dictation 결과 변동 흡수)
+TICKET_RAW=$(echo "$PROMPT" | grep -oiE '\b[A-Z]{2,}[[:space:]-][0-9]+\b' | head -1)
+[ -z "$TICKET_RAW" ] && exit 0
 
-[ -z "$TICKET" ] && exit 0
+# normalize: 공백 → 하이픈, 소문자 → 대문자
+TICKET=$(echo "$TICKET_RAW" | tr ' ' '-' | tr 'a-z' 'A-Z')
 
 # 영향 TC 자동 조회 (실패해도 사용자 작업은 방해하지 않음)
 echo "[code-forge auto-flow-trigger] 티켓 '$TICKET' 감지 → flow tc select 자동 호출"
