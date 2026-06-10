@@ -36,7 +36,7 @@ $ARGUMENTS --profile → 코딩 프로필 생성만 실행 (아래 "코딩 프�
 **흐름:**
 1. Step 1에서 감지한 스택 정보(또는 package.json 분석)를 기반으로 **분석 카테고리를 동적 선택**
 2. 프로젝트 코드를 실제로 읽고 (주요 디렉토리에서 2-3개 파일 샘플링) 패턴 분석
-3. 결과를 `.claude/coding-profile.md`에 저장
+3. 결과를 `.candidate/profile.md`에 저장 (레거시 `.claude/coding-profile.md` 는 폴백으로만)
 4. 사용자에게 결과 보여주고 수정 여부 확인
 
 **스택별 분석 카테고리 (동적 선택):**
@@ -58,7 +58,7 @@ $ARGUMENTS --profile → 코딩 프로필 생성만 실행 (아래 "코딩 프�
 
 **참조 템플릿:** `${CLAUDE_PLUGIN_ROOT}/.candidate/code-analysis-prompt.md` (React/TS 예시)
 
-**생성 경로:** `.claude/coding-profile.md` (local) 또는 `~/.claude/coding-profile.md` (global)
+**생성 경로:** `.candidate/profile.md` (local, 우선) 또는 `~/.claude/coding-profile.md` (global, 레거시 폴백)
 
 ---
 

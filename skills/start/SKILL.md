@@ -473,8 +473,6 @@ gh pr create \
 ## Test plan
 - [ ] lint/build 통과
 - [ ] {테스트 결과}
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```

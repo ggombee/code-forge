@@ -8,7 +8,7 @@ alwaysApply: true
 
 ## 1. Coding Profile
 
-프로젝트 루트에 `.claude/coding-profile.md`가 있으면 참조한다. 없으면 이 섹션을 건너뛴다.
+프로젝트 루트에 `.candidate/profile.md`(우선) 또는 레거시 `.claude/coding-profile.md`가 있으면 참조한다. 없으면 이 섹션을 건너뛴다.
 
 코딩 프로필에는 팀/개인의 코딩 철학, 트레이드오프 판단 기준이 기록되어 있다.
 `/setup` 실행 시 생성할 수 있다.

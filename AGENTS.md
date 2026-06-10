@@ -113,7 +113,6 @@ Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/s
 | `/figma-to-code` | Figma 디자인 → 코드 변환 |
 | `/crawler` | Playwright 크롤링 설계 |
 | `/startup-validator` | 새 서비스 아이디어 검증 |
-| `/gemini` | Gemini CLI 래퍼 |
 
 ---
 

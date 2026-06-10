@@ -34,7 +34,7 @@ claude plugin install code-forge
 1. `/setup` → 스택 감지 → CLAUDE.md + AGENTS.md 자동 생성
 2. 스택에 맞는 모듈(컨벤션)이 에이전트에 주입
 3. `/code-forge:smith-create-agent` → 프로젝트 전용 에이전트에 사고모델(Blueprint) 임베딩 (setup에서 자동 호출됨)
-4. `/code-forge:setup --profile` → 프로젝트 코딩 스타일 분석 → `.claude/coding-profile.md` 생성
+4. `/code-forge:setup --profile` → 프로젝트 코딩 스타일 분석 → `.candidate/profile.md` 생성
 
 ## 핵심 워크플로우
 
@@ -43,7 +43,7 @@ claude plugin install code-forge
 /done                   → 이미 구현된 코드 검증 → 커밋 → PR
 /bug-fix "에러 메시지"   → 2-3 옵션 → 선택 → 수정
 /setup                  → 스택 감지 → CLAUDE.md + AGENTS.md 생성
-/setup --profile        → 코딩 스타일 분석 → coding-profile.md 생성
+/setup --profile        → 코딩 스타일 분석 → .candidate/profile.md 생성
 ```
 
 ## 에이전트 (14개, 4단계 권한)
@@ -135,7 +135,7 @@ Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵�
 
 외부 도구는 파일 직독 금지. `bin/forge status --json` surface 경유 (Phase H 예정).
 
-## 스킬 (20개 — v4.2, 2026-06-08 /voice 추가)
+## 스킬 (19개 — v4.2, 2026-06-08 /voice 추가, /gemini 아카이브)
 
 ### 핵심 워크플로우 (사용자 직접 호출)
 
@@ -161,7 +161,6 @@ Blueprint(사고모델)가 인라인 임베딩되어 플러그인 없이도 핵�
 | `/figma-to-code` | Figma 디자인 → 코드 변환 |
 | `/crawler` | Playwright 크롤링 설계 |
 | `/startup-validator` | 새 서비스 아이디어 검증 |
-| `/gemini` | Gemini CLI 래퍼 |
 
 ### v4.0 폐지 스킬 / 모듈 17개 / 프리셋 3개
 

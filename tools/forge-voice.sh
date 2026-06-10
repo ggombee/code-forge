@@ -15,6 +15,8 @@
 #   WHISPER_MODEL          — 모델 경로 (기본 ~/.whisper/models/ggml-small.bin)
 #   WHISPER_LANG           — 언어 코드 (기본 ko, en, ja, auto)
 #   FORGE_VOICE_AUTO_PASTE — 1 시 자동 paste (기본 1, 0이면 클립보드만)
+#   FORGE_VOICE_AUTO_SUBMIT— 1 시 paste 후 Enter 자동 입력 (기본 1, hands-free 완성)
+#   WHISPER_BIN            — whisper 바이너리 (기본 자동 탐지: whisper-cli/whisper-cpp/main)
 #   VOICE_POST_PROCESS     — 1 시 Claude Haiku로 후처리 (ANTHROPIC_API_KEY 필요)
 #   FORGE_VOICE_STATE_DIR  — 상태 파일 위치 (기본 ~/.local/share/forge-voice)
 #
@@ -33,7 +35,10 @@ set -e
 # ── 설정 ────────────────────────────────────────────────────
 WHISPER_MODEL="${WHISPER_MODEL:-$HOME/.whisper/models/ggml-small.bin}"
 WHISPER_LANG="${WHISPER_LANG:-ko}"
+# whisper 바이너리 자동 탐지 — brew 최신은 whisper-cli, 구버전은 whisper-cpp/main
+WHISPER_BIN="${WHISPER_BIN:-$(command -v whisper-cli || command -v whisper-cpp || command -v whisper || command -v main || echo whisper-cpp)}"
 FORGE_VOICE_AUTO_PASTE="${FORGE_VOICE_AUTO_PASTE:-1}"
+FORGE_VOICE_AUTO_SUBMIT="${FORGE_VOICE_AUTO_SUBMIT:-1}"
 STATE_DIR="${FORGE_VOICE_STATE_DIR:-$HOME/.local/share/forge-voice}"
 WAV_FILE="$STATE_DIR/recording.wav"
 PID_FILE="$STATE_DIR/sox.pid"
@@ -48,7 +53,10 @@ need() {
 
 check_deps() {
   need sox sox
-  need whisper-cpp whisper-cpp
+  command -v "$WHISPER_BIN" >/dev/null 2>&1 || {
+    echo "❌ whisper 바이너리 없음 (whisper-cli/whisper-cpp/main) — brew install whisper-cpp"
+    exit 1
+  }
   [ -f "$WHISPER_MODEL" ] || {
     echo "❌ Whisper 모델 없음: $WHISPER_MODEL"
     echo "   다운로드: mkdir -p ~/.whisper/models && curl -fsSL -o '$WHISPER_MODEL' \\"
@@ -106,8 +114,9 @@ cmd_once() {
   rm -f "$WAV_FILE"
   notify "🎙️ 녹음 시작 — 1초 침묵 시 자동 종료"
   # silence: trigger when 1 burst of sound > 0.1s, end after 1 burst of silence > 1.5s at <3% threshold
+  # set -e 하에서도 sox 실패가 빈 파일 안내를 건너뛰지 않도록 || true 로 스코프
   sox -d -V0 -r 16000 -c 1 -b 16 "$WAV_FILE" \
-    silence 1 0.1 3% 1 1.5 3% >/dev/null 2>&1
+    silence 1 0.1 3% 1 1.5 3% >/dev/null 2>&1 || true
 
   if [ ! -s "$WAV_FILE" ]; then
     notify "⚠️ 녹음 실패 (마이크 권한 확인)"
@@ -137,7 +146,7 @@ cmd_status() {
 transcribe_and_paste() {
   # whisper.cpp 실행 (txt 출력)
   local out="$STATE_DIR/recording"
-  whisper-cpp -m "$WHISPER_MODEL" -l "$WHISPER_LANG" \
+  "$WHISPER_BIN" -m "$WHISPER_MODEL" -l "$WHISPER_LANG" \
     -otxt -of "$out" -f "$WAV_FILE" \
     -np -nt >/dev/null 2>&1 || {
     notify "❌ Whisper 변환 실패"
@@ -171,6 +180,16 @@ transcribe_and_paste() {
     else
       osascript -e 'tell application "System Events" to keystroke "v" using command down' 2>/dev/null || true
     fi
+    # 자동 제출 (Enter) — hands-free 완성. FORGE_VOICE_AUTO_SUBMIT=0 으로 끔
+    if [ "$FORGE_VOICE_AUTO_SUBMIT" = "1" ]; then
+      sleep 0.1
+      if command -v cliclick >/dev/null 2>&1; then
+        cliclick kp:return >/dev/null 2>&1 || \
+          osascript -e 'tell application "System Events" to key code 36' 2>/dev/null || true
+      else
+        osascript -e 'tell application "System Events" to key code 36' 2>/dev/null || true
+      fi
+    fi
   fi
 
   notify "✅ $(printf '%.60s' "$text")$([[ ${#text} -gt 60 ]] && echo '…')"
@@ -186,7 +205,7 @@ post_process() {
     -H "anthropic-version: 2023-06-01" \
     -H "content-type: application/json" \
     -d "$(jq -n --arg t "$raw" '{
-      model: "claude-haiku-4-5-20251001",
+      model: "claude-haiku-4-5",
       max_tokens: 500,
       messages: [{
         role: "user",
