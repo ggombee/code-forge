@@ -51,6 +51,14 @@ case "$CMD" in
     USAGE_TOTAL=0
     [ -f "$USAGE_LOG" ] && USAGE_TOTAL=$(wc -l < "$USAGE_LOG" | tr -d ' ')
 
+    # 실시간 라우팅 스냅샷 (v1-ADDITIVE — event-schema.md §1 HYBRID transport)
+    # route.json 없거나 jq 없거나 파싱 불가면 null — 소비자(parse-forge)는 미지 필드 무시
+    ROUTE="null"
+    if [ -f "$STATE_DIR/route.json" ] && command -v jq >/dev/null 2>&1; then
+      ROUTE=$(jq -c . "$STATE_DIR/route.json" 2>/dev/null) || ROUTE="null"
+      [ -z "$ROUTE" ] && ROUTE="null"
+    fi
+
     # 버전
     VERSION=$(grep -o '"version": *"[^"]*"' "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/.claude-plugin/plugin.json" 2>/dev/null | head -1 | grep -o '"[^"]*"$' | tr -d '"')
 
@@ -74,7 +82,8 @@ case "$CMD" in
   },
   "usage": {
     "total_events": $USAGE_TOTAL
-  }
+  },
+  "route": $ROUTE
 }
 JSON
     else
@@ -100,16 +109,39 @@ JSON
     grep -o '"version": *"[^"]*"' "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/.claude-plugin/plugin.json" 2>/dev/null | head -1 | grep -o '"[^"]*"$' | tr -d '"'
     ;;
 
+  emit-event)
+    # 실시간 라우팅 스냅샷 갱신 — docs/contracts/event-schema.md §1 (HYBRID, latest-only)
+    # stdin으로 forge-event JSON 1개를 받아 .claude/state/route.json에 원자적 덮어쓰기(mv).
+    # 히스토리는 쌓지 않는다 — 누적 지표는 usage.jsonl/quality.jsonl 담당.
+    if ! command -v jq >/dev/null 2>&1; then
+      echo "emit-event: jq 필요 (brew install jq)" >&2; exit 1
+    fi
+    INPUT=$(cat)
+    if ! echo "$INPUT" | jq -e 'type == "object"' >/dev/null 2>&1; then
+      echo "emit-event: stdin이 유효한 JSON 객체가 아님" >&2; exit 1
+    fi
+    mkdir -p "$STATE_DIR"
+    if echo "$INPUT" | jq -c --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        '.schema_version //= "1" | .ts //= $ts | .producer //= "bin/forge emit-event"' \
+        > "$STATE_DIR/.route.json.tmp" 2>/dev/null; then
+      mv "$STATE_DIR/.route.json.tmp" "$STATE_DIR/route.json"
+    else
+      rm -f "$STATE_DIR/.route.json.tmp"
+      echo "emit-event: 쓰기 실패" >&2; exit 1
+    fi
+    ;;
+
   help|--help|-h)
     cat <<HELP
 forge — code-forge 플러그인 CLI
 
 Usage:
-  forge status [--json]   현재 상태 요약
+  forge status [--json]   현재 상태 요약 (route 스냅샷 포함)
+  forge emit-event        stdin JSON → .claude/state/route.json 원자 갱신 (latest-only)
   forge version           플러그인 버전
   forge help              이 메시지
 
-Contract: docs/contracts/state-schema.md
+Contract: docs/contracts/state-schema.md, docs/contracts/event-schema.md
 HELP
     ;;
 

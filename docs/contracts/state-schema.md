@@ -11,6 +11,8 @@
 | ver | 날짜 | 변경 |
 |-----|-----|------|
 | 1.0 | 2026-04-14 | 초기 명세 |
+| 1.1 | 2026-05-17 | §5 progress.md 신설 (G3), G3.5 4섹션 확장 |
+| 1.2 | 2026-06-12 | §6 route.json 신설 (HYBRID transport — event-schema.md §1). schema_version은 "1" 유지 (v1-additive) |
 
 버전이 올라가면 `.claude/state/schema-version` 파일에 숫자 기록.
 
@@ -23,6 +25,8 @@
 ├── schema-version        # "1" (단일 줄)
 ├── reflect.flag          # (존재 시) 품질 검증 실패 상태
 ├── quality.jsonl         # (append) 검증 이벤트 로그
+├── progress.md           # (옵션) 작업 이어가기 + 의사결정 누적 (§5)
+├── route.json            # (옵션) 실시간 라우팅 스냅샷 — latest-only 덮어쓰기 (§6)
 ├── notepad.md            # (옵션) 현재 작업 메모 (사용자 수정 OK)
 └── decisions.md          # (옵션) 설계 결정 누적 기록
 ```
@@ -214,6 +218,18 @@ failed_files:
 **forge-hearth 연동**: 다중 프로젝트 dashboard는 각 repo의 `progress.md`를 stitch해서 "현재 진행 중인 ticket + 미결 질문 1줄 요약" 표시. **미결 질문 있는 ticket은 우선 표시**.
 
 **Hermes H2 (G7) 연결**: 사용자가 미결 질문에 반복적으로 같은 답 패턴 보이면 → `coding-practice/.candidate/profile.md` 자동 누적 후보 (G7 작업).
+
+---
+
+### 6. `route.json` (실시간 라우팅 스냅샷, 2026-06-12 신설 — HYBRID transport)
+
+**목적**: "지금 무슨 모델/effort/role로 도는지" **현재 상태 딱 하나** (latest-only). 히스토리는 쌓지 않는다 — 누적 지표는 `usage.jsonl`/`quality.jsonl` 담당. 형식·필드 사전은 [`event-schema.md`](event-schema.md) §1-§2가 단일 진실.
+
+**쓰는 자**: `bin/forge emit-event` (stdin JSON → 원자적 `mv` 덮어쓰기). 호출 주체는 Phase 2+에서 배선 (/start 라우팅 결정 시점, SubagentStop 등) — 현재는 shadow (수동 호출만).
+
+**읽는 자**: `bin/forge status --json`의 `route` 키 (v1-additive — 파일 직독 금지 규약 준수). 없으면 `null`.
+
+**GC**: 불필요 — 단일 파일 덮어쓰기.
 
 ---
 
