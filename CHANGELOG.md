@@ -5,6 +5,20 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [4.4.0] — 2026-06-12
+
+### 추가
+- **`bin/forge emit-event`** — 실시간 라우팅 스냅샷(`.claude/state/route.json`) 원자 갱신. latest-only 덮어쓰기 — 히스토리는 usage.jsonl/quality.jsonl 담당 (HYBRID transport, event-schema.md §1)
+- **`bin/forge status --json`에 `route` 키** — v1-additive (스키마 범프 없음). route.json 없으면 `null`
+- **`references/routing-policy.md`** — 라우팅 정책 단일 진실: 라우팅 가능한 축(티어/벤더 — 버전은 표시 전용), 핀 정책, effort 정직성(Claude 서브에이전트 상한은 advisory)
+- state-schema.md §6 route.json 등재 + 버전표 1.1/1.2
+
+### 변경
+- `instructions/agent-patterns/model-routing.md` → 포인터 스텁 (구 티어 매트릭스 113줄은 `archive/instructions/` 보존, 참조 3곳 갱신 — codex 에이전트는 이제 더 가벼운 routing-policy를 주입받음)
+
+### 기록
+- **모델 핀 정책 확정 (사용자 결정 ⓐ)**: opus 핀 2개(architect/analyst) 유지 — opus-4-8 고정. haiku 2 + sonnet 10도 비용 격리로 유지. 근거: 티어 별칭은 main 모델이 아니라 티어 최신으로 해석된다는 실측 (2026-06-11)
+
 ## [4.3.0] — 2026-06-12
 
 ### 추가
