@@ -51,10 +51,20 @@ Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/s
 
 ---
 
+## 릴리스 절차 (버전 범프 시 필수)
+
+1. **`CHANGELOG.md` 최상단에 새 버전 섹션** 작성 — 추가/변경/수정/제거, 사용자 관점 패치노트
+2. `.claude-plugin/plugin.json` version 범프 — **CHANGELOG 갱신과 같은 커밋에**
+3. `git push origin main` → `claude plugin update code-forge@forge-market --scope project` (+ `--scope local`)
+4. 캐시(`~/.claude/plugins/cache/forge-market/code-forge/<ver>/`)에서 핵심 변경 1개 spot-check — **"소스 수정 ≠ 배포"** (2026-06-11 교훈: 픽스가 소스에만 있고 캐시는 한 달 stale이었음)
+
+---
+
 ## 금지 작업
 
 | 금지 | 이유 |
 |------|------|
+| **CHANGELOG.md 갱신 없는 버전 범프** | 패치노트 없는 릴리스 — 변경 추적 불가 (§릴리스 절차) |
 | `.claude/agents/` (프로젝트 컴파일 출력) 직접 수정 | smith-build 출력물 — 다음 컴파일 시 덮어씌워짐. 소스는 `.agents/agents/` |
 | `hooks/hooks.json` 수동 수정 후 검증 생략 | JSON 파싱 오류로 훅 전체 비활성화됨 |
 | `rules/` 파일 삭제 | alwaysApply/path-scoped 규칙 — 모든 에이전트 동작에 영향 |
