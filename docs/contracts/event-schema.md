@@ -5,25 +5,31 @@
 
 ---
 
-## 1. Transport (single, canonical)
+## 1. Transport — HYBRID ruling (2026-06-11, owner-confirmed)
 
-- **Sink:** `.claude/state/events.jsonl` — per-project, append-only NDJSON (one forge-event per line). Matches the existing `.claude/state/` convention in `state-schema.md`. **Not** `~/.forge-glow/` (global, mixes projects).
-- **Read API:** `bin/forge route --json` returns the latest reduced snapshot (latest-per-`(agent, thread, role)`). External tools **never** read the file directly — they call the API (honors `state-schema.md` §외부 도구 연동 규약).
-- **Mapper:** one canonical shell mapper `forge-glow/hud/lib/map-event.sh` translates each vendor's raw JSONL into forge-event. Producers stay dumb; one place owns vendor quirks.
+실시간과 기록은 서로 다른 형태가 맞다는 소유자 결정에 따라 transport는 두 축으로 분리한다:
+
+- **실시간(latest-only) — `.claude/state/route.json`:** 현재 상태(모델/effort/role/handoff) 딱 하나를 원자적 덮어쓰기(`mv` rename). 소비자는 `bin/forge status --json`의 **v1-additive `route` 객체**로 읽는다 (별도 `route` 서브커맨드/리듀서 불필요). 외부 도구는 파일 직독 금지 — surface 경유 (honors `state-schema.md` §외부 도구 연동 규약).
+- **기록(누적 지표 — 이행률/사용량/품질):** 신규 일기장을 만들지 않는다. **기존 누적 로그를 수리해 사용**한다 — `~/.code-forge/usage.jsonl`(bellows, name 어트리뷰션 수리 필요)과 `.claude/state/quality.jsonl`. 히스토리 대시보드(stats TUI/hearth)는 이쪽을 소비.
+- **Mapper:** one canonical shell mapper `forge-glow/hud/lib/map-event.sh` translates each vendor's raw JSONL into the forge-event shape (§2) before writing `route.json`. Producers stay dumb; one place owns vendor quirks.
+
+> **DEFERRED (정보보존 — 삭제 아님):** 원안의 `.claude/state/events.jsonl` append-only NDJSON + reducer + `bin/forge route --json` 서브커맨드는 **2nd consumer(이벤트 히스토리를 실소비하는 주체)가 실존할 때 재개**한다. 소비자 0인 채 무한 append하는 shadow는 켜지 않는다 (GC 미설계 상태). 원안 스펙 본문은 본 문서 git 히스토리(2026-06-08판)에 보존.
 
 ---
 
 ## 2. The event shape
 
 ```jsonc
-// one forge-event per line in .claude/state/events.jsonl
+// the forge-event shape — current snapshot lives in .claude/state/route.json (§1)
 {
   "schema_version": "1",              // string; forward-compat guard. NEVER bumped for additive fields (see §4)
   "ts": "2026-06-08T12:34:56Z",       // ISO8601 emit time
   "agent": "claude",                  // "claude" | "codex" | <subagent type>
-  "model": "opus",                    // TIER (coarse): haiku|sonnet|opus|<codex tier>|unknown — for pricing/grouping/routing
-  "model_version": "claude-opus-4-8", // EXACT id, VERBATIM from source, or null. DISPLAY/PROVENANCE ONLY — never a routing knob (see §5)
-  "effort_level": "high",             // low|medium|high|xhigh|max | null  (FR2)
+  "model": "fable",                   // TIER (coarse): haiku|sonnet|opus|fable|<codex tier>|unknown — for pricing/grouping/routing
+  "model_version": "claude-fable-5[1m]", // EXACT id, VERBATIM from source, or null. DISPLAY/PROVENANCE ONLY — never a routing knob (see §5)
+  "effort_level": "high",             // low|medium|high|xhigh|max|ultracode | null  (FR2)
+                                      //   ※ API effort enum은 low~max 5종. ultracode는 Claude Code 하니스 전용 레벨
+                                      //     (xhigh + 워크플로우 오케스트레이션) — verbatim 기록, API param으로 전달 금지
   "role": "coder",                    // planner|coder|reviewer|critic | null  (FR3)
   "turn": 12,                         // int turn/iteration counter
   "session_id": "abc123",             // session id
@@ -51,7 +57,7 @@
 ## 3. Vendor → event mapping (verified on-disk source paths)
 
 ### Claude (`~/.claude/projects/**/*.jsonl`, incl. subagents)
-- `model_version` ← `.message.model` (exact id, e.g. `claude-opus-4-8` / `claude-opus-4-7` / `claude-sonnet-4-6`). `model` (tier) ← data-driven lookup keyed off that id.
+- `model_version` ← `.message.model` (exact id, e.g. `claude-fable-5[1m]` / `claude-opus-4-8` / `claude-sonnet-4-6` — 리터럴 핀 금지, verbatim). `model` (tier) ← data-driven lookup keyed off that id (fable/opus/sonnet/haiku 키워드 매칭, 신규 티어 우선).
 - `usage` ← `.message.usage.{input_tokens, cache_read_input_tokens, cache_creation_input_tokens, output_tokens}`, summed per session; `reasoning` = 0.
 - `effort_level` / `role`: **absent from the transcript** (only `thinking` blocks exist). Sourced from the **harness sidecar** (§3 sidecar), never scraped. `null` when no sidecar.
 
@@ -78,7 +84,9 @@
 
 ## 5. `model_version` is display-only (FR1 honest finding)
 
-Per-task / per-subagent Opus-version pinning (4.8 vs 4.7 vs 4.6) is **NOT supported** by the harness — the Agent `model` param is a tier-alias slot (`haiku`/`sonnet`/`opus`), not a full-id slot. The only real version knob is the session-global `settings.json` `"model"` (changed via `/model`).
+Per-task / per-subagent Opus-version pinning (4.8 vs 4.7 vs 4.6) is **NOT supported** by the harness — the Agent `model` param is a tier-alias slot (`haiku`/`sonnet`/`opus`/`fable`), not a full-id slot. The only real version knob is the session-global `settings.json` `"model"` (changed via `/model`).
+
+**실측 (2026-06-11, main=claude-fable-5[1m] 환경):** `model: opus` 핀 서브에이전트의 transcript `.message.model` = `claude-opus-4-8` — 티어 별칭은 **main 세션 모델이 아니라 해당 티어의 최신 모델**로 해석된다. 따라서 핀 제거 시 서브에이전트는 main(Fable, 2x 단가)을 상속하고, 핀 유지 시 티어 최신에 머문다 — 핀은 비용 통제 수단으로 유효.
 
 Therefore `model_version` is captured **verbatim** purely so the HUD can display the truth (`🧠 Opus 4.8 @ high`). Routing decisions are made on `model` (tier) + `agent` (vendor) only. See `OVERHAUL_PLAN.md` §6 FR1.
 
@@ -90,4 +98,4 @@ Therefore `model_version` is captured **verbatim** purely so the HUD can display
 
 ---
 
-_Last verified: 2026-06-08. Owner: code-forge contracts. Consumed by: forge-glow (Phase 5+), forge-hearth (new feature, deferred)._
+_Last verified: 2026-06-11 (transport HYBRID ruling + fable/ultracode enum + opus-alias 실측). Owner: code-forge contracts. Consumed by: forge-glow (Phase 5+), forge-hearth (new feature, deferred)._
