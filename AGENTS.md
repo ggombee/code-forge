@@ -1,7 +1,10 @@
 # AGENTS.md — code-forge Agent Instructions
 
 이 파일은 AAIF(Agent Architecture Instruction Format) 표준에 따라 작성되었다.
-AI 에이전트가 이 저장소에서 작업할 때 반드시 준수해야 할 규칙을 정의한다.
+AI 에이전트(Codex/Cursor 포함)가 이 저장소에서 작업할 때 준수해야 할 규칙을 정의한다.
+
+> **카탈로그(에이전트/스킬/훅/규칙 표)는 여기 없다** — 단일 소스 [`docs/REFERENCE.md`](docs/REFERENCE.md) 참조.
+> 이 파일은 멀티모델 진입점 델타(수정 규칙 + 금지 작업)만 유지한다 (2026-06-12 H1 dedup).
 
 ---
 
@@ -9,16 +12,16 @@ AI 에이전트가 이 저장소에서 작업할 때 반드시 준수해야 할 
 
 ```
 code-forge/
-├── agents/          # 컴파일된 에이전트 .md (직접 수정 금지 — smith-build 사용)
-├── docs/            # 설계 원칙, 가이드 문서
+├── agents/          # 플러그인 에이전트 .md (직접 편집 가능)
+├── docs/            # 설계 원칙, 가이드, REFERENCE.md(카탈로그 단일 소스)
 ├── hooks/           # Claude Code 훅 스크립트
 ├── instructions/    # 멀티에이전트 협업 가이드
 ├── modules/         # 스택별 컨벤션 모듈
-├── plugins/smith/   # Smith 빌드 시스템 (에이전트 소스)
-├── presets/         # 스택 프리셋 (standard, modern-stack)
-├── rules/           # 사고 모델 + 코딩 표준 (alwaysApply)
-├── skills/          # 스킬 커맨드 (/start, /done 등)
-├── CLAUDE.md        # 플러그인 메인 설명서
+├── plugins/smith/   # Smith 빌드 시스템 (프로젝트 에이전트 소스)
+├── presets/         # 스택 프리셋
+├── rules/           # 사고 모델 + 코딩 표준
+├── skills/          # 스킬 커맨드 (/start, /handoff 등 — 목록은 REFERENCE.md)
+├── CLAUDE.md        # 플러그인 메인 설명서 (포인터 중심)
 └── AGENTS.md        # 이 파일
 ```
 
@@ -44,92 +47,7 @@ code-forge/
 2. /code-forge:smith-build --project → .claude/agents/ 컴파일
 ```
 
-Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/smith/agents/state/`, `plugins/smith/agents/act/`에 있다.
-
----
-
-## 에이전트 목록 (14개, 4단계 권한)
-
-### READ-ONLY (Read/Grep/Glob만 허용)
-
-| 에이전트 | 모델 | 용도 |
-|---------|------|------|
-| `analyst` | opus | 요구사항 분석, 누락 사항 발견 |
-| `architect` | opus | 아키텍처 분석, 설계 자문 |
-| `refactor-advisor` | sonnet | 리팩토링 전략 분석 |
-| `vision` | sonnet | 이미지/PDF/다이어그램 분석 |
-
-### SHELL-ACCESS (+ Bash, Write/Edit 없음)
-
-| 에이전트 | 모델 | 용도 |
-|---------|------|------|
-| `scout` | haiku | 코드베이스 빠른 탐색 |
-| `code-reviewer` | sonnet | 코드 리뷰 (품질+보안) |
-| `git-operator` | sonnet | Git 커밋/브랜치 관리 |
-| `researcher` | sonnet | 외부 문서/라이브러리 조사 |
-
-### EDIT-ONLY (+ Edit, Write 없음)
-
-| 에이전트 | 모델 | 용도 |
-|---------|------|------|
-| `lint-fixer` | haiku | ESLint/TypeScript 오류 자동 수정 |
-| `build-fixer` | sonnet | 빌드/컴파일 오류 수정 |
-
-### READ-WRITE-FULL (Write 포함 전체)
-
-| 에이전트 | 모델 | 용도 |
-|---------|------|------|
-| `implementor` | sonnet | 계획 기반 즉시 구현 |
-| `deep-executor` | sonnet | 자율적 심층 구현 |
-| `assayer` | sonnet | 테스트 생성 (generate/tdd 모드) |
-| `codex` | sonnet | Codex 페어 프로그래밍 (MCP/CLI 듀얼) |
-
----
-
-## 스킬 (17개)
-
-### 사용자 직접 호출
-
-| 커맨드 | 동작 |
-|--------|------|
-| `/start` | MD 또는 텍스트 → 분석 → 구현 → 검증 → 커밋 → PR |
-| `/done` | 구현 완료 후 검증 → 커밋 → PR |
-| `/bug-fix` | 버그 분석 후 2-3가지 옵션 제시 |
-| `/refactor` | 리팩토링 + 정책 보호 테스트 |
-| `/generate-test` | BDD 시나리오 기반 테스트 생성 |
-| `/debate` | 교차 모델 토론 |
-| `/research` | 구조화된 리서치 |
-| `/setup` | 스택 감지 + CLAUDE.md + AGENTS.md 생성 |
-| `/codex` | Codex 페어 프로그래밍 |
-
-### 자동 호출 (user-invocable: false)
-
-| 커맨드 | 동작 |
-|--------|------|
-| `/quality` | 포맷 → 린트 → 타입 체크 (훅 백업용) |
-| `/stats` | 사용량 통계 (관리자용) |
-| `/setup-test` | 테스트 환경 초기 세팅 |
-| `/setup-agent-teams` | Agent Teams 설정 |
-| `/figma-to-code` | Figma 디자인 → 코드 변환 |
-| `/crawler` | Playwright 크롤링 설계 |
-| `/startup-validator` | 새 서비스 아이디어 검증 |
-
----
-
-## Hooks
-
-| 이벤트 | 스크립트 | 동작 |
-|--------|---------|------|
-| `SessionStart` | `session-init.sh`, `bellows-log.sh` | 세션 초기화 + 버전 체크 + 로깅 |
-| `PreToolUse Bash` | `guard.sh` + prompt | 위험 명령 차단 |
-| `PreToolUse Write` | `write-guard.sh` | .env/인증서/자격증명 파일 차단 |
-| `PreToolUse Write (SKILL.md)` | `skill-dedup.sh` + prompt | 새 스킬 생성 시 중복 검사 |
-| `PostToolUse Edit\|Write` | `lint-fix.sh` | 자동 ESLint --fix + Prettier |
-| `PostToolUse Agent\|Skill` | `bellows-log.sh` | 사용 로깅 → ~/.code-forge/usage.jsonl |
-| `Stop` | `quality-gate.sh`, `notify.sh` | ESLint + TypeScript 검증 + Mac 알림 |
-| `SubagentStop` | `subagent-stop.sh` | 구현 에이전트 완료 시 tsc 검증 |
-| `PreCompact` | `pre-compact.sh` | 컨텍스트 압축 전 상태 스냅샷 |
-| `PermissionRequest` | `permission-guard.sh` | 권한 요청 검증 |
+Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/smith/agents/state/`, `plugins/smith/agents/act/`.
 
 ---
 
@@ -137,34 +55,22 @@ Smith 빌드는 프로젝트 에이전트 전용. STATE/ACT 부품은 `plugins/s
 
 | 금지 | 이유 |
 |------|------|
-| `agents/` 직접 수정 | Smith 빌드 출력물 — 다음 컴파일 시 덮어씌워짐 |
+| `.claude/agents/` (프로젝트 컴파일 출력) 직접 수정 | smith-build 출력물 — 다음 컴파일 시 덮어씌워짐. 소스는 `.agents/agents/` |
 | `hooks/hooks.json` 수동 수정 후 검증 생략 | JSON 파싱 오류로 훅 전체 비활성화됨 |
-| `rules/` 파일 삭제 | `alwaysApply` 규칙 — 모든 에이전트 동작에 영향 |
+| `rules/` 파일 삭제 | alwaysApply/path-scoped 규칙 — 모든 에이전트 동작에 영향 |
 | `presets/` 스키마 변경 | `/setup` 스킬 파싱 오류 유발 |
-| 민감한 파일(.env, credentials) 커밋 | `write-guard.sh`가 차단하지만 직접 커밋은 차단 안 됨 |
+| 민감한 파일(.env, credentials) 커밋 | `write-guard.sh`가 Write를 차단하지만 직접 커밋은 차단 안 됨 |
+| 폐지 스킬(/done /bug-fix /refactor /quality)을 문서/표에 재추가 | v4.0에서 규칙·훅으로 흡수됨 — 대체 매핑은 `docs/CATALOG.md` |
+| 에이전트/스킬 개수를 손으로 세서 문서에 박기 | 3중 불일치 사고(17/19/21, 2026-06-11 검출) 재발 방지 — 산출 명령 표기 |
 
 ---
 
-## 규칙
+## 카탈로그 참조 (단일 소스)
 
-(2026-05-17 redesign G2: 실제 frontmatter와 일치하도록 표 분류 정정)
-
-| 파일 | 적재 시점 | 적용 범위 |
-|------|---|----------|
-| `rules/thinking-model.md` | **alwaysApply** | GROUND→APPLY→VERIFY→ADAPT 루프. 불변 제약 5가지. 가정 분류(A/B/C). |
-| `rules/candidate-profile.md` | **alwaysApply** | 프로젝트 코딩 프로필 (.candidate/profile.md) 참조 규칙 |
-| `rules/coding-standards.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 코딩 표준, 네이밍, 금지 패턴, import 순서 |
-| `rules/build-guide.md` | path-scoped (`*.{tsx,jsx}`) | React 패턴, Hook 규칙, TypeScript 패턴 |
-| `rules/review-guide.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 설계 철학, 안티패턴, 성능 최적화 |
-
----
-
-## 멀티에이전트 협업
-
-3개 이상 에이전트 협업 시 Agent Teams 사용:
-
-```
-TeamCreate → 팀원 spawn → 병렬 작업 → shutdown → TeamDelete
-```
-
-상세 가이드: `instructions/multi-agent/coordination-guide.md`
+| 찾는 것 | 위치 |
+|---------|------|
+| 에이전트 목록 (4단계 권한 + 모델 핀) | `docs/REFERENCE.md` §에이전트 |
+| 스킬 목록 (직접/자동 호출) | `docs/REFERENCE.md` §스킬 |
+| 훅 + quality-gate + State Layer | `docs/REFERENCE.md` §Hooks~ |
+| 규칙 적재 시점 (alwaysApply/path-scoped) | `docs/REFERENCE.md` §규칙 적재 |
+| 멀티에이전트 협업 (Agent Teams) | `docs/REFERENCE.md` §멀티에이전트 + `instructions/multi-agent/coordination-guide.md` |
