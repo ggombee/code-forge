@@ -2,7 +2,21 @@
 # skill-dedup.sh — 새 SKILL.md 생성 시 기존 스킬과 중복 검사
 # PreToolUse (Write) 훅에서 실행. SKILL.md 파일에만 반응.
 
-FILE_PATH="${TOOL_INPUT_FILE_PATH:-}"
+# stdin JSON 파싱 (Claude Code hooks는 stdin으로 JSON 전달 — guard.sh와 동일 패턴)
+INPUT=$(cat)
+FILE_PATH=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(d.get('tool_input', {}).get('file_path', ''))
+except:
+    print('')
+" 2>/dev/null)
+
+# 폴백: 환경변수 방식 (구버전 호환)
+if [ -z "$FILE_PATH" ]; then
+  FILE_PATH="${TOOL_INPUT_FILE_PATH:-}"
+fi
 if [ -z "$FILE_PATH" ] && [ -n "${TOOL_INPUT:-}" ]; then
   FILE_PATH=$(echo "$TOOL_INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//' | sed 's/"$//')
 fi
