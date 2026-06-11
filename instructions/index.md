@@ -23,7 +23,7 @@ instructions/
 ├── index.md                          # 이 파일
 ├── agent-patterns/
 │   ├── parallel-execution.md         # 병렬 실행 패턴 (Read Tool 특화 포함)
-│   ├── model-routing.md              # 모델 선택 기준
+│   ├── model-routing.md              # (스텁) → references/routing-policy.md로 이전
 │   └── agent-teams-usage.md          # Agent Teams 활용
 ├── multi-agent/
 │   ├── coordination-guide.md         # 병렬 실행 핵심 원칙
@@ -44,7 +44,7 @@ instructions/
 | 문서                    | 용도                                    | 사용 시점                |
 | ----------------------- | --------------------------------------- | ------------------------ |
 | `parallel-execution.md` | 독립 작업 동시 실행 원칙 + Read Tool 병렬화 | 병렬 실행 필요 시        |
-| `model-routing.md`      | 복잡도별 모델 선택 (haiku/sonnet/opus)  | 에이전트 모델 선택 시    |
+| `references/routing-policy.md` | 라우팅 정책 단일 진실 (축/핀/effort — 구 model-routing 대체) | 에이전트 모델 선택 시 |
 | `agent-teams-usage.md`  | Agent Teams 7단계 흐름                  | Agent Teams 사용 시      |
 
 ### Multi-Agent

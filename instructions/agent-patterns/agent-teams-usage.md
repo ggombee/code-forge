@@ -121,5 +121,5 @@ TeamDelete();
 | `${CLAUDE_PLUGIN_ROOT}/instructions/multi-agent/coordination-guide.md` | 역할 템플릿, 모델 라우팅 |
 | `${CLAUDE_PLUGIN_ROOT}/instructions/multi-agent/teammate-done-process.md` | 팀원 완료 프로세스 |
 | `${CLAUDE_PLUGIN_ROOT}/instructions/multi-agent/team-evaluation.md` | 팀원 평가 기준 |
-| `${CLAUDE_PLUGIN_ROOT}/instructions/agent-patterns/model-routing.md` | 모델 선택 기준 |
+| `${CLAUDE_PLUGIN_ROOT}/references/routing-policy.md` | 라우팅 정책 (모델 선택 기준) |
 | `${CLAUDE_PLUGIN_ROOT}/instructions/agent-patterns/parallel-execution.md` | 병렬 실행 패턴 |

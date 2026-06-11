@@ -10,7 +10,7 @@ maxTurns: 50
 
 @${CLAUDE_PLUGIN_ROOT}/instructions/agent-patterns/agent-teams-usage.md
 @${CLAUDE_PLUGIN_ROOT}/instructions/agent-patterns/parallel-execution.md
-@${CLAUDE_PLUGIN_ROOT}/instructions/agent-patterns/model-routing.md
+@${CLAUDE_PLUGIN_ROOT}/references/routing-policy.md
 @${CLAUDE_PLUGIN_ROOT}/instructions/validation/forbidden-patterns.md
 @${CLAUDE_PLUGIN_ROOT}/rules/thinking-model.md
 
