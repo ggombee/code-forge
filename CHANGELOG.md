@@ -5,6 +5,20 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [4.6.0] — 2026-06-12
+
+### 추가 (마스터플랜 2단계 — "작업 시작할 때 길안내 (Foreman)")
+- **Foreman 관문** — 자연어 작업성 발화("만들어줘/구현해줘/추가해줘" 등) 감지 시 "① /start로 정식 진행 ② 그냥 진행(복잡도 LOW/MED/HIGH + 권장 effort 명시)" 선택지를 모델이 1회 제시하도록 컨텍스트 주입. **세션당 1회**(스로틀 마커), 슬래시 명령·10자 미만 발화엔 침묵. 강제 아님 — 영구 휴면이던 auto-flow-trigger.sh(UserPromptSubmit) 재활용
+- **완료 시점 마무리 제안** — 턴 종료 시 변경 파일이 있는데 progress.md가 1시간 내 미갱신이면 다음 프롬프트에서 "progress 정리 또는 /handoff" 1회 안내. Stop 훅 출력은 모델에 미도달(공식 문서 판정)이라 route.json `wrapup_hint` + 다음-프롬프트 백스톱 구조. quality.jsonl에는 미기록(게이트 통계 오염 방지)
+- **스킬 4종(/start /test /e2e /debate) 발화 트리거 문구** — description에 자연어 트리거 예시 보강 (모델이 스킬을 떠올리는 빈도 개선, /handoff 패턴 복제)
+
+### 변경
+- auto-flow-trigger.sh의 전역 flow CLI 가드를 티켓 분기(C2) 직전으로 강등 — flow 미설치 환경에서도 Foreman(C0/C1)은 동작. 티켓→flow tc select 회로는 동작 무변경
+- 분류용 grep 전체에 `|| true` 가드 — set -e 하 훅 침묵 사망 방지 (적대 검증 must_fix 7)
+
+### 측정 (Foreman 철회 기준의 전제 — 적대 검증 must_fix 4)
+- usage.jsonl `type:skill` 채널 충실도 실측: 기록 2/2 모두 스킬명 정상(`code-forge:start`) — 4주 후 제안→전환 측정에 사용 가능
+
 ## [4.5.0] — 2026-06-12
 
 ### 수정 (마스터플랜 1단계 — "검증이 돌았는지 보이게 + 만년 빨간불 수리")
