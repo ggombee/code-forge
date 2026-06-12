@@ -264,7 +264,8 @@ TC 없음: apps/cargopass-web/src/components/layout/Header.tsx
 ```
 
 **수명주기**:
-- `status: draft` → 사람이 검토 후 `accepted`(규칙으로 승격 — 목적지는 §4-5 사용자 결정) 또는 `rejected`로 수정
+- `status: draft` → 사람이 검토 후 `accepted`(규칙으로 승격) 또는 `rejected`로 수정
+- **승격 목적지 (2026-06-12 사용자 결정 §4-5)**: 해당 프로젝트의 `.candidate/profile.md` (kkombee 채택 — coding-practice의 기존 .candidate 패턴과 동일 구조). 승격 작업 자체도 사람이 수행
 - **rejected slug 재생성 금지** — `forge whet --draft`는 같은 slug의 파일이 존재하면(상태 불문) 건너뜀
 - 자동 삭제 없음 (정보 보존)
 
