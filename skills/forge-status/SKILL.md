@@ -88,11 +88,41 @@ fi
 ```bash
 if [ -f "$HOME/.code-forge/usage.jsonl" ]; then
   echo "=== 이번 주 사용 Top 3 ==="
-  # 7일 이내 에이전트/스킬 집계
+  # 7일 이내 에이전트/스킬 집계 — POSIX awk (gawk 3-인자 match 금지: macOS에서 무동작이었음)
+  # ISO ts는 문자열 비교가 곧 시간 비교
   CUTOFF=$(date -u -v-7d +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d '7 days ago' +"%Y-%m-%dT%H:%M:%SZ")
-  awk -v c="$CUTOFF" '$0 !~ /"ts":"'"$CUTOFF"'"/ && match($0,/"name":"([^"]+)"/,n) { print n[1] }' "$HOME/.code-forge/usage.jsonl" | sort | uniq -c | sort -rn | head -3
+  awk -v c="$CUTOFF" -F'"' '{
+    ts=""; name=""
+    for (i = 1; i < NF; i++) {
+      if ($i == "ts") ts = $(i+2)
+      if ($i == "name") name = $(i+2)
+    }
+    if (ts >= c && name != "") print name
+  }' "$HOME/.code-forge/usage.jsonl" | sort | uniq -c | sort -rn | head -3
 fi
 ```
+
+### 2-6. Whetstone 초안 (있으면 — state-schema §7)
+
+```bash
+if ls .claude/state/whetstone/*.md >/dev/null 2>&1; then
+  echo "=== Whetstone 초안 (채택은 사람이 — status를 accepted/rejected로) ==="
+  for w in .claude/state/whetstone/*.md; do
+    S=$(grep '^status:' "$w" | head -1 | sed 's/^status: *//')
+    C=$(grep '^count:' "$w" | head -1 | sed 's/^count: *//')
+    P=$(sed -n '/^## 반복 패턴/{n;p;}' "$w" | cut -c1-70)
+    printf "%-9s %3s회  %s\n" "[$S]" "$C" "$P"
+  done
+fi
+```
+
+### 2-7. 자가진단 (doctor)
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/bin/forge doctor
+```
+
+4종 보고만 (자동 수리 없음): 주입 회로(route.json 최근성) / 품질 게이트 만년 빨간불(pass==0&&fail>0) / 버전 정합(프로젝트 local.md vs 설치본) / flow CLI 휴면.
 
 ---
 

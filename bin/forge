@@ -31,15 +31,24 @@ case "$CMD" in
       REFLECT_BLOCKS=$(awk '/^failed_blocks:/{flag=1;next}/^[a-z]/{flag=0}flag{sub(/^  - /,"");printf "%s ",$0}' "$STATE_DIR/reflect.flag" | sed 's/ $//')
     fi
 
+    # 집계 화이트리스트 — 게이트 발행 type만 분모 (state-schema §2: self-emit whetstone 등 제외)
+    GATE_TYPES='"type":"(eslint|tsc|test-trigger|reflect)"'
     QUALITY_COUNT=0
     QUALITY_PASS=0
     QUALITY_WARN=0
     QUALITY_FAIL=0
     if [ -f "$STATE_DIR/quality.jsonl" ]; then
-      QUALITY_COUNT=$(wc -l < "$STATE_DIR/quality.jsonl" 2>/dev/null | tr -d ' ')
-      QUALITY_PASS=$(grep -c '"status":"pass"' "$STATE_DIR/quality.jsonl" 2>/dev/null || echo 0)
-      QUALITY_WARN=$(grep -c '"status":"warn"' "$STATE_DIR/quality.jsonl" 2>/dev/null || echo 0)
-      QUALITY_FAIL=$(grep -c '"status":"fail"' "$STATE_DIR/quality.jsonl" 2>/dev/null || echo 0)
+      # grep -c는 0 매치여도 "0"을 출력하고 exit 1 — `|| echo 0`을 붙이면 0이 두 줄 되는 함정
+      QUALITY_COUNT=$(grep -cE "$GATE_TYPES" "$STATE_DIR/quality.jsonl" 2>/dev/null); QUALITY_COUNT=${QUALITY_COUNT:-0}
+      QUALITY_PASS=$(grep -E "$GATE_TYPES" "$STATE_DIR/quality.jsonl" 2>/dev/null | grep -c '"status":"pass"')
+      QUALITY_WARN=$(grep -E "$GATE_TYPES" "$STATE_DIR/quality.jsonl" 2>/dev/null | grep -c '"status":"warn"')
+      QUALITY_FAIL=$(grep -E "$GATE_TYPES" "$STATE_DIR/quality.jsonl" 2>/dev/null | grep -c '"status":"fail"')
+    fi
+
+    # Whetstone 초안 대기 수 (state-schema §7)
+    WHET_DRAFTS=0
+    if [ -d "$STATE_DIR/whetstone" ]; then
+      WHET_DRAFTS=$(grep -l '^status: draft' "$STATE_DIR"/whetstone/*.md 2>/dev/null | wc -l | tr -d ' ')
     fi
 
     NOTEPAD_LINES=0
@@ -78,7 +87,8 @@ case "$CMD" in
     "quality_warn": $QUALITY_WARN,
     "quality_fail": $QUALITY_FAIL,
     "notepad_lines": $NOTEPAD_LINES,
-    "decisions_count": $DECISIONS_COUNT
+    "decisions_count": $DECISIONS_COUNT,
+    "whetstone_drafts": $WHET_DRAFTS
   },
   "usage": {
     "total_events": $USAGE_TOTAL
@@ -99,6 +109,7 @@ JSON
       fi
       echo ""
       echo "Quality events: $QUALITY_COUNT total (pass:$QUALITY_PASS warn:$QUALITY_WARN fail:$QUALITY_FAIL)"
+      [ "$WHET_DRAFTS" -gt 0 ] && echo "Whetstone: 초안 ${WHET_DRAFTS}건 대기 (.claude/state/whetstone/ — 검토 후 accepted/rejected)"
       echo "Notepad: $NOTEPAD_LINES lines"
       echo "Decisions: $DECISIONS_COUNT entries"
       echo "Usage log: $USAGE_TOTAL events"
@@ -141,13 +152,142 @@ JSON
     fi
     ;;
 
+  whet)
+    # Whetstone — quality.jsonl(active+archive)에서 3회+ 반복 패턴 스캔 (state-schema §7)
+    # 분모는 게이트 type 화이트리스트(§2 경합 계약). generic detail(파일 경로 없음)은 제외 —
+    # "린트 오류" 같은 무정보 detail은 규칙 후보가 못 됨.
+    DRAFT=false
+    [ "${1:-}" = "--draft" ] && DRAFT=true
+    if ! command -v jq >/dev/null 2>&1; then
+      echo "whet: jq 필요 (brew install jq)" >&2; exit 1
+    fi
+    # archive(과거) → active(최근) 순으로 읽어야 first_seen/last_seen이 시간순
+    SCAN_FILES=()
+    [ -f "$STATE_DIR/quality.archive.jsonl" ] && SCAN_FILES+=("$STATE_DIR/quality.archive.jsonl")
+    [ -f "$STATE_DIR/quality.jsonl" ] && SCAN_FILES+=("$STATE_DIR/quality.jsonl")
+    if [ ${#SCAN_FILES[@]} -eq 0 ]; then
+      echo "whet: quality.jsonl 없음 — 스캔할 데이터 없음 (graceful skip)"; exit 0
+    fi
+    # detail별 집계: count / first_seen / last_seen / type (입력은 시간순 append라 첫/마지막 ts 사용)
+    CANDIDATES=$(cat "${SCAN_FILES[@]}" 2>/dev/null \
+      | jq -r 'select(.type=="eslint" or .type=="tsc" or .type=="test-trigger")
+               | select(.detail != null and (.detail | contains("/")))
+               | [.type, .ts, .detail] | @tsv' 2>/dev/null \
+      | awk -F'\t' '{
+          d=$3; c[d]++; t[d]=$1; if (!(d in first)) first[d]=$2; last[d]=$2
+        } END {
+          for (d in c) if (c[d] >= 3) printf "%d\t%s\t%s\t%s\t%s\n", c[d], t[d], first[d], last[d], d
+        }' \
+      | sort -rn)
+    if [ -z "$CANDIDATES" ]; then
+      echo "whet: 3회+ 반복 패턴 없음"; exit 0
+    fi
+    echo "=== Whetstone 후보 (3회+ 반복, count 순) ==="
+    echo "$CANDIDATES" | awk -F'\t' '{printf "%3d회  [%s]  %s\n", $1, $2, $5}'
+    if ! $DRAFT; then
+      echo ""
+      echo "초안 생성: forge whet --draft  (.claude/state/whetstone/ — 채택은 사람이)"
+      exit 0
+    fi
+    mkdir -p "$STATE_DIR/whetstone"
+    CREATED=0
+    while IFS=$'\t' read -r CNT TYPE FIRST LAST DETAIL; do
+      # slug: detail의 파일명 우선, 없으면 앞 40자 정규화
+      SLUG=$(echo "$DETAIL" | grep -oE '[A-Za-z0-9_.-]+\.[a-z]{2,4}' | head -1)
+      [ -z "$SLUG" ] && SLUG=$(echo "$DETAIL" | cut -c1-40)
+      SLUG=$(echo "$SLUG" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g; s/--*/-/g; s/^-//; s/-$//')
+      [ -z "$SLUG" ] && continue
+      # 같은 slug 존재 시 스킵 (상태 불문 — rejected slug 재생성 금지, state-schema §7)
+      if ls "$STATE_DIR"/whetstone/*-"$SLUG".md >/dev/null 2>&1; then
+        continue
+      fi
+      DRAFT_FILE="$STATE_DIR/whetstone/$(date -u +%Y-%m-%d)-$SLUG.md"
+      cat > "$DRAFT_FILE" <<DRAFTEOF
+---
+status: draft
+type: $TYPE
+count: $CNT
+first_seen: $FIRST
+last_seen: $LAST
+---
+
+## 반복 패턴
+$DETAIL
+
+## 규칙 후보 (사람이 다듬을 것)
+- {초안 — 채택 전까지 효력 없음. 검토 후 status를 accepted/rejected로}
+DRAFTEOF
+      CREATED=$((CREATED + 1))
+      echo "초안 생성: $DRAFT_FILE"
+      # self-emit — 집계 화이트리스트 밖이라 게이트 지표 미오염 (state-schema §2)
+      printf '{"ts":"%s","sid":"whet","type":"whetstone","status":"pass","detail":"draft: %s (count %s)"}\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$SLUG" "$CNT" >> "$STATE_DIR/quality.jsonl"
+    done <<< "$CANDIDATES"
+    echo ""
+    echo "신규 초안 ${CREATED}건 (기존 slug는 스킵 — 재생성 금지)"
+    ;;
+
+  doctor)
+    # 자가진단 4종 — 보고만, 자동 수리 없음 (마스터플랜 5단계: "연결이 죽었는데 아무도 모르는 상태" 방지)
+    echo "=== forge doctor ==="
+    # 1. 주입 회로 — route.json 최근성 (session-init/quality-gate emit 증거)
+    if [ -f "$STATE_DIR/route.json" ]; then
+      NOW_EPOCH=$(date +%s)
+      ROUTE_MTIME=$(stat -f %m "$STATE_DIR/route.json" 2>/dev/null || stat -c %Y "$STATE_DIR/route.json" 2>/dev/null || echo 0)
+      ROUTE_AGE_D=$(( (NOW_EPOCH - ROUTE_MTIME) / 86400 ))
+      if [ "$ROUTE_AGE_D" -le 7 ]; then
+        echo "✅ 주입 회로: route.json ${ROUTE_AGE_D}일 전 갱신 — emit 회로 살아있음"
+      else
+        echo "🔴 주입 회로: route.json ${ROUTE_AGE_D}일째 미갱신 — session-init/quality-gate emit이 안 도는 중일 수 있음"
+      fi
+    else
+      echo "🔴 주입 회로: route.json 없음 — 세션 시작 주입·게이트 emit 증거 없음 (4.7.0+ 설치본에서 세션 1회 후 재확인)"
+    fi
+    # 2. 만년 빨간불 — 게이트 화이트리스트에서 pass==0 && fail>0 (active+archive)
+    GATE_TYPES='"type":"(eslint|tsc|test-trigger|reflect)"'
+    D_PASS=0; D_FAIL=0
+    for QF in "$STATE_DIR/quality.jsonl" "$STATE_DIR/quality.archive.jsonl"; do
+      [ -f "$QF" ] || continue
+      D_PASS=$((D_PASS + $(grep -E "$GATE_TYPES" "$QF" 2>/dev/null | grep -c '"status":"pass"')))
+      D_FAIL=$((D_FAIL + $(grep -E "$GATE_TYPES" "$QF" 2>/dev/null | grep -c '"status":"fail"')))
+    done
+    if [ "$D_PASS" -eq 0 ] && [ "$D_FAIL" -gt 0 ]; then
+      echo "🔴 품질 게이트: pass 0 / fail ${D_FAIL} — 만년 빨간불 (게이트 설정이 프로젝트와 안 맞을 가능성. 신호가 늑대소년이 됨)"
+    elif [ "$D_PASS" -eq 0 ] && [ "$D_FAIL" -eq 0 ]; then
+      echo "⚪ 품질 게이트: 기록 없음 (이 프로젝트에서 게이트 미가동)"
+    else
+      echo "✅ 품질 게이트: pass ${D_PASS} / fail ${D_FAIL}"
+    fi
+    # 3. 버전 정합 — 프로젝트 local.md 생성 버전 vs 설치본
+    LOCAL_MD="$PROJECT_ROOT/.claude/code-forge.local.md"
+    PLUGIN_VER=$(grep -o '"version": *"[^"]*"' "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/.claude-plugin/plugin.json" 2>/dev/null | head -1 | grep -o '[0-9][0-9.]*')
+    if [ -f "$LOCAL_MD" ]; then
+      LOCAL_VER=$(grep -o 'version: *[0-9][0-9.]*' "$LOCAL_MD" | head -1 | grep -o '[0-9][0-9.]*' || echo "")
+      if [ -n "$LOCAL_VER" ] && [ "$LOCAL_VER" != "${PLUGIN_VER:-}" ]; then
+        echo "🟡 버전 정합: 프로젝트 ${LOCAL_VER} vs 설치본 ${PLUGIN_VER:-?} — /setup 재실행 권장 (매 세션 버전 안내 뜨는 원인)"
+      else
+        echo "✅ 버전 정합: ${LOCAL_VER:-?} == ${PLUGIN_VER:-?}"
+      fi
+    else
+      echo "⚪ 버전 정합: code-forge.local.md 없음 (/setup 미실행 프로젝트)"
+    fi
+    # 4. flow 휴면
+    if command -v flow >/dev/null 2>&1; then
+      echo "✅ flow CLI: 설치됨"
+    else
+      echo "⚪ flow CLI: 미설치 — 휴면 (의도된 보류, 마스터플랜 §3. Foreman/Whetstone이 관문·회고 대행)"
+    fi
+    ;;
+
   help|--help|-h)
     cat <<HELP
 forge — code-forge 플러그인 CLI
 
 Usage:
-  forge status [--json]   현재 상태 요약 (route 스냅샷 포함)
+  forge status [--json]   현재 상태 요약 (route 스냅샷·whetstone 초안 수 포함)
   forge emit-event        stdin JSON → .claude/state/route.json 원자 갱신 (latest-only)
+  forge whet [--draft]    quality.jsonl 3회+ 반복 패턴 스캔 → 규칙 초안 (채택은 사람이)
+  forge doctor            자가진단 4종 (주입 회로/만년 빨간불/버전 정합/flow 휴면) — 보고만
   forge version           플러그인 버전
   forge help              이 메시지
 

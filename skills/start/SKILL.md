@@ -53,7 +53,7 @@ MD 파일 또는 자유 텍스트로 작업을 정의하면, 분석 → 디자�
 | 1-2 (BE URL 감지) | `flow spec capture <URL> --redact --json` | `.policy/api-specs/{endpoint}.md` 생성. type 정의 전 응답 우선 |
 | 3 (정책 매트릭스) | `flow tc select <ticket> --json` 또는 `flow policy diff <ticket>` | 영향 TC + 변경 컴포넌트 자동 식별 |
 | 5 (검증) | `flow run report` + `flow tc verify --stale` + `flow policy lint` | 사이클 결과 + 메타데이터 stale 검증 |
-| 7 (회고) | `flow retro` | 3회+ 반복 패턴 감지 → rule 후보 (G6에서 자동 PR draft 예정) |
+| 7 (회고) | ~~`flow retro`~~ → `forge whet --draft` | 3회+ 반복 패턴 감지 → 규칙 초안 (2026-06-12 교체 — flow 휴면 의존 제거, §7-1) |
 
 자연어 입력에 티켓 ID 패턴(`[A-Z]+-\d+`) 매칭 시 `hooks/auto-flow-trigger.sh` (UserPromptSubmit hook)가 모델 자율 의존 없이 `flow workflow start` / `flow tc select` 강제 호출.
 
@@ -525,17 +525,17 @@ EOF
 - {PR URL}
 ```
 
-### 7-1. flow retro 자동 호출 (redesign G5, 2026-05-19)
+### 7-1. Whetstone 회고 스캔 (2026-06-12 마스터플랜 5단계 — 구 flow retro 교체)
 
-작업 사이클 종료 시 회고 사이클 자동 누적. 3회+ 반복 incident는 rule 후보로 (G6 H1 차용 예정):
+작업 사이클 종료 시 quality.jsonl 반복 패턴을 규칙 초안으로. flow CLI 없이 돌고(휴면 의존 제거), **채택은 사람이**:
 
 ```bash
-if command -v flow >/dev/null 2>&1; then
-  flow retro --json 2>/dev/null || true   # .policy/feedback/ 누적 → 패턴 후보
-fi
+"${CLAUDE_PLUGIN_ROOT}/bin/forge" whet --draft 2>/dev/null || true
 ```
 
-→ feedback 디렉토리 없으면 graceful skip.
+→ quality.jsonl 없으면 graceful skip. 신규 초안이 생기면 완료 보고에 "규칙 초안 N건 대기 (/forge-status로 확인)" 1줄 포함.
+
+> 구 `flow retro` 호출(redesign G5)은 flow CLI 미설치로 영구 no-op이었음 — 마스터플랜 §3 "flow CLI 켜기" 보류 결정에 따라 Whetstone이 회고 골격을 대신한다.
 
 ### 7-2. progress.md 정리 prompt (redesign G3.5c, 2026-05-20)
 

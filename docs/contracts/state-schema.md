@@ -93,11 +93,16 @@ failed_files:
 |-----|------|-----|------|
 | `ts` | ISO-8601 UTC | ✅ | 이벤트 시각 |
 | `sid` | string | ✅ | 세션 ID (transcript 매칭용) |
-| `type` | enum | ✅ | `eslint` \| `tsc` \| `scope` \| `test-trigger` \| `policy-sync` \| `reflect` \| `scope-type` \| `cleanup` |
+| `type` | enum | ✅ | `eslint` \| `tsc` \| `scope` \| `test-trigger` \| `policy-sync` \| `reflect` \| `scope-type` \| `cleanup` \| `whetstone` |
 | `status` | enum | ✅ | `pass` \| `warn` \| `fail` |
 | `detail` | string | ❌ | 사람이 읽는 상세. JSON 이스케이프 준수 |
 
 **읽는 자**: `skills/forge-status`, forge-glow L3 (adapter 경유 권장)
+
+**집계 화이트리스트 (2026-06-12 신설 — 경합 계약)**:
+- 게이트 지표 집계(`bin/forge status`의 quality_pass/warn/fail)와 Whetstone 패턴 스캔(`forge whet`)의 분모는 **게이트 발행 type만**: `eslint` | `tsc` | `test-trigger` | `reflect`.
+- 게이트 외 producer가 append하는 type(`whetstone` 등)은 관찰 로그일 뿐 — **집계에서 제외** (self-emit이 pass/fail 분모를 오염시키지 않게).
+- 새 self-emit type을 추가하려면 이 화이트리스트엔 넣지 말고 enum에만 등재할 것.
 
 **GC** (2026-06-12 개정 — 삭제 아닌 archive 이동):
 - 7일 경과 엔트리는 `session-init.sh`가 세션 시작 시 `quality.archive.jsonl`로 이동 (활성 파일만 가볍게 유지)
@@ -232,6 +237,40 @@ failed_files:
 **읽는 자**: `bin/forge status --json`의 `route` 키 (v1-additive — 파일 직독 금지 규약 준수). 없으면 `null`.
 
 **GC**: 불필요 — 단일 파일 덮어쓰기.
+
+---
+
+### 7. `whetstone/` (규칙 초안 디렉토리, 2026-06-12 신설 — 마스터플랜 5단계)
+
+**목적**: quality.jsonl(active+archive)에서 3회+ 반복된 패턴을 규칙 후보 초안으로 적재. **채택은 반드시 사람이** — 자동 승격/자동 PR 없음 (마스터플랜 §3 금지 유지).
+
+**생성자**: `bin/forge whet --draft` (스캔·초안 생성 모두 수동/스킬 트리거 — 백그라운드 자동 생성 없음)
+
+**포맷** (`.claude/state/whetstone/{YYYY-MM-DD}-{slug}.md`):
+```markdown
+---
+status: draft        # draft | accepted | rejected
+type: test-trigger   # 패턴이 나온 quality.jsonl type
+count: 27
+first_seen: 2026-06-08T09:47:24Z
+last_seen: 2026-06-12T10:30:00Z
+---
+
+## 반복 패턴
+TC 없음: apps/cargopass-web/src/components/layout/Header.tsx
+
+## 규칙 후보 (사람이 다듬을 것)
+- {모델이 초안 작성 — 채택 전까지 효력 없음}
+```
+
+**수명주기**:
+- `status: draft` → 사람이 검토 후 `accepted`(규칙으로 승격 — 목적지는 §4-5 사용자 결정) 또는 `rejected`로 수정
+- **rejected slug 재생성 금지** — `forge whet --draft`는 같은 slug의 파일이 존재하면(상태 불문) 건너뜀
+- 자동 삭제 없음 (정보 보존)
+
+**읽는 자**: `bin/forge status`(draft 카운트), `hooks/session-init.sh`(draft ≥1 시 1줄 보고), `skills/forge-status` §2-6
+
+**정직한 종료 조건**: 30일간 승격 0건이면 루프 폐기 재평가 (마스터플랜 5단계).
 
 ---
 

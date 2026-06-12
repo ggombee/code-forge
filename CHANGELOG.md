@@ -5,6 +5,22 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [4.9.0] — 2026-06-12
+
+### 추가 (마스터플랜 5단계 — "반복 실수에서 배우기 (Whetstone) + 자가진단 (doctor)")
+- **`forge whet [--draft]`** — quality.jsonl(active+archive)에서 3회+ 반복 패턴 스캔 → 규칙 초안(`.claude/state/whetstone/{날짜}-{slug}.md`, frontmatter status:draft/count/first_seen/last_seen). generic detail(파일 경로 없음) 제외. **같은 slug 존재 시 스킵**(rejected 재생성 금지). **채택은 반드시 사람이** — 자동 승격/자동 PR 없음. 30일 승격 0건이면 루프 폐기 재평가
+- **`forge doctor`** — 자가진단 4종 보고만(자동 수리 없음): 주입 회로(route.json 최근성) / 품질 게이트 만년 빨간불(pass==0&&fail>0) / 버전 정합(프로젝트 local.md vs 설치본 — §4-4를 코드로) / flow CLI 휴면. "연결이 죽었는데 아무도 모르는 상태" 재발 방지
+- **집계 화이트리스트 계약** (state-schema §2, must_fix 2) — 게이트 지표·whet 스캔 분모는 게이트 발행 type(eslint|tsc|test-trigger|reflect)만. self-emit(type:whetstone)은 집계 제외 — 분모 오염 방지
+- **session-init에 초안 대기 1줄 보고** + `forge status`에 whetstone_drafts(JSON)/Whetstone 행(텍스트)
+- **/forge-status §2-6 Whetstone 표 + §2-7 doctor**
+
+### 변경
+- **/start §7-1 회고를 flow retro → `forge whet --draft`로 교체** — flow CLI 미설치로 영구 no-op이던 호출 제거(마스터플랜 §3 flow 보류 결정), flow 없이 도는 회고 골격
+
+### 수정
+- **/forge-status §2-5 사용량 집계가 macOS에서 무동작이던 것 수리** (must_fix 8) — gawk 전용 3-인자 match() → POSIX awk. 덤으로 7일 필터가 실제로 동작하게 (구버전은 ts 비교 자체가 없었음)
+- **grep -c 0매치 함정 수리** — `grep -c … \|\| echo 0` 패턴은 0일 때 "0"이 두 줄 되어 산술 오류 (status 집계 잠재 버그 — 카운트가 0인 적이 없어 숨어 있었음)
+
 ## [4.8.0] — 2026-06-12
 
 ### 추가 (마스터플랜 4단계 — "작업 난도 → 모델/effort 권고 + 상태바 표시")

@@ -268,6 +268,16 @@ REFLECT_EOF
   fi
 fi
 
+# Whetstone 초안 대기 보고 (1줄 — state-schema §7, 마스터플랜 5단계. 채택은 사람이)
+WHET_DIR="$WORK_DIR/.claude/state/whetstone"
+if [ -d "$WHET_DIR" ]; then
+  WHET_DRAFTS=$(grep -l '^status: draft' "$WHET_DIR"/*.md 2>/dev/null | wc -l | tr -d ' ')
+  if [ "${WHET_DRAFTS:-0}" -gt 0 ]; then
+    echo ""
+    echo "[code-forge] Whetstone 규칙 초안 ${WHET_DRAFTS}건 대기 — /forge-status로 검토 (status를 accepted/rejected로)"
+  fi
+fi
+
 # quality.jsonl GC (7일 경과 엔트리 → archive 이동, 10MB 초과 시 앞쪽 절반 archive)
 # 계약: docs/contracts/state-schema.md §2
 # 2026-06-12 수리 2건:
