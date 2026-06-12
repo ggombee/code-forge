@@ -7,6 +7,7 @@ category: utility
 # Codex Pair Programming
 
 > Claude + OpenAI Codex 협업 스킬. MCP 서버 설정 시에만 사용 가능.
+> OpenAI 공식 codex 플러그인(`/codex:review` 등)과의 역할 분리: [`docs/codex-coexistence.md`](../../docs/codex-coexistence.md)
 
 ---
 

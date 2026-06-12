@@ -34,7 +34,8 @@ claude plugin install code-forge
 |------|---|
 | `rules/thinking-model.md` | **alwaysApply** — GROUND→APPLY→VERIFY→ADAPT |
 | `rules/candidate-profile.md` | **alwaysApply** — 프로필 참조 + 소통 보장선 + 커밋 컨벤션 |
-| `rules/coding-standards.md` `review-guide.md` | path-scoped `*.{ts,tsx,js,jsx}` |
+| `rules/coding-standards.md` | path-scoped `*.{ts,tsx,js,jsx}` |
+| `rules/review-guide.md` | 자동 주입 없음 — 리뷰 에이전트 @-include 전용 (이중 적재 해소) |
 | `rules/build-guide.md` | path-scoped `*.{tsx,jsx}` |
 
 ## 카탈로그 (단일 소스 — 여기 표를 복제하지 말 것)

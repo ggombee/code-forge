@@ -1,7 +1,10 @@
 ---
-paths:
-  - '**/*.{ts,tsx,js,jsx}'
+alwaysApply: false
 ---
+
+<!-- 자동 주입 해제 (2026-06-12 마스터플랜 8단계): 리뷰 에이전트 5종(code-reviewer/architect/
+     deep-executor/refactor-advisor/assayer)이 @-include로 직접 읽는데 path-scoped 주입까지
+     겹쳐 TS 세션마다 ~916줄 이중 적재였음. 에이전트 @-include는 무변경 — 리뷰 품질 무영향. -->
 
 # 리뷰/리팩토링 가이드
 

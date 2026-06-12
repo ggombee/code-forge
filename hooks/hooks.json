@@ -56,7 +56,6 @@
       },
       {
         "matcher": "Write",
-        "pathPattern": "**/SKILL.md",
         "hooks": [
           {
             "type": "command",
@@ -71,7 +70,14 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/quality-gate.sh"
-          },
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|idle_prompt",
+        "hooks": [
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh"

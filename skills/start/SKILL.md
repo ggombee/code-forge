@@ -182,13 +182,17 @@ Task(subagent_type = 'vision', model = 'sonnet',
 
 ## Phase 3: 코드 분석 + 계획
 
-### 3-1. 병렬 코드 탐색
+### 3-1. 병렬 코드 탐색 (복잡도 조건부 — 2026-06-12 §4-6 사용자 결정)
+
+명백한 LOW(1개 파일, 스타일/텍스트 변경이 요구사항에서 자명)는 **scout 생략**하고 대상 파일 직접 Read. 그 외에는 scout 병렬:
 
 ```typescript
 Task(subagent_type = 'scout', model = 'haiku', prompt = '변경 대상 영역 구조 분석');
 Task(subagent_type = 'scout', model = 'haiku', prompt = '기존 패턴 및 컨벤션 분석');
 Task(subagent_type = 'scout', model = 'haiku', prompt = '관련 유틸/서비스/훅 파악');
 ```
+
+HIGH(§3-3)면 Plan 에이전트가 **필수** — 스폰 생략 금지. (LOW 생략/MEDIUM+ 병렬/HIGH 필수 — 비용은 복잡도에 비례하게)
 
 ### 3-2. 디자인 vs 코드 비교 (디자인 분석이 있을 때)
 

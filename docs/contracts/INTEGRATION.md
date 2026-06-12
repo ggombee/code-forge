@@ -2,17 +2,19 @@
 
 > 4개 컴포넌트가 하나의 워크플로우로 유기적으로 동작하는 방식 + 공유 데이터 계약.
 > Claude Code (개인 PC) 진입점에서 자동 로드되는 단일 진실 소스.
+>
+> **상태 범례 (2026-06-12 정직화 — 마스터플랜 8단계)**: 🟢 **wired** = 실제 회로가 돌고 실사용 증거 있음 / 📐 **designed** = 코드·문서는 있으나 미가동(휴면/보류). 이 구분 없이 적힌 약속이 신뢰를 깎았다 — 이제 designed를 wired처럼 서술하지 않는다.
 
 ---
 
 ## 1. 컴포넌트 역할 분담
 
-| 컴포넌트 | layer | 책임 | 입력 | 출력 (다른 컴포넌트가 소비) |
-|---|---|---|---|---|
-| **code-forge** | UX (Claude Code 플러그인) | 자연어/슬래시 → 단계별 워크플로우. 14 에이전트 + 19 스킬. | 사용자 발화, `/start`, `/test`, `/setup` | `.claude/state/quality.jsonl`, `bin/forge status --json` |
-| **flow-toolkit** | execution (멀티 모델 CLI) | policy / TC / spec / retro / doctor. Claude / Codex / Cursor 공통 계약. | `flow workflow start <ticket>`, hook 트리거 | `.policy/*.json`, `~/.flow/projects/{repo}/`, retro 패턴 |
-| **forge-glow** | observability (HUD) | 실시간 statusLine + Python rich TUI + tmux. 5-layer 데이터 (L1~L5). | stdin / transcript / `bin/forge` / OTel / `~/.forge-glow/workflow.json` | statusLine 출력, `forge-glow-stats` TUI |
-| **forge-hearth** | reporting (markdown dashboard) | 다중 프로젝트 progress 집계. tracker-agnostic. | `sources.json` v2 / `~/.forge-glow/workflow.json` | `dashboard.md`, `projects/*.md` |
+| 컴포넌트 | 상태 | layer | 책임 | 입력 | 출력 (다른 컴포넌트가 소비) |
+|---|---|---|---|---|---|
+| **code-forge** | 🟢 wired | UX (Claude Code 플러그인) | 자연어/슬래시 → 단계별 워크플로우. 에이전트/스킬 수는 디스크가 진실. | 사용자 발화, `/start`, `/test`, `/setup` | `.claude/state/quality.jsonl`, `route.json`(emit-event), `bin/forge status --json` |
+| **forge-glow** | 🟢 wired | observability (HUD) | 실시간 statusLine + Python rich TUI + tmux. 5-layer 데이터 (L1~L5). | stdin / transcript / `bin/forge` / OTel | statusLine 출력, `forge-glow-stats` TUI |
+| **flow-toolkit** | 📐 designed (휴면 — 사용자 보류, 마스터플랜 §3) | execution (멀티 모델 CLI) | policy / TC / spec / retro / doctor. | `flow workflow start <ticket>` | `.policy/*.json`, `~/.flow/projects/{repo}/` — **현재 생산 0** (CLI 미설치). 관문은 Foreman, 회고는 Whetstone(`forge whet`)이 대행 |
+| **forge-hearth** | 📐 designed (미가동) | reporting (markdown dashboard) | 다중 프로젝트 progress 집계. tracker-agnostic. | `sources.json` v2 / `~/.forge-glow/workflow.json` | `dashboard.md` — 입력 데이터 미존재로 미가동. 마스터플랜 10단계에서 재상정 |
 
 ---
 
@@ -23,9 +25,9 @@
                             │
                             ▼
         ┌─────────────────────────────────────────────────┐
-        │  code-forge (Claude Code 플러그인)              │
-        │   /start /test /done /bug-fix /research         │
-        │    └─ 단계별로 flow CLI 자동 호출 (auto-trigger)│
+        │  code-forge (Claude Code 플러그인) 🟢           │
+        │   /start /test /e2e /handoff (+ Foreman 관문)   │
+        │    └─ flow CLI 호출은 📐휴면 (graceful skip)    │
         └──────┬─────────────────────────┬────────────────┘
                │ produces                │ invokes
                ▼                         ▼
@@ -100,15 +102,14 @@ statusLine   Python TUI                tmux 하단바
 - **불변 규칙**: forge-glow는 `.claude/state/*` 파일을 **직접 읽지 않는다**. 반드시 `bin/forge status --json` surface 경유.
 - **이유**: state 파일 형식 변경 시 외부 소비자 깨짐 방지.
 
-### 3.3 `.policy/*.json` — flow-toolkit이 정의, code-forge skill이 호출
+### 3.3 `.policy/*.json` — flow-toolkit이 정의, code-forge skill이 호출 📐 designed (휴면)
 
 - **schema**: `flow-toolkit/packages/flow-rules/docs/policy-detection.md`
 - **필수 필드**: `id`, `screen`, `category`, `bdd`, `affects.components[]`
-- **생성**: `flow policy new <domain>`
-- **검증**: `flow policy lint` (자동 호출: PostToolUse hook + code-forge `/start` Step 5)
-- **영향 분석**: `flow policy diff <ticket>` → 변경 컴포넌트 → 영향 TC 자동 식별
+- **생성**: `flow policy new <domain>` / **검증**: `flow policy lint` / **영향 분석**: `flow policy diff <ticket>`
+- **현실 (2026-06-12)**: flow CLI 미설치로 위 호출 전부 graceful skip — `.policy/` 생산 0. 회고 축은 `forge whet`(Whetstone)이 quality.jsonl 기반으로 대행. flow 거취는 마스터플랜 10단계에서 데이터 갖고 재결정
 
-### 3.4 `.claude/state/quality.jsonl` — code-forge hooks 출력
+### 3.4 `.claude/state/quality.jsonl` — code-forge hooks 출력 🟢 wired
 
 - **공급자**: `code-forge/hooks/quality-gate.sh` (Stop 훅)
 - **소비자**: forge-glow 및 외부 도구
@@ -116,28 +117,30 @@ statusLine   Python TUI                tmux 하단바
 - **이벤트**: ESLint 결과, tsc 결과, policy-sync 결과, scope 위반 등
 - **계약 파일**: `code-forge/docs/contracts/state-schema.md`
 
-### 3.5 `auto-trigger.md` — 자연어 → flow CLI 자동 발화
+### 3.5 자연어 관문 — auto-flow-trigger.sh (UserPromptSubmit) 🟢 wired (Foreman) / 📐 flow 분기는 휴면
 
-- **위치**: `flow-toolkit/packages/flow-rules/docs/auto-trigger.md`
-- **로드 방식**: Claude는 `CLAUDE.md`, Codex/Cursor는 `AGENTS.md`에서 `@import`
-- **규칙 예시**:
-  - 티켓 ID 언급 ("PROJ-123 작업 시작") → `flow workflow start PROJ-123`
-  - "통합테스트 돌려" → `flow run report`
-  - "회고 보여줘" → `flow retro`
+- **위치**: `code-forge/hooks/auto-flow-trigger.sh` (구 auto-trigger.md 문서 발화 방식은 hook 강제 호출로 대체 — redesign G5)
+- 🟢 **Foreman 관문** (4.6.0+): 작업성 발화 감지 → "/start로? 그냥? (복잡도/effort)" 선택지, 세션당 1회
+- 🟢 **티켓 ID 분기**: `PROJ-123` 패턴 감지 (음성 친화 정규식 — G9c)
+- 📐 **flow CLI 강제 호출**: 티켓 감지 후 `flow tc select` 호출하나 미설치라 graceful skip — Foreman 선택지만 실발화
 
 ---
 
 ## 4. 자연어 → 명령 매핑 (Claude Code 안에서)
 
-| 사용자 발화 | code-forge 진입 | flow CLI 자동 호출 |
+> flow CLI 칸은 전부 📐 휴면 (미설치 graceful skip) — 실발화 칸은 "현재 실제로"가 진실.
+
+| 사용자 발화 | 현재 실제로 (🟢) | flow CLI 설계분 (📐 휴면) |
 |---|---|---|
-| "PROJ-123 작업 시작" | `/start feature.md` 또는 자연어 → analyst | `flow workflow start PROJ-123 --json`, `flow tc select PROJ-123` |
-| "이 API 응답 받아와 — http://..." | `/start` Step 0-3 | `flow spec capture <URL> --redact` |
-| "정책 영향 TC 보여줘" | `/start` Step 1-3 | `flow policy diff <ticket>` |
-| "통합테스트 돌려줘" | `/test` | `flow run report` |
-| "회고 / 패턴 보여줘" | `/research` 또는 직접 | `flow retro` |
-| "사이드 이펙트 점검" | `/done` Step 5 | `flow tc verify --stale` |
-| "버그: TypeError ..." | thinking-model GROUND (2-3 옵션) | (none — 사고모델 적용) |
+| "PROJ-123 작업 시작" | Foreman 선택지 → `/start` 권유 (4.6.0+) | `flow workflow start`, `flow tc select` |
+| "기능 만들어줘/구현해줘" | Foreman 선택지 (복잡도/effort 권고 — §3-3b 기록) | — |
+| "통합테스트 돌려줘" | `/test` (유닛/E2E 자동 라우팅) | `flow run report` |
+| "화면 테스트 만들어줘" | `/e2e` (Forge Loop) | — |
+| "회고 / 반복 패턴 보여줘" | `forge whet` (Whetstone) + `/forge-status` | `flow retro` |
+| "세션 정리하고 넘기자" | `/handoff` | — |
+| "버그: TypeError ..." | thinking-model GROUND (2-3 옵션) | — |
+
+(구 표의 `/done` `/bug-fix` `/research`는 v4.0 폐지 — 대체 매핑 `docs/CATALOG.md`)
 
 ---
 

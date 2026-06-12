@@ -5,6 +5,20 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [4.10.0] — 2026-06-12
+
+### 변경 (마스터플랜 8단계 — "컨텍스트 다이어트 + 문서가 거짓말 안 하게")
+- **review-guide.md 자동 주입 해제** — 리뷰 에이전트 5종이 @-include로 직접 읽는데 path-scoped 주입까지 겹쳐 TS 세션마다 ~916줄(~8.5-10.5K tok) 이중 적재였음. frontmatter `alwaysApply: false`로 — 에이전트 @-include 5곳 무변경(리뷰 품질 무영향). REFERENCE.md·CLAUDE.md 적재표 동기화
+- **/start §3-1 scout 스폰 복잡도 조건부** (§4-6 사용자 결정) — 명백한 LOW는 scout 생략·직접 Read, MEDIUM+ 병렬 유지, HIGH는 Plan 필수. 비용이 복잡도에 비례하게
+- **notify.sh를 Stop → Notification(permission_prompt|idle_prompt)으로 이전** — 스크립트 자체 주석부터 "Notification 훅 호출용"이었는데 Stop(매 턴)에 등록돼 있었음. 이제 "권한/입력 대기"일 때만 Mac 알림 (매 턴 벨 소음 해소)
+- **INTEGRATION.md 정직화** — 🟢 wired / 📐 designed 범례 + 컴포넌트·계약별 상태 표기. flow-toolkit/forge-hearth는 designed(휴면) 명시, §4 매핑 표를 "현재 실제로" 기준으로 재작성(폐지 스킬 /done /bug-fix /research 제거)
+- **FORGE_ATLAS** — §4.2 SPINE LANDMINE을 '해소됨(2026-06-12)'으로 교체, §4.6 상세를 event-schema.md 포인터로 축약(원문 git 보존), §4.3 flow 휴면 정직 표기, §5.2 routing 🟢 갱신
+
+### 제거 (archive 이동 — 삭제 아님)
+- **dead 문서 8개(1,574줄) → archive/** — 참조 0곳 실측: improvement-plan/report-2026-04(역사) · decision-framework · figma 2종(스킬이 자체 보유 확인) · git-workflows · pr-template(/start 인라인 존재) · mcp-server-setup(codex-mcp-setup-guide와 중복)
+- **hooks.json `pathPattern` 필드 제거** — 공식 미지원 필드 실측(claude-code-guide, 문서 출처 확인). skill-dedup.sh는 자체 경로 가드 보유라 동작 무변화. FileChanged/PermissionRequest/PostCompact/`async`/`if`는 **표준 지원 확인 — 무변경**
+- **codex-coexistence.md 참조 유실 복구** — /codex 스킬에서 링크 (archive 대신 살림)
+
 ## [4.9.0] — 2026-06-12
 
 ### 추가 (마스터플랜 5단계 — "반복 실수에서 배우기 (Whetstone) + 자가진단 (doctor)")

@@ -172,7 +172,7 @@ $CLAUDE_PLUGIN_ROOT/bin/forge version
 | `rules/candidate-profile.md` | **alwaysApply** | 코딩 프로필(.candidate/profile.md) 참조 + §3 소통 최소 보장선 + §5 커밋 컨벤션 |
 | `rules/coding-standards.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 코딩 표준, 네이밍, 금지 패턴, import 순서 |
 | `rules/build-guide.md` | path-scoped (`*.{tsx,jsx}`) | React 패턴, Hook 규칙, TypeScript 패턴 |
-| `rules/review-guide.md` | path-scoped (`*.{ts,tsx,js,jsx}`) | 설계 철학, 안티패턴, 성능 최적화 |
+| `rules/review-guide.md` | 자동 주입 없음 — 리뷰 에이전트 5종이 @-include로 직접 로드 (2026-06-12 이중 적재 해소) | 설계 철학, 안티패턴, 성능 최적화 |
 
 ---
 
