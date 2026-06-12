@@ -61,9 +61,25 @@ fi
 # ── C1. Foreman — 작업성 발화 → /start·복잡도·effort 선택지 (세션당 1회) ──
 C1_MARKER="$MARKER_DIR/foreman-$TODAY-$SID-c1"
 case "$PROMPT" in
-  /*) C1_ELIGIBLE=0 ;;  # 슬래시 명령 — 이미 레일 위
+  /start*)
+    # /start로 이미 정문 통과 — 이 세션의 안내를 소모해서, 진행 중간의
+    # 추가 작업 발화("그리고 X도 추가해줘")에 "/start 할까요?"가 뜨는 모순 방지
+    touch "$C1_MARKER" 2>/dev/null || true
+    C1_ELIGIBLE=0 ;;
+  /*) C1_ELIGIBLE=0 ;;  # 그 외 슬래시 명령 — 대상 아님 (안내 기회는 보존)
   *)  C1_ELIGIBLE=1 ;;
 esac
+# 진행 중 신호가 있으면 침묵 — 새 세션에서 이어가는 작업의 연속 발화("계속 진행해줘")에
+# 새 작업 안내가 뜨지 않게. 신호: plan.md 존재 또는 progress.md 1시간 내 갱신
+if [ "$C1_ELIGIBLE" -eq 1 ]; then
+  if [ -f "$PROJECT_ROOT/.claude/temp/plan.md" ]; then
+    C1_ELIGIBLE=0
+  elif [ -f "$PROJECT_ROOT/.claude/state/progress.md" ]; then
+    P_MTIME=$(stat -f %m "$PROJECT_ROOT/.claude/state/progress.md" 2>/dev/null \
+      || stat -c %Y "$PROJECT_ROOT/.claude/state/progress.md" 2>/dev/null || echo 0)
+    [ $(( $(date +%s) - P_MTIME )) -lt 3600 ] && C1_ELIGIBLE=0
+  fi
+fi
 if [ "$C1_ELIGIBLE" -eq 1 ] && [ ! -f "$C1_MARKER" ] && [ "${#PROMPT}" -ge 10 ]; then
   if echo "$PROMPT" | grep -qiE '(만들|구현|추가|수정해|수정하|고쳐|고치|리팩토|개선해|개선하|작성해|작성하|생성해|연동|적용해|마이그레|구축|개발해|시작하|시작해|진행해|붙여|implement|build|create|add|refactor|fix)' 2>/dev/null; then
     touch "$C1_MARKER" 2>/dev/null || true
@@ -72,7 +88,8 @@ if [ "$C1_ELIGIBLE" -eq 1 ] && [ ! -f "$C1_MARKER" ] && [ "${#PROMPT}" -ge 10 ];
 이 발화가 실제 코드 작업 요청이면, 착수 전에 사용자에게 다음 선택지를 한 번 제시할 것:
   ① /start로 정식 진행 (분석→구현→검증→커밋, progress 기록)
   ② 그냥 진행 — 단, 복잡도 판단(LOW/MED/HIGH)과 권장 effort(low/medium/high/xhigh)를 한 줄로 명시
-질문/단답/논의성 발화로 판단되면 제안을 생략하고 평소대로 답할 것.
+질문/단답/논의성 발화, 또는 직전까지 진행 중이던 작업의 연속 발화(추가 요청·수정 지시)로
+판단되면 제안을 생략하고 기존 맥락 안에서 이어갈 것 — 새 작업으로 시작하지 말 것.
 FOREMAN_EOF
   fi
 fi
