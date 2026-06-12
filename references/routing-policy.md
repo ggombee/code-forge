@@ -41,7 +41,7 @@
 
 - 라우팅 결정은 **/start GROUND→PLAN 경계에서 1회** (scout의 저비용 신호 수신 후) — per-phase 재라우팅 churn 금지.
 - 결정의 운반: `bin/forge emit-event` → `.claude/state/route.json` (latest-only) → `bin/forge status --json`의 `route` 키 → HUD 표시 (Phase 2-3 플래그 뒤). 계약: `docs/contracts/event-schema.md`.
-- RoutingDecision shape (canonical — OVERHAUL_PLAN §5): `{agent, model(tier), model_version(표시전용), role, effort_per_phase, cross_vendor}`.
+- RoutingDecision shape (canonical — `workspace/archive/OVERHAUL_PLAN.md` §5, 2026-06-12 archive 이동): `{agent, model(tier), model_version(표시전용), role, effort_per_phase, cross_vendor}`.
 
 ## 5. complexity → effort 매핑 (확정 — 2026-06-12, 마스터플랜 4단계)
 

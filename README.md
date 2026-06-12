@@ -4,8 +4,11 @@
 
 > 설치하면 Claude Code가 더 잘 동작합니다.
 
-14개 전문 에이전트, 17개 스킬, 17개 스택 모듈.
-검증된 사고모델이 모든 작업의 품질을 일관되게 유지합니다.
+전문 에이전트, 슬래시 스킬, 스택 모듈을 제공하는 Claude Code 플러그인.
+검증된 사고모델(GROUND→APPLY→VERIFY→ADAPT)이 모든 작업의 품질을 일관되게 유지합니다.
+(에이전트/스킬 개수는 디스크가 진실 — `ls agents/*.md | wc -l`, `ls skills/*/SKILL.md | wc -l`)
+
+**현재 상태**: 개인 GitHub 운영 중 (마켓플레이스 배포 4.10.0). 패치노트: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -28,13 +31,8 @@ claude
 ### 방법 2: 로컬 클론
 
 ```bash
-# 1. 클론
 git clone https://github.com/ggombee/code-forge.git
-
-# 2. 플러그인 디렉토리 지정하여 실행
 claude --plugin-dir /path/to/code-forge
-
-# 3. 프로젝트 세팅
 > /setup
 ```
 
@@ -67,29 +65,41 @@ MD 파일에 요구사항을 적으면, 분석 → 디자인 확인 → 구현 �
 /start "버튼 색상 변경"         # 자유 텍스트도 가능
 ```
 
-### `/bug-fix` — 옵션을 제시합니다
+복잡도를 스스로 판단해서 LOW면 탐색을 생략하고, HIGH면 계획 에이전트를 먼저 태웁니다.
+완료 검증·버그 수정 같은 후속은 별도 스킬이 아니라 규칙·훅에 흡수되어 있습니다 (대체 매핑: [docs/CATALOG.md](docs/CATALOG.md)).
 
-에러 메시지를 던지면 2-3가지 해결 방안을 비교해서 보여줍니다. 선택하면 바로 수정.
+### `/handoff` — 세션을 끊고 이어가기
 
-```
-/bug-fix "TypeError: Cannot read property of undefined"
-```
+auto-compact에 맡기지 않고, 대화에만 존재하는 맥락(결정/이유/미결질문)을 progress.md에 문서화한 뒤
+다음 세션 킥오프 프롬프트를 클립보드에 복사합니다. 새 세션은 시작 시 자동 주입으로 이어받습니다.
 
-### 그 외
+### 그 외 주요 스킬
 
 | 스킬 | 한 줄 설명 |
 |------|----------|
-| `/done` | 이미 구현한 코드 → 검증 → 커밋 → PR |
-| `/refactor` | 리팩토링 분석 + 정책 보호 테스트 |
-| `/generate-test` | BDD 시나리오 기반 테스트 코드 생성 |
+| `/test` | 테스트 통합 진입점 — 유닛/E2E/세팅 자동 라우팅 |
+| `/e2e` | 화면 단위 E2E 자동화 (Playwright + 자율 실행 루프) |
 | `/debate` | 서로 다른 모델끼리 토론시켜서 방향 결정 |
 | `/research` | 구조화된 팩트 기반 리서치 |
 | `/codex` | OpenAI Codex와 페어 프로그래밍 |
+| `/voice` | 음성 입력 셋업 (local Whisper, hands-free) |
 | `/setup --profile` | 프로젝트 코딩 스타일 분석 → 프로필 생성 |
+
+전체 카탈로그: [docs/REFERENCE.md](docs/REFERENCE.md)
+
+### `bin/forge` — 상태 표면 (외부 도구 연동)
+
+```bash
+bin/forge status --json   # 품질 게이트/라우팅/REFLECT 상태 (외부 도구의 유일한 읽기 표면)
+bin/forge whet --draft    # 반복 품질 이슈 3회+ → 개인 컨벤션 후보 초안 (채택은 사람)
+bin/forge doctor          # 주입 회로/버전 정합/만년 적색 자가진단 (보고만)
+```
+
+[forge-glow](https://github.com/ggombee/forge-glow) HUD가 이 표면을 소비해 품질 게이트·effort 권고를 상태줄에 표시합니다.
 
 ---
 
-## 에이전트 14명
+## 에이전트
 
 코드를 수정할 수 있는 놈과 없는 놈을 확실히 나눴습니다.
 
@@ -101,6 +111,7 @@ MD 파일에 요구사항을 적으면, 분석 → 디자인 확인 → 구현 �
 | **전체** | implementor, deep-executor, assayer, codex | 뭐든 가능 |
 
 간단한 탐색은 haiku가 빠르게, 복잡한 구현은 sonnet이, 아키텍처 분석은 opus가 처리합니다.
+라우팅 정책(티어 핀 = 비용 통제): [references/routing-policy.md](references/routing-policy.md)
 
 ---
 
@@ -130,6 +141,20 @@ MD 파일에 요구사항을 적으면, 분석 → 디자인 확인 → 구현 �
 | Testing | Jest, Vitest |
 
 프리셋으로 한 번에: `standard` (Pages+Jotai+Emotion+Jest) 또는 `modern-stack` (MUI+App+Zustand+Tailwind+Vitest)
+
+---
+
+## 자매 도구 (5-family)
+
+code-forge는 단독으로 완결되지만, 같은 계약 위에서 자매 도구와 결합됩니다.
+계약 + 연결 상태(🟢 wired / 📐 designed)는 [docs/contracts/INTEGRATION.md](docs/contracts/INTEGRATION.md)가 단일 진실.
+
+| 도구 | 역할 | 상태 |
+|---|---|---|
+| [forge-glow](https://github.com/ggombee/forge-glow) | 실시간 HUD (상태줄) | 🟢 wired — `bin/forge status --json` 소비 |
+| flow-toolkit | model-agnostic 워크플로우 CLI | 📐 휴면 — 미설치 시 전부 graceful skip |
+| forge-hearth | 다중 프로젝트 대시보드 | 📐 휴면 |
+| coding-practice | 개인 컨벤션 원본 (`.candidate/profile.md`) | 🟢 candidate-profile 룰이 소비 |
 
 ---
 

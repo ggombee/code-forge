@@ -1,6 +1,6 @@
 # forge-event v1 — normalized cross-agent event contract
 
-> **Status:** Phase 0 SHADOW spec (written, not yet consumed). Introduced by the Option C overhaul (`workspace/OVERHAUL_PLAN.md` §2). Sibling to [`state-schema.md`](./state-schema.md) and [`INTEGRATION.md`](./INTEGRATION.md).
+> **Status:** Phase 0 SHADOW spec (written, not yet consumed). Introduced by the Option C overhaul (`workspace/archive/OVERHAUL_PLAN.md` §2 — archived 2026-06-12; plan of record is `workspace/FORGE_MASTERPLAN.md`). Sibling to [`state-schema.md`](./state-schema.md) and [`INTEGRATION.md`](./INTEGRATION.md).
 > **Purpose:** ONE normalized event that every model/agent (Claude, Codex, future) maps INTO and every consumer (forge-glow HUD, forge-hearth, routing) reads OUT — killing the shell↔Python dual-parser drift at the root.
 
 ---
@@ -88,7 +88,7 @@ Per-task / per-subagent Opus-version pinning (4.8 vs 4.7 vs 4.6) is **NOT suppor
 
 **실측 (2026-06-11, main=claude-fable-5[1m] 환경):** `model: opus` 핀 서브에이전트의 transcript `.message.model` = `claude-opus-4-8` — 티어 별칭은 **main 세션 모델이 아니라 해당 티어의 최신 모델**로 해석된다. 따라서 핀 제거 시 서브에이전트는 main(Fable, 2x 단가)을 상속하고, 핀 유지 시 티어 최신에 머문다 — 핀은 비용 통제 수단으로 유효.
 
-Therefore `model_version` is captured **verbatim** purely so the HUD can display the truth (`🧠 Opus 4.8 @ high`). Routing decisions are made on `model` (tier) + `agent` (vendor) only. See `OVERHAUL_PLAN.md` §6 FR1.
+Therefore `model_version` is captured **verbatim** purely so the HUD can display the truth (`🧠 Opus 4.8 @ high`). Routing decisions are made on `model` (tier) + `agent` (vendor) only. See `workspace/archive/OVERHAUL_PLAN.md` §6 FR1 (canonical routing policy: `references/routing-policy.md`).
 
 ---
 
