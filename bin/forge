@@ -111,7 +111,9 @@ JSON
 
   emit-event)
     # 실시간 라우팅 스냅샷 갱신 — docs/contracts/event-schema.md §1 (HYBRID, latest-only)
-    # stdin으로 forge-event JSON 1개를 받아 .claude/state/route.json에 원자적 덮어쓰기(mv).
+    # stdin으로 부분 JSON을 받아 기존 route.json과 DEEP-MERGE 후 원자적 덮어쓰기(mv).
+    # merge 의미론: producer마다 자기 필드만 보내면 됨 — quality-gate의 last_gate와
+    # /start의 complexity가 서로를 지우지 않는다(클로버 방지). ts/producer는 매 emit 갱신.
     # 히스토리는 쌓지 않는다 — 누적 지표는 usage.jsonl/quality.jsonl 담당.
     if ! command -v jq >/dev/null 2>&1; then
       echo "emit-event: jq 필요 (brew install jq)" >&2; exit 1
@@ -121,8 +123,16 @@ JSON
       echo "emit-event: stdin이 유효한 JSON 객체가 아님" >&2; exit 1
     fi
     mkdir -p "$STATE_DIR"
-    if echo "$INPUT" | jq -c --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        '.schema_version //= "1" | .ts //= $ts | .producer //= "bin/forge emit-event"' \
+    EXISTING='{}'
+    if [ -f "$STATE_DIR/route.json" ] && jq -e . "$STATE_DIR/route.json" >/dev/null 2>&1; then
+      EXISTING=$(cat "$STATE_DIR/route.json")
+    fi
+    if printf '%s\n%s\n' "$EXISTING" "$INPUT" | jq -c -s --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        '. as [$old, $new]
+         | ($old * $new)
+         | .ts = ($new.ts // $ts)
+         | .producer = ($new.producer // "bin/forge emit-event")
+         | .schema_version //= "1"' \
         > "$STATE_DIR/.route.json.tmp" 2>/dev/null; then
       mv "$STATE_DIR/.route.json.tmp" "$STATE_DIR/route.json"
     else

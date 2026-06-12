@@ -9,7 +9,7 @@
 
 실시간과 기록은 서로 다른 형태가 맞다는 소유자 결정에 따라 transport는 두 축으로 분리한다:
 
-- **실시간(latest-only) — `.claude/state/route.json`:** 현재 상태(모델/effort/role/handoff) 딱 하나를 원자적 덮어쓰기(`mv` rename). 소비자는 `bin/forge status --json`의 **v1-additive `route` 객체**로 읽는다 (별도 `route` 서브커맨드/리듀서 불필요). 외부 도구는 파일 직독 금지 — surface 경유 (honors `state-schema.md` §외부 도구 연동 규약).
+- **실시간(latest-only) — `.claude/state/route.json`:** 현재 상태(모델/effort/role/last_gate) 딱 하나를 원자적 갱신(`mv` rename). **emit은 DEEP-MERGE** — producer는 자기 필드만 보내면 되고(`bin/forge emit-event`가 기존 파일과 `$old * $new` 병합), `ts`/`producer`는 매 emit 갱신. 서로 다른 producer(quality-gate의 `last_gate`, /start의 `complexity`)가 서로를 지우지 않는다. 소비자는 `bin/forge status --json`의 **v1-additive `route` 객체**로 읽는다 (별도 `route` 서브커맨드/리듀서 불필요). 외부 도구는 파일 직독 금지 — surface 경유 (honors `state-schema.md` §외부 도구 연동 규약).
 - **기록(누적 지표 — 이행률/사용량/품질):** 신규 일기장을 만들지 않는다. **기존 누적 로그를 수리해 사용**한다 — `~/.code-forge/usage.jsonl`(bellows, name 어트리뷰션 수리 필요)과 `.claude/state/quality.jsonl`. 히스토리 대시보드(stats TUI/hearth)는 이쪽을 소비.
 - **Mapper:** one canonical shell mapper `forge-glow/hud/lib/map-event.sh` translates each vendor's raw JSONL into the forge-event shape (§2) before writing `route.json`. Producers stay dumb; one place owns vendor quirks.
 

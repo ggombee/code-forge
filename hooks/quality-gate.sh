@@ -25,9 +25,23 @@ SESSION_ID="${CLAUDE_SESSION_ID:-$(date -u +%s)}"
 
 mkdir -p "$STATE_DIR" 2>/dev/null || true
 
+# route.json에 최근 게이트 결과 기록 (HUD "이번 턴 검증" 표시용 — event-schema.md §1)
+# emit-event는 deep-merge라 다른 producer(/start complexity 등) 필드를 지우지 않음.
+FORGE_BIN="${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/bin/forge"
+emit_route() {
+  local status="$1" blocks="$2"
+  [ -x "$FORGE_BIN" ] || return 0
+  printf '{"last_gate":{"status":"%s","blocks":"%s"},"producer":"quality-gate"}' "$status" "$blocks" \
+    | "$FORGE_BIN" emit-event >/dev/null 2>&1 || true
+}
+
 # 변경 파일 (JS/TS 계열, staged+unstaged)
 CHANGED_FILES=$(git diff --name-only HEAD 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|vue|svelte)$' | head -20)
-[ -z "$CHANGED_FILES" ] && exit 0
+if [ -z "$CHANGED_FILES" ]; then
+  # 침묵 스킵이던 경로 — "검증 탔는가"에 항상 답하기 위해 skipped 기록 (quality.jsonl에는 미기록, 스팸 방지)
+  emit_route "skipped" ""
+  exit 0
+fi
 
 HAS_FAILURE=false
 FAILED_BLOCKS=""
@@ -57,29 +71,68 @@ emit() {
   fi
 }
 
+# 동일 detail이 최근 기록에 있으면 재기록 안 함 (동일 파일 27회 반복 경고 스팸 방지 — 2026-06-12)
+emit_once() {
+  local type="$1" status="$2" detail="$3"
+  local esc
+  esc=$(printf '%s' "$detail" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr -d '\n')
+  if [ -f "$JSONL_FILE" ] && tail -200 "$JSONL_FILE" 2>/dev/null | grep -qF "\"detail\":\"$esc\""; then
+    return 0
+  fi
+  emit "$type" "$status" "$detail"
+}
+
 # ── 1. ESLint + tsc ──
+# 2026-06-12 수리: 두 검사 모두 모노레포에서 구조적 always-fail이었음 (실측: pass 0/384)
+#  - eslint: "출력 존재=fail" 판정이라 설정 오류 메시지에도 fail → exit code 판정으로
+#  - tsc: 루트에서 실행 → 루트 tsconfig 없는 모노레포는 help+exit 1 → 변경 파일의 워크스페이스 스코프로
 if [ -x "$PROJECT_ROOT/node_modules/.bin/eslint" ]; then
-  LINT_OUT=$(echo "$CHANGED_FILES" | xargs "$PROJECT_ROOT/node_modules/.bin/eslint" --quiet 2>&1 | head -30)
-  if [ -n "$LINT_OUT" ]; then
+  # shellcheck disable=SC2086
+  LINT_OUT=$("$PROJECT_ROOT/node_modules/.bin/eslint" --quiet $CHANGED_FILES 2>&1 | head -30)
+  LINT_EXIT=$?
+  if [ "$LINT_EXIT" -eq 0 ]; then
+    emit "eslint" "pass" ""
+  elif [ "$LINT_EXIT" -eq 1 ]; then
     emit "eslint" "fail" "린트 오류"
     echo "$LINT_OUT" | head -20 >&2
     HAS_FAILURE=true
     FAILED_BLOCKS="${FAILED_BLOCKS}eslint "
   else
-    emit "eslint" "pass" ""
+    # exit 2+ = 설정/내부 오류 — 코드 문제가 아니므로 차단하지 않음 (graceful)
+    emit "eslint" "warn" "eslint 설정 오류(exit ${LINT_EXIT}) — 판정 스킵"
   fi
 fi
 
 if [ -x "$PROJECT_ROOT/node_modules/.bin/tsc" ]; then
-  TSC_OUT=$(cd "$PROJECT_ROOT" && ./node_modules/.bin/tsc --noEmit --pretty false 2>&1 | head -20)
-  TSC_EXIT=$?
-  if [ $TSC_EXIT -ne 0 ]; then
-    emit "tsc" "fail" "타입 에러"
-    echo "$TSC_OUT" >&2
-    HAS_FAILURE=true
-    FAILED_BLOCKS="${FAILED_BLOCKS}tsc "
+  # 변경 파일별 가장 가까운 tsconfig.json 워크스페이스 수집 (최대 3개)
+  TS_PROJECTS=$(while IFS= read -r f; do
+    d=$(dirname "$f")
+    while :; do
+      if [ -f "$PROJECT_ROOT/$d/tsconfig.json" ]; then echo "$d"; break; fi
+      [ "$d" = "." ] && break
+      d=$(dirname "$d")
+    done
+  done <<< "$CHANGED_FILES" | sort -u | head -3)
+
+  if [ -z "$TS_PROJECTS" ]; then
+    emit "tsc" "warn" "tsconfig 미발견 — tsc 스킵 (변경 파일 기준 워크스페이스 없음)"
   else
-    emit "tsc" "pass" ""
+    TSC_FAIL_PROJ=""
+    while IFS= read -r proj; do
+      [ -z "$proj" ] && continue
+      TSC_OUT=$("$PROJECT_ROOT/node_modules/.bin/tsc" -p "$PROJECT_ROOT/$proj" --noEmit --pretty false 2>&1 | head -20)
+      if [ $? -ne 0 ]; then
+        TSC_FAIL_PROJ="${TSC_FAIL_PROJ}${proj} "
+        echo "$TSC_OUT" >&2
+      fi
+    done <<< "$TS_PROJECTS"
+    if [ -n "$TSC_FAIL_PROJ" ]; then
+      emit "tsc" "fail" "타입 에러: ${TSC_FAIL_PROJ% }"
+      HAS_FAILURE=true
+      FAILED_BLOCKS="${FAILED_BLOCKS}tsc "
+    else
+      emit "tsc" "pass" ""
+    fi
   fi
 fi
 
@@ -165,9 +218,9 @@ for f in $CHANGED_FILES; do
     TC_MISSING=$((TC_MISSING + 1))
     case "$f" in
       */utils/*|*/helpers/*|*/lib/*|*/adapters/*)
-        emit "test-trigger" "warn" "유틸 TC 없음: $f (/test $f 권장)" ;;
+        emit_once "test-trigger" "warn" "유틸 TC 없음: $f (/test $f 권장)" ;;
       */hooks/*|*/components/*)
-        emit "test-trigger" "warn" "TC 없음: $f (/test $f 권장)" ;;
+        emit_once "test-trigger" "warn" "TC 없음: $f (/test $f 권장)" ;;
     esac
   fi
 done
@@ -251,6 +304,13 @@ if git diff --quiet HEAD 2>/dev/null && git diff --cached --quiet 2>/dev/null; t
   if [ "$CLEANED" -gt 0 ]; then
     emit "cleanup" "pass" "design-refs ${CLEANED}개 정리"
   fi
+fi
+
+# ── 최근 게이트 결과 → route.json (HUD "이번 턴 검증" 표시) ──
+if [ "$HAS_FAILURE" = true ]; then
+  emit_route "fail" "${FAILED_BLOCKS% }"
+else
+  emit_route "pass" ""
 fi
 
 exit 0
