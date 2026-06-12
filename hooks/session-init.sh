@@ -1,6 +1,12 @@
 #!/bin/bash
-# session-init.sh — 세션 시작 시 플러그인 자동 업데이트
-# SessionStart 훅에서 실행됨
+# session-init.sh — 세션 시작 훅 (SessionStart)
+#   1) 플러그인 자동 업데이트 (dev 레포 git 설치본 한정 — 서브셸 격리)
+#   2) 프로젝트 컨텍스트/notepad/progress/REFLECT 주입 (★항상 실행)
+#
+# 2026-06-12 수리 (FORGE_MASTERPLAN 3단계, must_fix 3):
+#   마켓플레이스 설치본(캐시)엔 .git이 없는데 구버전은 .git 부재 시 3줄 만에 exit 0 —
+#   아래 주입 블록 전체가 배포 환경에서 역사상 한 번도 발화하지 않았다 (이번 조사 최대 발견).
+#   업데이트 로직의 어떤 실패/조기 종료도 주입을 막지 않도록 서브셸 함수로 격리.
 
 set -euo pipefail
 
@@ -11,68 +17,62 @@ CACHE_FILE="$PLUGIN_ROOT/.plugin-cache-version"
 # 현재 로컬 버전
 LOCAL_VERSION=$(grep -o '"version": *"[^"]*"' "$PLUGIN_JSON" | head -1 | grep -o '[0-9][0-9.]*')
 
-# git repo가 아니면 스킵
-if [ ! -d "$PLUGIN_ROOT/.git" ]; then
-  exit 0
+# SessionStart stdin 페이로드 (transcript_path 등 — tty면 수동 실행이므로 스킵)
+HOOK_INPUT=""
+if [ ! -t 0 ]; then
+  HOOK_INPUT=$(cat 2>/dev/null || true)
 fi
 
-cd "$PLUGIN_ROOT"
+# ─────────────────────────────────────────────
+# 1. 플러그인 자동 업데이트 — 서브셸 ( ) 격리:
+#    exit는 서브셸만 끝내고, cd도 본 셸에 누출되지 않는다
+# ─────────────────────────────────────────────
+run_auto_update() (
+  # git repo가 아니면 스킵 (마켓플레이스 캐시 설치본 — 업데이트는 plugin update가 담당)
+  [ -d "$PLUGIN_ROOT/.git" ] || exit 0
 
-# remote 확인 (타임아웃 5초, 실패 시 무시)
-if ! git fetch origin --quiet 2>/dev/null; then
-  exit 0
-fi
+  cd "$PLUGIN_ROOT"
 
-# 로컬과 리모트 비교
-LOCAL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
-REMOTE_HEAD=$(git rev-parse origin/main 2>/dev/null || echo "")
+  # remote 확인 (실패 시 무시)
+  git fetch origin --quiet 2>/dev/null || exit 0
 
-if [ -z "$LOCAL_HEAD" ] || [ -z "$REMOTE_HEAD" ]; then
-  exit 0
-fi
+  LOCAL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
+  REMOTE_HEAD=$(git rev-parse origin/main 2>/dev/null || echo "")
+  { [ -z "$LOCAL_HEAD" ] || [ -z "$REMOTE_HEAD" ]; } && exit 0
 
-# 이미 최신이면 스킵
-if [ "$LOCAL_HEAD" = "$REMOTE_HEAD" ]; then
-  # 캐시 버전 파일 갱신
-  echo "$LOCAL_VERSION" > "$CACHE_FILE"
-  exit 0
-fi
-
-# 로컬 변경사항이 있으면 업데이트 스킵 (사용자가 수정 중일 수 있음)
-if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-  exit 0
-fi
-
-# 자동 업데이트 실행
-if ! git pull origin main --ff-only --quiet 2>/dev/null; then
-  # ff-only 실패 (conflict) → 강제 업데이트하지 않고 스킵
-  exit 0
-fi
-
-# 업데이트 후 새 버전 확인
-NEW_VERSION=$(grep -o '"version": *"[^"]*"' "$PLUGIN_JSON" | head -1 | grep -o '[0-9][0-9.]*')
-PREV_VERSION="${LOCAL_VERSION}"
-
-# 캐시 파일에 이전 버전이 있으면 그걸 사용
-if [ -f "$CACHE_FILE" ]; then
-  PREV_VERSION=$(cat "$CACHE_FILE" 2>/dev/null || echo "$LOCAL_VERSION")
-fi
-
-# 버전 변경 시 알림
-if [ "$PREV_VERSION" != "$NEW_VERSION" ]; then
-  echo "⚡ code-forge updated: v${PREV_VERSION} → v${NEW_VERSION}"
-
-  # 최근 변경 요약 (버전 변경 커밋들)
-  CHANGES=$(git log --oneline "${LOCAL_HEAD}..HEAD" --no-decorate 2>/dev/null | head -5)
-  if [ -n "$CHANGES" ]; then
-    echo ""
-    echo "Changes:"
-    echo "$CHANGES"
+  # 이미 최신이면 캐시 버전만 갱신
+  if [ "$LOCAL_HEAD" = "$REMOTE_HEAD" ]; then
+    echo "$LOCAL_VERSION" > "$CACHE_FILE"
+    exit 0
   fi
-fi
 
-# 캐시 버전 갱신
-echo "$NEW_VERSION" > "$CACHE_FILE"
+  # 로컬 변경사항이 있으면 업데이트 스킵 (사용자가 수정 중일 수 있음)
+  if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+    exit 0
+  fi
+
+  # ff-only 실패 (conflict) → 강제 업데이트하지 않고 스킵
+  git pull origin main --ff-only --quiet 2>/dev/null || exit 0
+
+  NEW_VERSION=$(grep -o '"version": *"[^"]*"' "$PLUGIN_JSON" | head -1 | grep -o '[0-9][0-9.]*')
+  PREV_VERSION="${LOCAL_VERSION}"
+  if [ -f "$CACHE_FILE" ]; then
+    PREV_VERSION=$(cat "$CACHE_FILE" 2>/dev/null || echo "$LOCAL_VERSION")
+  fi
+
+  if [ "$PREV_VERSION" != "$NEW_VERSION" ]; then
+    echo "⚡ code-forge updated: v${PREV_VERSION} → v${NEW_VERSION}"
+    CHANGES=$(git log --oneline "${LOCAL_HEAD}..HEAD" --no-decorate 2>/dev/null | head -5)
+    if [ -n "$CHANGES" ]; then
+      echo ""
+      echo "Changes:"
+      echo "$CHANGES"
+    fi
+  fi
+
+  echo "$NEW_VERSION" > "$CACHE_FILE"
+)
+run_auto_update || true
 
 # ─────────────────────────────────────────────
 # 프로젝트 에이전트 재컴파일 알림
@@ -240,6 +240,12 @@ if [ -f "$FLAG_FILE" ]; then
     ACK_REASON=$(grep "^ack:" "$FLAG_FILE" | head -1 | sed 's/^ack: *//')
     echo ""
     echo "[code-forge] REFLECT flag ack됨: $ACK_REASON"
+  elif FLAG_MTIME=$(stat -f %m "$FLAG_FILE" 2>/dev/null || stat -c %Y "$FLAG_FILE" 2>/dev/null || echo 0) \
+    && [ "$FLAG_MTIME" -gt 0 ] && [ $(( $(date +%s) - FLAG_MTIME )) -gt 259200 ]; then
+    # 72시간 넘게 방치된 flag — 33줄 전체 대신 1줄 축약 (자동 삭제는 하지 않음)
+    FLAG_AGE_DAYS=$(( ( $(date +%s) - FLAG_MTIME ) / 86400 ))
+    echo ""
+    echo "[code-forge] ⚠️ REFLECT flag ${FLAG_AGE_DAYS}일째 방치 — 품질 검증 실패가 미해소 상태. 재검증(파일 수정 후 턴 종료) 또는 'ack: <이유>' / rm $FLAG_FILE 로 정리 권장"
   else
     FLAG_SUMMARY=$(head -15 "$FLAG_FILE" 2>/dev/null || echo "[flag read error]")
     cat <<REFLECT_EOF
@@ -262,21 +268,52 @@ REFLECT_EOF
   fi
 fi
 
-# quality.jsonl GC (7일 경과 엔트리 정리, 10MB 초과 시 트리밍)
+# quality.jsonl GC (7일 경과 엔트리 → archive 이동, 10MB 초과 시 앞쪽 절반 archive)
 # 계약: docs/contracts/state-schema.md §2
+# 2026-06-12 수리 2건:
+#   - 3-인자 match()는 gawk 전용 — macOS BSD awk에서 매번 에러로 GC가 영구 무동작이었음 → POSIX match+substr
+#   - 삭제 → quality.archive.jsonl append로 변경: 반복 패턴 히스토리는 Whetstone(마스터플랜 5단계)의
+#     입력 데이터라 유실 금지 (정보보존 원칙). 활성 파일만 가볍게 유지
 JSONL_FILE="$WORK_DIR/.claude/state/quality.jsonl"
+ARCHIVE_FILE="$WORK_DIR/.claude/state/quality.archive.jsonl"
 if [ -f "$JSONL_FILE" ]; then
   SIZE=$(wc -c < "$JSONL_FILE" 2>/dev/null || echo 0)
   # 10MB = 10485760
   if [ "$SIZE" -gt 10485760 ]; then
-    # 뒤쪽 절반 유지
+    # 앞쪽 절반 archive, 뒤쪽 절반 유지
     TOTAL=$(wc -l < "$JSONL_FILE")
     HALF=$((TOTAL / 2))
+    head -n "$((TOTAL - HALF))" "$JSONL_FILE" >> "$ARCHIVE_FILE" 2>/dev/null || true
     tail -n "$HALF" "$JSONL_FILE" > "$JSONL_FILE.tmp" && mv "$JSONL_FILE.tmp" "$JSONL_FILE"
   fi
-  # 7일 경과 GC (best-effort, 포맷 가정)
+  # 7일 경과 → archive (best-effort, 포맷 가정. ts 없는 줄도 archive로 — 유실 0)
   CUTOFF=$(date -u -v-7d +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d '7 days ago' +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
   if [ -n "$CUTOFF" ]; then
-    awk -v cutoff="$CUTOFF" 'match($0, /"ts":"([^"]+)"/, a) { if (a[1] >= cutoff) print }' "$JSONL_FILE" > "$JSONL_FILE.tmp" 2>/dev/null && mv "$JSONL_FILE.tmp" "$JSONL_FILE"
+    awk -v cutoff="$CUTOFF" -v arch="$ARCHIVE_FILE" '{
+      if (match($0, /"ts":"[^"]*"/)) {
+        ts = substr($0, RSTART + 6, RLENGTH - 7)
+        if (ts >= cutoff) { print } else { print >> arch }
+      } else { print >> arch }
+    }' "$JSONL_FILE" > "$JSONL_FILE.tmp" 2>/dev/null && mv "$JSONL_FILE.tmp" "$JSONL_FILE" || rm -f "$JSONL_FILE.tmp"
+  fi
+fi
+
+# ─────────────────────────────────────────────
+# model_version → route.json (HUD 버전 표시의 producer — 마스터플랜 4단계 전제 배선)
+# 실측(2026-06-12): SessionStart/Stop stdin 페이로드에 model 필드 없음(공식 문서) →
+# transcript에서 마지막 assistant 메시지의 .message.model 추출 (resume/clear/compact 시 존재,
+# 신규 세션은 transcript가 비어 있으므로 graceful skip — 다음 세션부터 채워짐)
+# ─────────────────────────────────────────────
+FORGE_BIN="$PLUGIN_ROOT/bin/forge"
+if [ -n "$HOOK_INPUT" ] && [ -x "$FORGE_BIN" ] && command -v jq >/dev/null 2>&1; then
+  TRANSCRIPT=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null || echo "")
+  if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+    MODEL_VER=$(tail -50 "$TRANSCRIPT" 2>/dev/null \
+      | jq -r 'select(.message.model? // empty != "") | .message.model' 2>/dev/null \
+      | tail -1 || echo "")
+    if [ -n "$MODEL_VER" ]; then
+      printf '{"model_version":"%s","producer":"session-init"}' "$MODEL_VER" \
+        | "$FORGE_BIN" emit-event >/dev/null 2>&1 || true
+    fi
   fi
 fi

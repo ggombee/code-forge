@@ -99,9 +99,11 @@ failed_files:
 
 **읽는 자**: `skills/forge-status`, forge-glow L3 (adapter 경유 권장)
 
-**GC**:
-- 7일 경과 엔트리는 `session-init.sh`가 세션 시작 시 정리
-- 파일 크기 10MB 초과 시 절반으로 트리밍 (오래된 것부터)
+**GC** (2026-06-12 개정 — 삭제 아닌 archive 이동):
+- 7일 경과 엔트리는 `session-init.sh`가 세션 시작 시 `quality.archive.jsonl`로 이동 (활성 파일만 가볍게 유지)
+- 파일 크기 10MB 초과 시 앞쪽 절반을 archive로 이동
+- **유실 0 원칙**: 반복 패턴 히스토리는 Whetstone(규칙 초안 스캔)의 입력 — 스캔 도구는 active+archive 양쪽을 봐야 함
+- 비고: 구버전 GC는 gawk 전용 match() 때문에 macOS에서 영구 무동작이었음 (수리 전 기록이 보존된 이유)
 
 **호환성**:
 - 외부 도구는 **모르는 `type` 을 보면 무시**해야 함 (forward-compat)

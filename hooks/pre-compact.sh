@@ -24,4 +24,5 @@ if [ -d "$PROJECT_ROOT/.git" ]; then
   fi
 fi
 
+echo "권장: 자동 압축은 맥락 유실 위험 — 가능하면 /handoff로 progress.md에 정리 후 새 세션 권장"
 echo "=== 끝 ==="

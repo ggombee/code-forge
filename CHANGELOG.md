@@ -5,6 +5,17 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [4.7.0] — 2026-06-12
+
+### 수정 (마스터플랜 3단계 — "세션 시작 주입 살리기", 이번 조사 최대 발견 수리)
+- **session-init.sh 조기 exit 수리** — 마켓플레이스 설치본(캐시)엔 .git이 없는데 .git 부재 시 3줄 만에 종료 → 프로젝트 컨텍스트/notepad/progress.md/REFLECT 주입 전체가 **배포 환경에서 역사상 발화 0회**였음. 자동 업데이트 로직을 서브셸로 격리(어떤 실패도 주입을 못 막음, cd 누출 차단) — "이어가기" 회로 첫 통전
+- **quality.jsonl GC가 macOS에서 영구 무동작이던 것 수리** — gawk 전용 3-인자 match() → POSIX. 동시에 **삭제 → quality.archive.jsonl 이동**으로 변경: 반복 패턴 히스토리는 Whetstone(5단계) 입력이라 유실 금지 (state-schema §2 개정)
+- **REFLECT flag 72시간+ 방치 시 1줄 축약 주입** — 33줄 전체 대신 "N일째 방치 — 재검증/ack/rm 권장" (자동 삭제는 안 함)
+
+### 추가
+- **model_version → route.json 배선** — 실측 결과 SessionStart/Stop 페이로드에 model 필드가 없어 transcript 마지막 assistant 메시지에서 추출 (신규 세션은 transcript가 비어 graceful skip, resume/clear부터 채워짐). HUD 버전 표시(4단계)의 producer
+- **pre-compact.sh에 /handoff 권장 1줄** — 자동 압축 직전 "가능하면 /handoff로 정리 후 새 세션" 안내 (이제 받는 쪽 주입이 살았으니 시점 정합)
+
 ## [4.6.1] — 2026-06-12
 
 ### 수정 (Foreman 연속성 보완 — "진행 중인 작업의 연속 발화에 새 작업 안내가 뜨는 모순" 사용자 검토 반영)
