@@ -34,7 +34,7 @@
 ## 3. effort 정책
 
 - API enum: `low|medium|high|xhigh|max`. **`ultracode`는 Claude Code 하니스 전용 레벨** (xhigh + 워크플로우 오케스트레이션) — API param으로 전달 금지, 기록은 verbatim.
-- **Claude 서브에이전트의 effort 상한은 advisory** — 하니스가 강제 불가. `AUTO_EFFORT_MAX=xhigh` (Phase 2에서 routing.json에 명문화 예정)는 auto 경로 권고 상한이고, `max`/`ultracode`는 manual-only.
+- **Claude 서브에이전트의 effort 상한은 advisory** — 하니스가 강제 불가. `AUTO_EFFORT_MAX=xhigh`(§5 표가 유일본)는 auto 경로 권고 상한이고, `max`/`ultracode`는 manual-only.
 - 실제 비용 제어 수단: ① 티어 핀 (§2) ② codex `reasoning_effort` (실 param) ③ 작업 명세를 첫 턴에 완결되게 (재질문 루프 감소).
 
 ## 4. 결정 시점과 운반
@@ -43,7 +43,20 @@
 - 결정의 운반: `bin/forge emit-event` → `.claude/state/route.json` (latest-only) → `bin/forge status --json`의 `route` 키 → HUD 표시 (Phase 2-3 플래그 뒤). 계약: `docs/contracts/event-schema.md`.
 - RoutingDecision shape (canonical — OVERHAUL_PLAN §5): `{agent, model(tier), model_version(표시전용), role, effort_per_phase, cross_vendor}`.
 
-## 5. Phase 2+ 예정 (이 문서가 확장될 자리)
+## 5. complexity → effort 매핑 (확정 — 2026-06-12, 마스터플랜 4단계)
 
-- complexity judge → effort 매핑 표 (LOW→low, MED→medium/high, HIGH→high/xhigh; `routing.json`의 AUTO_EFFORT_MAX 상수)
+/start §3-3 복잡도 판단 결과를 effort 권고로 변환하는 표. **권고 전용** — 메인 세션 effort는 시스템이 못 바꾼다(§1, /effort는 사용자 전용). 실제 레버는 티어 핀(§2)과 codex `reasoning_effort`뿐.
+
+| complexity | effort 권고 | codex reasoning_effort | 비고 |
+|---|---|---|---|
+| **LOW** | low | low | 바로 구현 — 권고 표시 생략 가능 |
+| **MEDIUM** | medium (패턴 불명확 시 high) | medium | 기본 일꾼 레인 |
+| **HIGH** | high (새 아키텍처면 xhigh) | high | Plan 에이전트 동반 (§3-3) |
+
+- **AUTO_EFFORT_MAX=xhigh** — auto 경로 권고 상한. `max`/`ultracode`는 manual-only (§3과 동일).
+- **상수 위치는 이 표가 유일본** — `routing.json` 신설은 기각 (2026-06-12 결정: 소비자가 /start 권고 1곳뿐인데 파일 추가는 과잉. 소비자가 2곳+ 되면 재상정).
+- 운반: /start §3-3b가 `bin/forge emit-event`로 `{complexity, effort}`를 route.json에 기록 → `status --json` route 키 → HUD 🎚 (FORGE_GLOW_SHOW_EFFORT=1, 기본 off).
+
+## 6. Phase 2+ 예정 (이 문서가 확장될 자리)
+
 - FR3 role split (codex-plan/claude-code) 선택 규칙 — off by default, graceful skip

@@ -5,6 +5,20 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [4.8.0] — 2026-06-12
+
+### 추가 (마스터플랜 4단계 — "작업 난도 → 모델/effort 권고 + 상태바 표시")
+- **/start §3-3b 라우팅 권고** — 복잡도 판단 직후 routing-policy §5 표(LOW→low, MED→medium/high, HIGH→high/xhigh)로 effort 권고를 정하고 `emit-event`로 route.json에 기록(deep-merge — quality-gate의 last_gate와 공존 검증). 계획 출력에 '라우팅 (권고)' 행 표시. **권고 전용** — 메인 세션 effort는 시스템이 못 바꿈(/effort는 사용자 전용), 적용은 사용자 선택
+- **routing-policy.md §5 확정** — complexity→effort 매핑 표가 상수 유일본. `AUTO_EFFORT_MAX=xhigh`(auto 경로 상한, max/ultracode는 manual-only). routing.json 신설은 기각 — 소비자 1곳에 파일 추가는 과잉, 2곳+ 되면 재상정
+- **/start 계획 크면 /handoff 제안** — HIGH + 변경 파일 5개+ 시 체크포인트 A에서 세션 분리 옵션 1줄
+
+### 변경
+- **복잡도 기준 단일화** — /start §3-3 인라인 표가 유일본. 중복이던 `references/complexity-judgment.md`는 `archive/references/`로 이동(폐지 스킬 /bug-fix·/refactor 기준 포함이라 통째 보존, 참조 0곳 확인)
+- **/start 관련 스킬 표 현행화** — 폐지된 /done /quality → /test /e2e /handoff로 치환(대체 매핑은 docs/CATALOG.md)
+
+### 드롭 (정직한 기록)
+- **ctx 70% UserPromptSubmit /handoff 주입** — stdin 실측(v2.1.170 headless) 결과 usage/ctx 필드 부재(session_id/transcript_path/cwd/permission_mode/hook_event_name/prompt 6개뿐) → 마스터플랜 명시 조건대로 드롭. 커버리지는 기존 2채널(HUD ctx 80% 싸이렌 → /handoff, pre-compact 권장)이 담당
+
 ## [4.7.0] — 2026-06-12
 
 ### 수정 (마스터플랜 3단계 — "세션 시작 주입 살리기", 이번 조사 최대 발견 수리)

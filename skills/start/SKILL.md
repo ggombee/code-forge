@@ -206,6 +206,8 @@ Task(subagent_type = 'scout', model = 'haiku', prompt = '관련 유틸/서비스
 | **MEDIUM** | 2-5개 파일, 기존 패턴 | 패턴 확인 후 구현 |
 | **HIGH** | 5개+ 파일, 새 아키텍처 | Plan 에이전트 호출 |
 
+> 위 표가 복잡도 기준의 **유일본** (2026-06-12 단일화 — 구 `references/complexity-judgment.md`는 폐지 스킬 기준 포함이라 `archive/references/`에 통째 보존).
+
 HIGH 복잡도 시:
 ```typescript
 Task(subagent_type = 'Plan', model = 'opus', prompt = `
@@ -216,6 +218,25 @@ Task(subagent_type = 'Plan', model = 'opus', prompt = `
   구현 계획 수립 요청
 `);
 ```
+
+### 3-3b. 라우팅 권고 + 기록 (2026-06-12, 마스터플랜 4단계)
+
+복잡도 판단 직후 1회, [`references/routing-policy.md`](../../references/routing-policy.md) §5 표로 effort 권고를 정하고 route.json에 기록한다.
+
+| complexity | effort 권고 | codex reasoning_effort |
+|---|---|---|
+| LOW | low | low |
+| MEDIUM | medium (패턴 불명확 시 high) | medium |
+| HIGH | high (새 아키텍처면 xhigh) | high |
+
+```bash
+# deep-merge라 quality-gate의 last_gate 등 다른 producer 필드를 지우지 않음 (event-schema.md §1)
+echo '{"complexity":"{LOW|MEDIUM|HIGH}","effort_level":"{권고값}","producer":"/start"}' \
+  | "${CLAUDE_PLUGIN_ROOT}/bin/forge" emit-event 2>/dev/null || true
+```
+
+- **권고 전용** — 메인 세션 effort는 시스템이 못 바꾼다 (/effort는 사용자 전용). 서브에이전트 티어 핀과 codex `reasoning_effort`만 실제 레버.
+- 권고는 §3-4 계획 출력의 '라우팅(권고)' 행으로 사용자에게 표시 — 적용 여부는 사용자 선택.
 
 ### 3-4. 작업 계획 출력
 
@@ -235,9 +256,14 @@ Task(subagent_type = 'Plan', model = 'opus', prompt = `
 ### 변경 파일
 - {파일 목록}
 
+### 라우팅 (권고)
+- 복잡도 {LOW|MEDIUM|HIGH} → effort {권고값} (적용은 사용자 선택 — /effort)
+
 ### 검증 방법
 - {테스트 전략}
 ```
+
+> 계획이 크면(HIGH + 변경 파일 5개+) 체크포인트 A에서 "/handoff로 세션 분리" 옵션을 한 줄 제안.
 
 ### 3-5. progress.md append (작업 이어가기 + 의사결정 누적, 2026-05-17 redesign G3, 2026-05-20 G3.5 확장)
 
@@ -572,6 +598,9 @@ Phase 6-7: 자동 실행
 
 | 스킬 | 용도 | 단독 사용 시 |
 |------|------|-------------|
-| `/done` | 검증+커밋+PR | 이미 구현 끝났을 때 |
-| `/quality` | lint/build 검증 | `--lint-only` 등 부분 검증 |
+| `/test` | 테스트 통합 진입점 (유닛/E2E/세팅 자동 라우팅) | 구현 없이 테스트만 돌릴 때 |
+| `/e2e` | 화면 단위 E2E 자동화 (Forge Loop) | 페이지 단위 자동 테스트 |
+| `/handoff` | 세션 핸드오프 (progress.md + 킥오프 프롬프트) | 계획이 크거나 컨텍스트가 찼을 때 |
 | `/figma-to-code` | Figma 전용 변환 | Emotion 기반 코드 생성 |
+
+> 구 `/done` `/quality`는 v4.0 폐지 — 대체 매핑은 `docs/CATALOG.md`.
