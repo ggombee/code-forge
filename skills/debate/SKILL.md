@@ -1,6 +1,6 @@
 ---
 name: debate
-description: 교차 모델 토론. Agent Teams / Codex CLI / self-debate 모드 선택. 설계 결정, 아키텍처 선택 시 활용.
+description: 교차 모델 토론. Agent Teams / Codex CLI / self-debate 모드 선택. 설계 결정, 아키텍처 선택 시 활용. "어느 쪽이 나을까", "설계 비교해줘", "토론시켜줘", "교차 검증해줘" 등의 요청에 사용.
 category: analysis
 metadata:
   version: '2.0.0'

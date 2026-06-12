@@ -313,4 +313,28 @@ else
   emit_route "pass" ""
 fi
 
+# ── 8. 완료 시점 제안 (F3a — Foreman, FORGE_MASTERPLAN 2단계) ──
+# 변경 파일이 있는데 progress.md가 1시간 내 갱신 안 됐으면 wrapup_hint를 route.json에 기록.
+# Stop 훅 stdout은 모델에 미도달(공식 문서, 2026-06-12 판정)이라 실제 전달은
+# auto-flow-trigger.sh C0 백스톱(다음 프롬프트)이 담당. 세션당 1회 마커 dedup.
+# quality.jsonl에는 기록하지 않음 (stderr + route.json만 — 게이트 분모 오염 방지).
+F3A_MARKER="$HOME/.code-forge/foreman-$(date +%Y%m%d)-${SESSION_ID}-f3a-emit"
+if [ ! -f "$F3A_MARKER" ]; then
+  PROGRESS_FILE="$STATE_DIR/progress.md"
+  PROGRESS_FRESH=false
+  if [ -f "$PROGRESS_FILE" ]; then
+    P_MTIME=$(stat -f %m "$PROGRESS_FILE" 2>/dev/null || stat -c %Y "$PROGRESS_FILE" 2>/dev/null || echo 0)
+    [ $(( $(date +%s) - P_MTIME )) -lt 3600 ] && PROGRESS_FRESH=true
+  fi
+  if [ "$PROGRESS_FRESH" = false ]; then
+    mkdir -p "$HOME/.code-forge" 2>/dev/null || true
+    touch "$F3A_MARKER" 2>/dev/null || true
+    if [ -x "$FORGE_BIN" ]; then
+      printf '{"wrapup_hint":{"ts":"%s"},"producer":"quality-gate"}' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        | "$FORGE_BIN" emit-event >/dev/null 2>&1 || true
+    fi
+    echo "[quality-gate:wrapup] 변경 파일 있음 + progress.md 미갱신 — progress 정리 또는 /handoff 권장" >&2
+  fi
+fi
+
 exit 0
