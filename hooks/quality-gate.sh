@@ -86,20 +86,58 @@ emit_once() {
 # 2026-06-12 수리: 두 검사 모두 모노레포에서 구조적 always-fail이었음 (실측: pass 0/384)
 #  - eslint: "출력 존재=fail" 판정이라 설정 오류 메시지에도 fail → exit code 판정으로
 #  - tsc: 루트에서 실행 → 루트 tsconfig 없는 모노레포는 help+exit 1 → 변경 파일의 워크스페이스 스코프로
+# 2026-06-14 수리: eslint도 tsc처럼 변경 파일별 가장 가까운 config 워크스페이스로 내려가 실행
+#  (ESLint 9 flat config는 cwd 기준 탐색 — 루트 1회 실행은 루트 config 없으면 exit 2 영구 warn-skip)
 if [ -x "$PROJECT_ROOT/node_modules/.bin/eslint" ]; then
-  # shellcheck disable=SC2086
-  LINT_OUT=$("$PROJECT_ROOT/node_modules/.bin/eslint" --quiet $CHANGED_FILES 2>&1 | head -30)
-  LINT_EXIT=$?
-  if [ "$LINT_EXIT" -eq 0 ]; then
-    emit "eslint" "pass" ""
-  elif [ "$LINT_EXIT" -eq 1 ]; then
-    emit "eslint" "fail" "린트 오류"
-    echo "$LINT_OUT" | head -20 >&2
-    HAS_FAILURE=true
-    FAILED_BLOCKS="${FAILED_BLOCKS}eslint "
+  # 2026-06-14: 변경 파일별 가장 가까운 eslint config 워크스페이스로 내려가 실행 (tsc와 동일 패턴).
+  #  - ESLint 9 flat config는 cwd 기준으로 config를 찾으므로, 루트에 flat config 없는 모노레포에서
+  #    루트 1회 실행이 exit 2(설정 못 찾음)로 영구 warn-skip되던 것 수리 (kkombee 실측).
+  ES_WORKSPACES=$(while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    d=$(dirname "$f")
+    while :; do
+      for cfg in eslint.config.js eslint.config.mjs eslint.config.cjs eslint.config.ts \
+                 .eslintrc.js .eslintrc.cjs .eslintrc.json .eslintrc.yml .eslintrc.yaml; do
+        if [ -f "$PROJECT_ROOT/$d/$cfg" ]; then echo "$d"; break 2; fi
+      done
+      [ "$d" = "." ] && break
+      d=$(dirname "$d")
+    done
+  done <<< "$CHANGED_FILES" | sort -u | head -3)
+
+  if [ -z "$ES_WORKSPACES" ]; then
+    emit "eslint" "warn" "eslint config 미발견 — 스킵 (변경 파일 기준 워크스페이스 없음)"
   else
-    # exit 2+ = 설정/내부 오류 — 코드 문제가 아니므로 차단하지 않음 (graceful)
-    emit "eslint" "warn" "eslint 설정 오류(exit ${LINT_EXIT}) — 판정 스킵"
+    ES_FAIL_WS=""
+    ES_RAN=0
+    while IFS= read -r ws; do
+      [ -z "$ws" ] && continue
+      # 이 워크스페이스 아래의 변경 파일만 절대경로로 수집 (lintable 확장자)
+      if [ "$ws" = "." ]; then
+        WS_FILES=$(echo "$CHANGED_FILES" | grep -iE '\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte)$' | sed "s|^|$PROJECT_ROOT/|" || true)
+      else
+        WS_FILES=$(while IFS= read -r f; do case "$f" in "$ws"/*) echo "$PROJECT_ROOT/$f";; esac; done <<< "$CHANGED_FILES" | grep -iE '\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte)$' || true)
+      fi
+      [ -z "$WS_FILES" ] && continue
+      ES_RAN=1
+      # exit code를 파이프 없이 정확히 캡처 (pipefail 의존 제거), 출력은 별도 절단
+      # shellcheck disable=SC2086
+      LINT_OUT=$(cd "$PROJECT_ROOT/$ws" && "$PROJECT_ROOT/node_modules/.bin/eslint" --quiet $WS_FILES 2>&1)
+      LINT_EXIT=$?
+      if [ "$LINT_EXIT" -eq 1 ]; then
+        ES_FAIL_WS="${ES_FAIL_WS}${ws} "
+        printf '%s\n' "$LINT_OUT" | head -20 >&2
+      elif [ "$LINT_EXIT" -ge 2 ]; then
+        emit "eslint" "warn" "eslint 설정 오류(exit ${LINT_EXIT}) @${ws} — 판정 스킵"
+      fi
+    done <<< "$ES_WORKSPACES"
+    if [ -n "$ES_FAIL_WS" ]; then
+      emit "eslint" "fail" "린트 오류: ${ES_FAIL_WS% }"
+      HAS_FAILURE=true
+      FAILED_BLOCKS="${FAILED_BLOCKS}eslint "
+    elif [ "$ES_RAN" -eq 1 ]; then
+      emit "eslint" "pass" ""
+    fi
   fi
 fi
 

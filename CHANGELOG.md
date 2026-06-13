@@ -5,6 +5,23 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [4.11.0] — 2026-06-14
+
+> 재감사 워크플로우(19 에이전트)가 식별한 "게이트 없는 미처리 백로그" 중 코드 수정분. 마스터플랜 단계 외 품질 부채 정리.
+
+### 추가
+- **Forge Voice `⌘⇧K` 매크로** — `/handoff`가 클립보드에 복사한 킥오프 프롬프트를 "`/clear` 입력 + 붙여넣기 + 제출" 한 단축키로 자동화. `/clear`는 사용자 전용이라 hook이 아닌 키 입력으로 (`tools/forge-voice.lua`, handoff/voice 스킬 안내 갱신)
+
+### 수정
+- **quality-gate.sh eslint 워크스페이스 descent** — tsc(4.5.0)와 동일하게 변경 파일별 가장 가까운 eslint config 워크스페이스로 내려가 실행. ESLint 9 flat config는 cwd 기준 탐색이라, 루트 flat config 없는 모노레포에서 루트 1회 실행이 exit 2로 영구 warn-skip되던 비대칭 수리 (1단계 always-fail 수리와 별개의 잔여분)
+- **auto-flow-trigger.sh 모델명 오탐 가드** — "gpt 4" / "claude 3" / "llama 3" 등이 음성 친화 티켓 정규식(`\b[A-Z]{2,}[ -][0-9]+\b`)에 잡혀 `flow tc select`를 잘못 호출하던 잠복 지뢰(flow 활성 시 발화) 제거 — 알려진 모델 prefix는 통째로 스킵
+- **session-init.sh 네트워크 타임아웃** — 느린/끊긴 remote에서 git fetch/pull이 SessionStart를 무한 대기시키던 것에 상한(fetch 10s/pull 15s). `timeout`/`gtimeout` 있으면 사용, 없으면(macOS 기본) background+watchdog 폴백 — set -e 안전
+- **progress-archive.md 무한 누적 방지 (F3)** — 10MB 초과 시 앞쪽 절반을 `.old.md`로 회전(삭제 아님 — "완전 히스토리 보존" 의도 유지)
+
+### 문서
+- **routing-policy.md §2** — 2026-06-13 main이 `claude-opus-4-8`로 전환된 사실 반영(opus 핀이 현재 main과 동일 티어가 되어 비용 격리는 일시 중립, 버전 안정성+main 재전환 대비로 유지). 18행 실측(2026-06-11, main=Fable) 날짜 블록은 통제 조건이라 보존
+- **README.en.md** — 한국어 정직화판과 동기화(죽은 스킬 /bug-fix·/done·/refactor 홍보 제거 — `1422303`에서 선행 커밋)
+
 ## [4.10.0] — 2026-06-12
 
 ### 변경 (마스터플랜 8단계 — "컨텍스트 다이어트 + 문서가 거짓말 안 하게")

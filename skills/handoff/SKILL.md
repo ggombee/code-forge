@@ -66,7 +66,7 @@ KICKOFF
 
 > progress.md 갱신 + 킥오프 프롬프트 클립보드 복사 완료. 이제 `/clear` 입력 후 ⌘V로 붙여넣으세요.
 
-`/clear`는 사용자 전용 명령이라 모델이 대신 실행할 수 없다. 완전 자동화(단축키 하나로 /clear+붙여넣기)를 원하면 Hammerspoon 매크로 추가 가능 — Forge Voice(`tools/forge-voice.lua`)와 같은 패턴 (백로그, `/voice` 참조).
+`/clear`는 사용자 전용 명령이라 모델이 대신 실행할 수 없다. 완전 자동화는 Forge Voice의 **⌘⇧K 매크로**로 가능 — `/clear` 입력 + 클립보드(킥오프) 붙여넣기 + 제출을 단축키 하나로 (`tools/forge-voice.lua`, `/voice setup` 시 설치). 음성 셋업을 안 했으면 위 수동 2단계.
 
 ## graceful skip
 

@@ -27,9 +27,9 @@
 |---|---|---|
 | `haiku` ×2 | scout, lint-fixer | **기계적 작업 비용 격리** (DEFENDED — main 2x 단가 시대에 가치 상승) |
 | `sonnet` ×10 | implementor, deep-executor, assayer, code-reviewer, git-operator, researcher, refactor-advisor, vision, codex, build-fixer | 일꾼 티어 — 품질/비용 균형 |
-| `opus` ×2 | architect, analyst | 깊은 분석. **2026-06-12 사용자 결정 ⓐ: 핀 유지** — opus-4-8 고정($5/$25). 제거(=Fable 상속, 2x) 대안은 기각. 재논의 트리거: opus 티어 가격/성능 구조가 바뀔 때 |
+| `opus` ×2 | architect, analyst | 깊은 분석. **2026-06-12 결정 ⓐ: 핀 유지** — opus-4-8 고정($5/$25). ⚠️ 2026-06-13 main이 `claude-opus-4-8`로 전환(직전 Fable)되며 이 핀들은 **현재 main과 동일 티어** → 비용 격리 효과는 일시 중립(둘 다 $5/$25). 그래도 ① 버전 안정성 ② main이 상위 티어(예: Fable, 2x)로 재전환될 때의 대비책으로 유지. 재논의 트리거: opus 티어 가격/성능 구조 변경 **또는 main 티어 재전환** |
 
-**원칙**: 핀은 비용 통제 수단이다. 새 상위 티어(예: fable)가 나와도 핀된 에이전트는 영향받지 않는다 — 의도된 동작. 일괄 핀 제거 금지 (2026-06-11 검토: haiku 에이전트 최대 10x 비용 회귀).
+**원칙**: 핀은 비용 통제 수단이다. main이 상위 티어로 바뀌어도(예: Fable — 실제로 2026-05~06 main이었음, $10/$50) 핀된 에이전트는 영향받지 않는다 — 의도된 동작. 일괄 핀 제거 금지 (2026-06-11 검토: haiku 에이전트 최대 10x 비용 회귀). 현재 main = `claude-opus-4-8`(2026-06-13~) — 환경 사실 유일본은 `REDESIGN_PROGRESS.md` 환경 섹션.
 
 ## 3. effort 정책
 

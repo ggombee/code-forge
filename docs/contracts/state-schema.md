@@ -221,6 +221,7 @@ failed_files:
 - Yes: 해당 블록을 `.claude/state/progress-archive.md`로 이동 (히스토리 보존).
 - No: 그대로 유지 (사용자 자유).
 - 80줄 초과 시 session-init이 마지막 80줄만 주입 — 마지막 ticket의 의사결정이 가장 중요.
+- `progress-archive.md`는 10MB 초과 시 session-init이 앞쪽 절반을 `progress-archive.old.md`로 회전 (삭제 아님 — F3, 2026-06-14).
 
 **forge-hearth 연동**: 다중 프로젝트 dashboard는 각 repo의 `progress.md`를 stitch해서 "현재 진행 중인 ticket + 미결 질문 1줄 요약" 표시. **미결 질문 있는 ticket은 우선 표시**.
 

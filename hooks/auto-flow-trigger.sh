@@ -106,6 +106,15 @@ TICKET_RAW=$(echo "$PROMPT" | grep -oiE '\b[A-Z]{2,}[[:space:]-][0-9]+\b' 2>/dev
 # normalize: 공백 → 하이픈, 소문자 → 대문자
 TICKET=$(echo "$TICKET_RAW" | tr ' ' '-' | tr 'a-z' 'A-Z')
 
+# 모델명 오탐 제외 (2026-06-14): "gpt 4" / "claude 3" / "llama 3" 등은 티켓이 아니라 모델명.
+# G9c 음성 정규식이 \b[A-Z]{2,}[ -][0-9]+\b 로 이들을 잡아 flow tc select를 잘못 호출하던 잠복 지뢰
+# (flow 활성 시 발화). 알려진 모델 prefix면 정규화하지 말고 통째로 스킵.
+TICKET_PREFIX="${TICKET%%-*}"
+case "$TICKET_PREFIX" in
+  GPT|GPT4O|CLAUDE|LLAMA|GEMINI|OPUS|SONNET|HAIKU|FABLE|MISTRAL|QWEN|DEEPSEEK|GROK|O1|O3|O4)
+    exit 0 ;;
+esac
+
 # 영향 TC 자동 조회 (실패해도 사용자 작업은 방해하지 않음)
 echo "[code-forge auto-flow-trigger] 티켓 '$TICKET' 감지 → flow tc select 자동 호출"
 if flow tc select "$TICKET" --json 2>/dev/null; then

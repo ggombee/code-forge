@@ -23,6 +23,30 @@ if [ ! -t 0 ]; then
   HOOK_INPUT=$(cat 2>/dev/null || true)
 fi
 
+# 네트워크 호출 시간 제한 (2026-06-14): git fetch/pull이 느린/끊긴 remote에서
+# 무한 대기하면 SessionStart 자체가 멈춰 주입이 지연된다. timeout/gtimeout 있으면 사용,
+# 없으면(macOS 기본) background + watchdog kill로 이식성 확보. set -e 안전(모든 실패 || 흡수).
+run_bounded() {
+  local secs="$1"; shift
+  local rc=0
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$secs" "$@" || rc=$?
+    return "$rc"
+  fi
+  if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout "$secs" "$@" || rc=$?
+    return "$rc"
+  fi
+  "$@" &
+  local pid=$!
+  ( sleep "$secs"; kill "$pid" 2>/dev/null ) &
+  local wd=$!
+  wait "$pid" 2>/dev/null || rc=$?
+  kill "$wd" 2>/dev/null || true
+  wait "$wd" 2>/dev/null || true
+  return "$rc"
+}
+
 # ─────────────────────────────────────────────
 # 1. 플러그인 자동 업데이트 — 서브셸 ( ) 격리:
 #    exit는 서브셸만 끝내고, cd도 본 셸에 누출되지 않는다
@@ -33,8 +57,8 @@ run_auto_update() (
 
   cd "$PLUGIN_ROOT"
 
-  # remote 확인 (실패 시 무시)
-  git fetch origin --quiet 2>/dev/null || exit 0
+  # remote 확인 (실패/타임아웃 시 무시 — 10초 상한)
+  run_bounded 10 git fetch origin --quiet 2>/dev/null || exit 0
 
   LOCAL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
   REMOTE_HEAD=$(git rev-parse origin/main 2>/dev/null || echo "")
@@ -51,8 +75,8 @@ run_auto_update() (
     exit 0
   fi
 
-  # ff-only 실패 (conflict) → 강제 업데이트하지 않고 스킵
-  git pull origin main --ff-only --quiet 2>/dev/null || exit 0
+  # ff-only 실패 (conflict) → 강제 업데이트하지 않고 스킵 (15초 상한)
+  run_bounded 15 git pull origin main --ff-only --quiet 2>/dev/null || exit 0
 
   NEW_VERSION=$(grep -o '"version": *"[^"]*"' "$PLUGIN_JSON" | head -1 | grep -o '[0-9][0-9.]*')
   PREV_VERSION="${LOCAL_VERSION}"
@@ -305,6 +329,21 @@ if [ -f "$JSONL_FILE" ]; then
         if (ts >= cutoff) { print } else { print >> arch }
       } else { print >> arch }
     }' "$JSONL_FILE" > "$JSONL_FILE.tmp" 2>/dev/null && mv "$JSONL_FILE.tmp" "$JSONL_FILE" || rm -f "$JSONL_FILE.tmp"
+  fi
+fi
+
+# progress-archive.md 무한 누적 방지 (F3, 2026-06-14 — HISTORY:868)
+# /start §7-2 정리가 완료 ticket을 append하는 순수 히스토리 파일(자동 주입 안 됨).
+# 10MB 초과 시 앞쪽 절반을 .old.md로 회전 — 삭제 아님, "완전 히스토리 보존" 의도 유지.
+PA_FILE="$WORK_DIR/.claude/state/progress-archive.md"
+PA_OLD="$WORK_DIR/.claude/state/progress-archive.old.md"
+if [ -f "$PA_FILE" ]; then
+  PA_SIZE=$(wc -c < "$PA_FILE" 2>/dev/null || echo 0)
+  if [ "$PA_SIZE" -gt 10485760 ]; then
+    PA_TOTAL=$(wc -l < "$PA_FILE")
+    PA_HALF=$((PA_TOTAL / 2))
+    head -n "$((PA_TOTAL - PA_HALF))" "$PA_FILE" >> "$PA_OLD" 2>/dev/null || true
+    tail -n "$PA_HALF" "$PA_FILE" > "$PA_FILE.tmp" && mv "$PA_FILE.tmp" "$PA_FILE"
   fi
 fi
 
