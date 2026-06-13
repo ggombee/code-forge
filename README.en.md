@@ -1,9 +1,14 @@
 # code-forge
 
-Install it. Claude Code gets better.
+[한국어](README.md)
 
-14 specialized agents, 17 skills, 17 stack modules.
-A proven thinking model keeps quality consistent across every task.
+> Install it. Claude Code gets better.
+
+A Claude Code plugin that ships specialized agents, slash skills, and stack modules.
+A proven thinking model (GROUND→APPLY→VERIFY→ADAPT) keeps quality consistent across every task.
+(Agent/skill counts: the disk is the source of truth — `ls agents/*.md | wc -l`, `ls skills/*/SKILL.md | wc -l`)
+
+**Current status**: actively maintained on personal GitHub (marketplace release 4.10.0). Patch notes: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -26,13 +31,8 @@ claude
 ### Option 2: Local clone
 
 ```bash
-# 1. Clone
 git clone https://github.com/ggombee/code-forge.git
-
-# 2. Run with plugin directory
 claude --plugin-dir /path/to/code-forge
-
-# 3. Set up your project
 > /setup
 ```
 
@@ -65,29 +65,40 @@ It asks you twice: "Implement this?" and "Commit?"
 /start "change button color"   # free text works too
 ```
 
-### `/bug-fix` — options first, then fix
+It judges complexity itself — skips exploration for LOW, runs a Plan agent first for HIGH.
+Follow-ups like completion-validation and bug-fixing aren't separate skills; they're absorbed into rules and hooks (replacement mapping: [docs/CATALOG.md](docs/CATALOG.md)).
 
-Paste an error message and get 2–3 solution options with a comparison. Pick one and it applies the fix.
+### `/handoff` — cut a session, continue later
 
-```
-/bug-fix "TypeError: Cannot read property of undefined"
-```
+Instead of trusting auto-compact, it documents the context that lives only in the conversation (decisions, rationale, open questions) into `progress.md`, then copies a kickoff prompt for the next session to your clipboard. The next session picks it back up via session-init injection.
 
-### Other skills
+### Other key skills
 
 | Skill | What it does |
 |-------|-------------|
-| `/done` | Validate already-written code → commit → PR |
-| `/refactor` | Refactoring analysis + policy-preserving tests |
-| `/generate-test` | BDD scenario-based test generation |
+| `/test` | Unified test entry point — routes to unit / E2E / setup automatically |
+| `/e2e` | Screen-level E2E automation (Playwright + autonomous run loop) |
 | `/debate` | Run a structured debate between models to decide direction |
 | `/research` | Fact-based structured research |
 | `/codex` | Pair programming with OpenAI Codex |
+| `/voice` | Voice input setup (local Whisper, hands-free) |
 | `/setup --profile` | Analyze project coding style → generate a profile |
+
+Full catalog: [docs/REFERENCE.md](docs/REFERENCE.md)
+
+### `bin/forge` — state surface (for external tools)
+
+```bash
+bin/forge status --json   # quality gate / routing / REFLECT state (the only sanctioned read surface)
+bin/forge whet --draft    # recurring quality issues (3+ times) → personal-convention draft candidates (human adopts)
+bin/forge doctor          # self-diagnosis of injection circuit / version match / stuck-red (report-only)
+```
+
+[forge-glow](https://github.com/ggombee/forge-glow) (the HUD) consumes this surface to show the quality gate and effort recommendation on the status line.
 
 ---
 
-## 14 Agents
+## Agents
 
 Agents with write access and agents without are strictly separated.
 
@@ -99,6 +110,7 @@ Agents with write access and agents without are strictly separated.
 | **Full access** | implementor, deep-executor, assayer, codex | Anything |
 
 Simple exploration goes to haiku (fast), complex implementation to sonnet, architecture analysis to opus.
+Routing policy (tier pin = cost control): [references/routing-policy.md](references/routing-policy.md)
 
 ---
 
@@ -131,6 +143,20 @@ Presets for quick setup: `standard` (Pages+Jotai+Emotion+Jest) or `modern-stack`
 
 ---
 
+## Sister tools (the 5-family)
+
+code-forge is complete on its own, but composes with sister tools over shared contracts.
+The contract + wiring status (🟢 wired / 📐 designed) is canonically tracked in [docs/contracts/INTEGRATION.md](docs/contracts/INTEGRATION.md).
+
+| Tool | Role | Status |
+|---|---|---|
+| [forge-glow](https://github.com/ggombee/forge-glow) | Real-time HUD (status line) | 🟢 wired — consumes `bin/forge status --json` |
+| flow-toolkit | Model-agnostic workflow CLI | 📐 dormant — every call is a graceful skip when absent |
+| forge-hearth | Multi-project dashboard | 📐 dormant |
+| coding-practice | Personal-convention source (`.candidate/profile.md`) | 🟢 consumed by the candidate-profile rule |
+
+---
+
 ## The Forge metaphor
 
 code-forge uses a blacksmith metaphor — a cognitive apprenticeship model where each component has a clear role:
@@ -140,7 +166,7 @@ code-forge uses a blacksmith metaphor — a cognitive apprenticeship model where
 | **Forge** | The platform itself |
 | **Smith** | Builds and compiles agents (STATE + ACT) |
 | **Anvil** | User-facing interface (CLI, skills, commands) |
-| **Whetstone** | Sharpens coding skills (separate repo) |
+| **Whetstone** | Sharpens coding skills (separate repo: coding-practice) |
 | **Assayer** | Test generation and validation |
 | **Bellows** | Usage logging and statistics |
 | **Blueprint** | Thinking model and rules |
