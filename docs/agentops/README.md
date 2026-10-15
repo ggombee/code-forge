@@ -6,8 +6,8 @@
 
 ## 먼저 볼 문서
 
-1. [한눈에 보는 제품 결정](./11b.codeforge-public-service-summary.md) — 구조도와 쉬운 설명으로 제품 방향을 검토한다.
-2. [공개 서비스·24시간 AgentOps 최종 설계](./11.codeforge-public-service-architecture-debate.md) — 현재 제품 범위와 출시 계획의 기준 문서다.
+1. [나 대신 여러 AI의 일을 이어 가는 시스템](./11b.codeforge-public-service-summary.md) — 실제 하루가 어떻게 바뀌는지와 각 도구를 쓰는 이유부터 읽는다.
+2. [공개 서비스·24시간 AgentOps 최종 설계](./11.codeforge-public-service-architecture-debate.md) — 쉬운 설명에 이어 내부 계약, 보안 규칙과 출시 계획을 확인한다.
 3. [24시간 무인 실행기 참고 구현 감사와 최종 설계](./12.night-runner-reference-audit-and-design.md) — 무인 준비, 인간 승인, 실제 반영의 상태·권한·검증 계약을 정한다.
 
 ## 문서별 지위
@@ -18,7 +18,7 @@
 | [09 CodeForge 중심 장기 설계](./09.codeforge-owned-agent-system-design.md) | 장기 구조 참고 | 확장 가능한 전체 구조를 확인 |
 | [10 Thin Coordinator 검증](./10.codeforge-thin-coordinator-overengineering-validation.md) | 선택형 실험 | 과잉설계 위험과 작은 실험 범위를 확인 |
 | [11 공개 서비스 최종 설계](./11.codeforge-public-service-architecture-debate.md) | 제품 계획 기준 | 제품 범위, 출시 순서, 중단 기준을 결정 |
-| [11b 검토용 요약](./11b.codeforge-public-service-summary.md) | 사람용 요약 | 전체 결정을 빠르게 검토 |
+| [11b 제품 이야기](./11b.codeforge-public-service-summary.md) | 사람용 진입점 | 사용 장면, 최소 구성과 선택형 도구의 이유를 이해 |
 | [12 무인 실행 최종 설계](./12.night-runner-reference-audit-and-design.md) | 실행 하위 계획 | 24시간 준비와 인간 반영 게이트를 구현 |
 
 08~10번 문서는 당시 판단과 근거를 보존한다. 현재 구현 결정이 다르면 11번과 12번을 따른다.
