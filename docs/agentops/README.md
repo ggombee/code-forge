@@ -27,6 +27,8 @@
 
 CodeForge는 여러 모델과 실행기를 직접 대체하지 않는다. 작업 명세, 권한, 데이터 분리, 비용, 독립 검증, 실행 기록과 승인함을 소유하고 Claude, Codex, GLM, Qwen, Herdr, Hermes 같은 도구를 어댑터로 연결한다.
 
+실행 중 판단이 필요해도 전체 작업을 멈추지 않는다. 결정에 의존하는 노드만 `WAITING_DECISION`으로 두고, 메인 coordinator는 독립적으로 진행할 수 있는 일을 계속한다. 별도 Decision Concierge가 전용 창·스레드·모바일 카드로 질문하고, 답을 versioned `DecisionReceipt`로 원장에 돌려보낸다.
+
 언어도 하나로 고정하지 않는다. 에이전트용 스킬과 규칙은 모델·작업별 `LanguageProfile` 평가로 선택한다. 한국어 사용자 문서는 윤문하고, 공개 영어 문서는 영어 독자에게 자연스럽게 별도로 작성한다.
 
 ![CodeForge 한눈에 보는 구조도](./assets/codeforge-overview-ko.png)
@@ -35,7 +37,7 @@ CodeForge는 여러 모델과 실행기를 직접 대체하지 않는다. 작업
 
 1. 기존 CodeForge의 거짓 성공 판정과 동시 기록 결함을 고친다.
 2. 실행기와 무관한 검증 CLI와 GitHub Action을 공개한다.
-3. 한 사람이 쓰는 야간 실행기와 아침 승인함을 만든다.
+3. 한 사람이 쓰는 야간 실행기, 비동기 Decision Concierge와 아침 승인함을 만든다.
 4. 모델별 비용·품질·언어 프로필과 ForgeGlow 연동을 검증한다.
 5. 팀 승인과 조직 정책에 반복 수요가 확인되면 Hosted Hub로 넓힌다.
 
