@@ -1,62 +1,156 @@
-# Routing Policy — 모델/벤더 라우팅의 단일 진실
+# Routing Policy — 모델·사고 깊이·위임의 단일 진실
 
-> 라우팅 결정의 canonical 문서 (2026-06-12 신설 — Option C Phase 1 H4).
-> 구 `instructions/agent-patterns/model-routing.md`(티어 매트릭스)를 대체 — 원문은 `archive/instructions/model-routing.md` 보존.
-> 스킬/에이전트별 권장 티어 힌트는 [`routing-hints.md`](routing-hints.md) (본 정책의 보조 표).
+> Claude와 Codex가 공유하는 canonical 정책이다. 구체 모델명과 호스트 문법은 어댑터가 결정한다.
+> 목표는 가장 강한 모델을 많이 쓰는 것이 아니라, **필요한 증거를 가장 싼 충분한 경로로 얻는 것**이다.
 
 ---
 
-## 1. 라우팅 가능한 축 — 정직한 능력 서술
+## 1. 결정 원칙
 
-| 축 | 라우팅 가능? | 수단 |
-|---|---|---|
-| **티어** (haiku/sonnet/opus/fable) | ✅ | 에이전트 frontmatter `model:` 핀, Task() model param |
-| **벤더** (claude/codex) | ✅ | codex CLI 호출 (reasoning_effort는 codex만 실제 param) |
-| **모델 버전** (4.8 vs 4.7 …) | ❌ | 별칭 슬롯이라 불가. 유일한 버전 노브 = 세션 전역 `settings.json` `"model"` (/model) |
-| **effort** (Claude 서브에이전트) | ⚠️ advisory | Task()에 effort param 없음 — 권고만 가능. 실제 레버 = 티어 선택 + codex reasoning_effort |
+1. 복잡도·오케스트레이션 라우트는 GROUND→PLAN 경계에서 한 번 결정한다.
+2. 파일 수는 신호일 뿐 복잡도의 판정 기준이 아니다.
+3. 새 증거로 위험 등급이 바뀐 경우에만 라우트를 재판정한다. 단, 이미 결정한 라우트 안의 phase 전환(DEEP 계획 → BALANCED 구현 등)은 재라우팅이 아니며 resolver가 예고된 매핑을 적용한다.
+4. 높은 effort와 다수 에이전트는 품질 보장이 아니다. 검증 가능한 이득이 있을 때만 올린다.
+5. 자동 경로의 기본 상한은 `high`다. `xhigh` 이상은 고위험·고가치 작업에서 사용자가 요청했거나 eval로 이득이 확인된 경우만 쓴다.
+6. **모델/effort, 컨텍스트 깊이, fan-out은 독립된 세 축**이다. 같은 위험 판정을 공유해도 한 축을 올렸다는 이유로 나머지를 자동 상향하지 않는다.
 
-**실측 (2026-06-11, main=claude-fable-5[1m]):** `model: opus` 핀 서브에이전트의 transcript `.message.model` = `claude-opus-4-8`. **티어 별칭은 main 모델이 아니라 해당 티어의 최신으로 해석**된다. 따라서:
-- 핀 유지 = 티어 최신 고정 (비용 예측 가능)
-- 핀 제거 = main 세션 모델 상속 (main이 상위 티어면 비용 상승)
+## 2. 위험 신호
 
-`model_version`은 **표시/추적 전용** — 라우팅 노브 아님 (verbatim 기록, `docs/contracts/event-schema.md` §5).
+GROUND에서 아래 축을 각각 `low | medium | high`로 판단한다.
 
-## 2. 핀 정책 (14개 — 산출: `grep -l 'model:' agents/*.md | wc -l`)
-
-| 핀 | 에이전트 | 근거 |
-|---|---|---|
-| `haiku` ×2 | scout, lint-fixer | **기계적 작업 비용 격리** (DEFENDED — main 2x 단가 시대에 가치 상승) |
-| `sonnet` ×10 | implementor, deep-executor, assayer, code-reviewer, git-operator, researcher, refactor-advisor, vision, codex, build-fixer | 일꾼 티어 — 품질/비용 균형 |
-| `opus` ×2 | architect, analyst | 깊은 분석. **2026-06-12 결정 ⓐ: 핀 유지** — opus-4-8 고정($5/$25). ⚠️ 2026-06-13 main이 `claude-opus-4-8`로 전환(직전 Fable)되며 이 핀들은 **현재 main과 동일 티어** → 비용 격리 효과는 일시 중립(둘 다 $5/$25). 그래도 ① 버전 안정성 ② main이 상위 티어(예: Fable, 2x)로 재전환될 때의 대비책으로 유지. 재논의 트리거: opus 티어 가격/성능 구조 변경 **또는 main 티어 재전환** |
-
-**원칙**: 핀은 비용 통제 수단이다. main이 상위 티어로 바뀌어도(예: Fable — 실제로 2026-05~06 main이었음, $10/$50) 핀된 에이전트는 영향받지 않는다 — 의도된 동작. 일괄 핀 제거 금지 (2026-06-11 검토: haiku 에이전트 최대 10x 비용 회귀). 현재 main = `claude-opus-4-8`(2026-06-13~) — 환경 사실 유일본은 `REDESIGN_PROGRESS.md` 환경 섹션.
-
-## 3. effort 정책
-
-- API enum: `low|medium|high|xhigh|max`. **`ultracode`는 Claude Code 하니스 전용 레벨** (xhigh + 워크플로우 오케스트레이션) — API param으로 전달 금지, 기록은 verbatim.
-- **Claude 서브에이전트의 effort 상한은 advisory** — 하니스가 강제 불가. `AUTO_EFFORT_MAX=xhigh`(§5 표가 유일본)는 auto 경로 권고 상한이고, `max`/`ultracode`는 manual-only.
-- 실제 비용 제어 수단: ① 티어 핀 (§2) ② codex `reasoning_effort` (실 param) ③ 작업 명세를 첫 턴에 완결되게 (재질문 루프 감소).
-
-## 4. 결정 시점과 운반
-
-- 라우팅 결정은 **/start GROUND→PLAN 경계에서 1회** (scout의 저비용 신호 수신 후) — per-phase 재라우팅 churn 금지.
-- 결정의 운반: `bin/forge emit-event` → `.claude/state/route.json` (latest-only) → `bin/forge status --json`의 `route` 키 → HUD 표시 (Phase 2-3 플래그 뒤). 계약: `docs/contracts/event-schema.md`.
-- RoutingDecision shape (canonical — `workspace/archive/OVERHAUL_PLAN.md` §5, 2026-06-12 archive 이동): `{agent, model(tier), model_version(표시전용), role, effort_per_phase, cross_vendor}`.
-
-## 5. complexity → effort 매핑 (확정 — 2026-06-12, 마스터플랜 4단계)
-
-/start §3-3 복잡도 판단 결과를 effort 권고로 변환하는 표. **권고 전용** — 메인 세션 effort는 시스템이 못 바꾼다(§1, /effort는 사용자 전용). 실제 레버는 티어 핀(§2)과 codex `reasoning_effort`뿐.
-
-| complexity | effort 권고 | codex reasoning_effort | 비고 |
+| 축 | low | medium | high 예시 |
 |---|---|---|---|
-| **LOW** | low | low | 바로 구현 — 권고 표시 생략 가능 |
-| **MEDIUM** | medium (패턴 불명확 시 high) | medium | 기본 일꾼 레인 |
-| **HIGH** | high (새 아키텍처면 xhigh) | high | Plan 에이전트 동반 (§3-3) |
+| **ambiguity** | 완료 조건이 명확 | 일부 선택지가 남지만 수용 기준으로 판별 가능 | 요구·소유권·정책 의도가 불명확 |
+| **blast_radius** | 한 영역의 국소 변경 | 같은 기능의 여러 파일·호출자 영향 | 공용 계약, 여러 패키지·서비스 영향 |
+| **irreversibility** | 쉽게 되돌릴 수 있음 | 롤백 가능하지만 상태 변환이 필요 | 데이터 마이그레이션, 삭제, 배포 |
+| **external_effect** | 로컬 읽기·수정 | 승인된 개발 환경의 제한된 호출 | 외부 쓰기, 비용 발생, 권한·자격증명 |
+| **verification_gap** | 직접 테스트 가능 | fixture·mock으로 부분 검증 가능 | 실환경 의존, 재현 불가, 관찰 수단 없음 |
+| **novelty** | 저장소 기존 패턴 반복 | 익숙한 도구의 새 조합 | 새 아키텍처·새 런타임·미검증 기술 |
 
-- **AUTO_EFFORT_MAX=xhigh** — auto 경로 권고 상한. `max`/`ultracode`는 manual-only (§3과 동일).
-- **상수 위치는 이 표가 유일본** — `routing.json` 신설은 기각 (2026-06-12 결정: 소비자가 /start 권고 1곳뿐인데 파일 추가는 과잉. 소비자가 2곳+ 되면 재상정).
-- 운반: /start §3-3b가 `bin/forge emit-event`로 `{complexity, effort}`를 route.json에 기록 → `status --json` route 키 → HUD 🎚 (FORGE_GLOW_SHOW_EFFORT=1, 기본 off).
+등급은 합산 점수보다 **가장 위험한 축**을 우선한다.
 
-## 6. Phase 2+ 예정 (이 문서가 확장될 자리)
+- **LOW**: 모든 축이 low이고 기존 패턴과 직접 검증 경로가 있다.
+- **MEDIUM**: medium 축이 있으나 되돌릴 수 있고 검증 경로를 만들 수 있다.
+- **HIGH**: high 축이 하나라도 있거나 medium 축들이 결합해 실패 비용이 커진다.
+- **CRITICAL override**: 운영 데이터, 자격증명, 보안 경계, 대규모 삭제, 외부 공개·결제처럼 사전 승인 없이는 진행하면 안 되는 작업이다.
 
-- FR3 role split (codex-plan/claude-code) 선택 규칙 — off by default, graceful skip
+커밋 이후의 push·PR처럼 **선택 가능한 후속 외부 단계**는 구현 자체의 등급을 자동으로 HIGH로 올리지 않는다. 구현 위험과 외부 실행 위험을 단계별로 따로 판정하고, 외부 단계 직전에 승인 checkpoint를 둔다. 외부 효과가 작업의 본체라면 처음부터 해당 축에 반영한다.
+
+## 3. 컨텍스트 적재 사다리
+
+항상 작은 단계에서 시작하고, 해결되지 않은 질문이 있을 때만 다음 단계로 올라간다.
+
+| 단계 | 읽는 것 | 확장 조건 |
+|---|---|---|
+| **C0 Spine** | 자동 적재된 최소 계약 | 항상 |
+| **C1 Local** | 대상 파일 + 가장 가까운 정상 패턴 | 작업 시작 |
+| **C2 Task** | 선택된 스킬 1개 + 직접 연결된 primary reference 1개 | 로컬 증거로 판단 불가 |
+| **C3 Independent** | fresh reviewer가 산출물·수용 기준·diff만 검토 | HIGH에서 검증 공백이 남거나 독립 관점이 결정을 바꿀 때, CRITICAL에서는 필수 |
+
+- 카탈로그·가이드·참조를 예방적으로 전부 읽지 않는다.
+- 같은 내용을 설명하는 문서가 여러 개면 canonical 한 개만 읽고 나머지는 drift 검사 대상으로 취급한다.
+- 질문이 답해졌거나 다음 행동이 검증 가능해지면 더 읽지 않는다.
+
+## 4. 모델 클래스와 역할
+
+공통 정책은 제품명이 아니라 능력 클래스를 사용한다.
+
+| 클래스 | 용도 | 기본 effort |
+|---|---|---|
+| **FAST** | 검색, 분류, 목록화, 기계적 점검 | low |
+| **BALANCED** | 일반 구현, 테스트, 문서 수정 | medium |
+| **DEEP** | 아키텍처, 모호한 정책, 고위험 리뷰 | high |
+
+에이전트 역할도 분리한다.
+
+- **scanner**: FAST + read-only. 위치·패턴·증거만 반환한다.
+- **builder**: BALANCED + workspace-write. 합의된 범위만 구현한다.
+- **critic**: DEEP + read-only. 작성자의 추론을 받지 않고 산출물과 수용 기준만 본다.
+- **researcher**: BALANCED 또는 DEEP + read-only/network. 최신 외부 사실이 결정에 필요한 경우만 쓴다.
+
+위 역할의 read-only/workspace-write는 요구하는 경계다. Codex custom agent TOML은 부모의 sandbox·approval·provider·MCP를 대체하지 못하므로, 필요한 경계는 제한된 부모 session 또는 별도 프로세스에서 적용·검증한다. 역할 지침이나 도구 이름만으로 hard read-only를 선언하지 않는다. [공식 Subagents 문서](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+
+## 5. complexity → orchestration 매핑
+
+| 등급 | 주 실행 | effort | 서브에이전트 | 검증 |
+|---|---|---|---|---|
+| **LOW** | 현재 에이전트 또는 BALANCED | low | 없음 | 직접 lint/test/확인 |
+| **MEDIUM** | BALANCED | medium | 대상이 불명확할 때 scanner 1개 | 관련 테스트 + diff review |
+| **HIGH** | DEEP/high 계획 → BALANCED/medium 구현 | phase별 | 서로 다른 read-only lane 최대 2개, 검증 공백이 남을 때 DEEP/high fresh critic 1개 | diff review + 판별 실험, 필요 시 독립 검토 |
+| **CRITICAL** | DEEP/high 계획·검증, 구현은 승인된 최소 class | phase별, xhigh 이상은 명시 선택 | 독립 verifier 필수 | 변경 전 사용자 checkpoint + 복구 계획 |
+
+`xhigh`/`max`/`ultra`를 단순 파일 수나 "더 잘해줘"만으로 자동 선택하지 않는다. 먼저 요구 충돌, 열린 도구 범위, 정지 조건을 정리한다.
+
+- `plan_required`: HIGH와 CRITICAL에서 `true`. 별도 planner spawn을 뜻하지 않으며 현재 에이전트의 명시적 계획도 포함한다.
+- `critic_required`: CRITICAL은 `true`. HIGH는 verification gap이 남거나 독립 관점이 결정을 바꿀 때만 `true`다.
+- HIGH라는 이유로 구현 단계까지 high effort를 유지하지 않는다. phase가 바뀌면 구현·검증을 마친 host resolver만 실제 role/model/effort를 갱신하며, resolver가 없는 host는 권고값만 기록한다.
+
+## 6. 호스트 resolver
+
+| 공통 클래스 | Claude 어댑터 | Codex 어댑터 |
+|---|---|---|
+| FAST | 경량 티어(예: Haiku) | 설치 환경의 저지연 모델 |
+| BALANCED | 균형 티어(예: Sonnet) | 설치 환경의 균형 모델 |
+| DEEP | 심층 티어(예: Opus) | 설치 환경의 최상위 코딩 모델 |
+| effort | 하니스가 강제하지 못하면 advisory로 기록 | `model_reasoning_effort`로 명시 |
+
+- 실제 모델 ID는 어댑터 설정과 실행 로그에서만 관리한다. canonical 정책에 최신 버전·가격·폐기일을 적지 않는다.
+- Codex custom agent의 **목표 출력**은 `.codex/agents/*.toml`이고 Claude agent의 현재 출력은 `agents/*.md`다. Codex compiler가 배선되기 전에는 resolver를 advisory/design 상태로 표시한다.
+- 모델을 지정하지 않으면 부모 설정을 상속한다. 비용 격리가 필요할 때만 명시적으로 고정한다.
+- skill 본문은 portable plugin으로 재사용할 수 있으며, compiler는 실제 host 차이가 있는 manifest·trigger·reference·도구 mapping을 변환한다. native pack 지원과 새 core runtime 지원은 별도 capability로 기록한다.
+
+## 7. 위임 조건과 정지 규칙
+
+서브에이전트는 다음 조건을 모두 만족할 때만 사용한다.
+
+- 작업이 독립적이며 결과를 짧게 요약할 수 있다.
+- 메인 스레드의 로그·탐색 노이즈를 실제로 줄인다.
+- 같은 파일을 동시에 수정하지 않는다.
+- 조율 비용보다 병렬 이득 또는 관점 독립성이 크다.
+
+기본 fan-out은 0~2개다. 세 번째 lane은 기존 두 결과가 서로 다른 미해결 질문을 만들었을 때만 연다. 같은 주장만 반복되면 중단한다.
+
+토론·리뷰는 아래 중 하나면 종료한다.
+
+- 가장 큰 반론을 판별할 싼 테스트가 정해졌다.
+- 새 증거 없이 주장이 반복된다.
+- 수용 기준을 충족하거나, 어떤 증거가 부족한지 명확해졌다.
+- 외부 승인이나 사용자 결정이 필요하다.
+
+## 8. 기록 계약
+
+라우팅 결과는 `bin/forge emit-event`를 통해 latest-only route snapshot에 기록한다. 현재 in-repo consumer는 이를 표시만 하므로 **실행 제어가 아니라 telemetry/advisory**다. 실제 모델·agent 자동 선택은 host resolver가 구현되고 eval을 통과한 뒤에만 활성화한다.
+
+```json
+{
+  "complexity": "LOW|MEDIUM|HIGH|CRITICAL",
+  "phase": "ground|plan|build|verify",
+  "model_class": "FAST|BALANCED|DEEP",
+  "effort_level": "minimal|low|medium|high|xhigh|max|ultra",
+  "risk_triggers": ["ambiguity", "external_effect"],
+  "orchestration": "direct|scan|plan-build|plan-build-critic|checkpoint-verify",
+  "plan_required": true,
+  "critic_required": false,
+  "actual_orchestration": "pending|direct|scan|plan-build|plan-build-critic|checkpoint-verify",
+  "actual_agents": [],
+  "actual_model_class": null,
+  "actual_effort_level": null
+}
+```
+
+`model_class`·`effort_level`은 현 phase의 권고값이다. `actual_model_class`·`actual_effort_level`은 호스트가 실제 선택을 관측했을 때만 채우고, resolver가 없으면 `null`로 둔다. `orchestration`은 권고 경로다. `actual_orchestration`과 `actual_agents`는 실제 호출 뒤에 갱신하며, critic을 호출하지 않았는데 `plan-build-critic`으로 기록하지 않는다. latest-only snapshot은 현재 실행을 설명할 뿐 장기 eval 데이터가 아니다. 품질·token·latency 비교는 별도 fixture runner의 CI artifact로 계산한다.
+
+공통 effort enum은 호스트별 지원값의 superset이다. resolver는 현재 모델이 지원하는 값을 확인해야 하며, 미지원 값을 묵시적으로 전달하지 않는다. 하향 매핑이 필요하면 adapter의 명시적 매핑을 쓰고, runtime에서 관측한 실제 값은 `actual_effort_level`에 verbatim으로 남긴다.
+
+외부 도구는 상태 파일을 직접 읽지 않고 `bin/forge status --json`을 사용한다.
+
+새 core의 managed Work에서는 같은 정책 원본을 pin하되 실행 권한·budget·Work verdict는 core가 맡는다. 이 latest-only snapshot과 Bellows 로그는 관찰 자료이며 core ledger의 전이·승인·완료를 대신하지 않는다. 실제 전달한 지침·profile·source는 Attempt의 context provenance로 따로 기록한다. 세부 전환은 [최종 개선 계획](../plan/code-forge-final-improvement-plan-2026-10-18.md)을 따른다.
+
+## 9. 금지 패턴
+
+- HIGH라는 이유만으로 모든 문서와 에이전트를 호출
+- 동일한 탐색을 여러 에이전트가 중복 수행
+- 같은 모델의 다수결이나 합의를 정확성의 증거로 취급
+- fresh critic에게 작성자의 긴 추론과 결론을 먼저 주입
+- 실제 검증 없이 effort·라운드·fan-out만 증가
+- 호스트별 모델 ID를 공통 정책의 불변 규칙으로 고정
