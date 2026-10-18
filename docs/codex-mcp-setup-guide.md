@@ -192,10 +192,10 @@ codex mcp 상태 확인해줘
       "command": "uvx",
       "args": ["mcp-atlassian"],
       "env": {
-        "JIRA_URL": "https://{회사}.atlassian.net",
+        "JIRA_URL": "https://{workspace}.atlassian.net",
         "JIRA_USERNAME": "{이메일}",
         "JIRA_API_TOKEN": "{API 토큰}",
-        "CONFLUENCE_URL": "https://{회사}.atlassian.net/wiki",
+        "CONFLUENCE_URL": "https://{workspace}.atlassian.net/wiki",
         "CONFLUENCE_USERNAME": "{이메일}",
         "CONFLUENCE_API_TOKEN": "{API 토큰}"
       }

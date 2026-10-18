@@ -1,6 +1,14 @@
 # CodeForge 멀티모델 전환과 검증 플랫폼 최종 개선 계획안
 
-작성·개정일: 2026-10-18. 상태: 메타포·family·멀티호스트 교차 검수 반영. 이번 승인은 문서 수정·커밋·푸시 범위이며, 구현·새 저장소 생성·Goal 실행은 시작하지 않았다.
+작성·개정일: 2026-10-18. 상태: AgentOps 계획 브랜치와 최신 main 통합, Codex·Claude 2차 검수 후 계획 검수 GO. 공개 문서 통합·검수를 마쳤으며, 제품 구현·새 저장소 생성·Goal 실행·배포는 시작하지 않았다.
+
+이 문서를 **통합 실행 순서의 단일 기준**으로 사용한다. `docs/agentops/09·11·11b·12`는 제품 목적과 세부 요구사항, 8·9월 계획은 이력으로 보존한다. 단계·지원 범위·기술 선택이 다르면 이 문서의 단계표와 결정 상태를 따른다. [통합 검수 기록](../docs/agentops/evidence/2026-10-18-integrated-plan-review.md)에 변경 근거와 남은 검증을 기록한다.
+
+## 만들려는 제품과 기존 시스템
+
+사용자는 저장소와 개선 목표를 맡기고, CodeForge는 기준 상태 측정 → 작은 변경 후보 → 독립 재검증 → 검토·승인 → 실제 반영 확인을 이어 준다. 기능과 안전성을 유지한 채 코드의 결함·병목과 에이전트 비용을 줄인다. 질문이 생긴 작업만 기다리고 다른 독립 작업은 계속한다.
+
+현재 CodeForge의 규칙·스킬·Smith는 저장소에 맞는 작업 환경을 구성한다. Claude·Codex는 분석·코딩 실행기, Herdr는 터미널 제어, Glow는 세션 표시, Hermes는 선택형 예약·전송 기능을 제공한다. 새 core는 이 기능들을 연결하면서 작업 기준·검증 결과·승인·복구 기록을 유지한다. 기존 도구를 재사용하는 범위와 새로 구현하는 책임은 §2의 표를 따른다.
 
 이 문서는 기존 CodeForge 리팩토링과 최근 AgentOps 계획을 하나의 실행 순서로 합친다. **기존 `code-forge`는 멀티호스트 규칙·스킬·설치 제품으로 개선하고, 장기 실행·독립 검증·승인 원장은 새 `code-forge-core` 저장소에 만든다**는 것이 권고안이다. 새 이름은 가칭이다. 두 저장소가 같은 실행 상태를 각각 관리하지 않도록 책임과 연결 계약부터 고정한다.
 
@@ -18,14 +26,14 @@
 | [9월 리팩토링 정본](https://github.com/ggombee/code-forge/blob/3c856754f1d01d1b8cfe0557465b1ac906e81df8/docs/code-forge-refactoring-plan.md) | 9월 22일 결정 진행. 구현 저장소는 code-forge. 안전성·상태 수리·적재·프롬프트 평가 중심. Codex 전용 플러그인과 별도 엔진은 당시 범위 제외 | 안전성 수리와 평가 방법을 계승. 당시 범위 제외를 장기 금지로 해석하지 않음 |
 | [10월 AgentOps 문서 지도](https://github.com/ggombee/code-forge/blob/e05552cd35939dc7e5d50709dd0963c8c2abfe3e/docs/agentops/README.md) | 10월 16일 최신 커밋. 새 host-neutral core 모노레포, 기존 CodeForge의 adapter·policy pack 전환 명시 | 제품 목적과 저장소 분리 방향의 기준 |
 | [10월 제품·기술 설계](https://github.com/ggombee/code-forge/blob/e05552cd35939dc7e5d50709dd0963c8c2abfe3e/docs/agentops/11.codeforge-public-service-architecture-debate.md) | 측정→최소 변경→독립 검증→승인→반영. Claude/Codex·저비용 모델, capability·realm·예산 설계 | 새 코어의 상위 요구사항 |
-| [10월 무인 실행 설계](https://github.com/ggombee/code-forge/blob/e05552cd35939dc7e5d50709dd0963c8c2abfe3e/docs/agentops/12.night-runner-reference-audit-and-design.md) | durable 원장, 재시작, 질문 분리, 준비와 실제 반영 분리 | 상태·권한·복구 수용 조건 |
+| [10월 무인 실행 설계](../docs/agentops/12.night-runner-reference-audit-and-design.md) | durable 원장, 재시작, 질문 분리, 준비와 실제 반영 분리 | 공개 가능한 합성 사례로 검증할 상태·권한·복구 수용 조건 |
 | 저장소 밖 `workspace/plan/code-forge-final-upgrade-plan.md`, `code-forge-harness-upgrade-plan.md` | 2026-03-27의 하네스 강화·AGENTS 도입 계획 | 역사 자료. 당시 점수·개수·지원 정보는 현재 사실로 재사용하지 않음 |
 
-초기 조사 기준인 로컬 `main`의 HEAD는 `1779c8a`다. 위 문서 브랜치들은 fetch돼 있지만 작업 트리에 checkout되지 않았다. 조사 당시 `docs/codex-coexistence.md`, `references/routing-policy.md` 등에 미커밋 개선이 있었고 `plan/`, `scripts/`, `skills/docs-polish/`는 미추적 상태였다. 이번 문서 커밋에 포함되지 않는 코드·훅·스킬 WIP도 있으므로, 이 문서가 커밋됐다는 사실만으로 구현 baseline이 보존됐다고 보지 않는다. G0에서 그때의 실제 상태를 다시 기록한다.
+초기 조사 checkout의 `main` HEAD는 `1779c8a`였다. 당시 미커밋 코드·훅·스킬은 문서 커밋에 포함되지 않았다. 이번 통합은 원격 `docs/agentops-platform-plan`의 `e05552cd`와 원격 `main`의 `e9b9c1f`를 계획 브랜치에서 합친 `243eb1a`를 검수 기준으로 삼는다. 원본 작업트리의 미커밋 파일은 별도로 보존하며, 문서 통합을 구현 baseline 보존으로 계산하지 않는다.
 
-9월 문서가 다른 컴퓨터에서 통과했다고 적은 런타임 검사 23건·상태 검사 9건은 이 컴퓨터의 통과 결과가 아니다. 현재 루트에서 그 문서의 `lib/`, `tests/` 디렉터리를 찾지 못했다. 가져오지 않은 구현을 완료로 계산하지 않는다. 로컬 `bin/forge`에는 상태·이벤트·doctor 경로가 있으나 계획상의 setup/build compiler 완료를 확인하지 못했다.
+9월 문서의 런타임 검사 23건·상태 검사 9건은 초기 조사 checkout의 결과가 아니었다. 이번에는 원본 작업트리의 미추적 `lib/`·`tests/`를 확인하고 두 검사를 다시 실행해 각각 23건·9건 통과를 확인했다. 이 코드는 계획 브랜치에 들어 있지 않으며 실호스트·CI·설치본 검증도 남아 있다. 계획 브랜치의 `hooks/quality-gate.sh`는 macOS Bash 3.2 구문 검사에서 실패했다. G0a에서 복원 리허설을 거쳐 재사용하고, G1a의 완료 여부는 통합된 코드로 다시 판정한다.
 
-추가 검수 범위는 인접 `forge-glow`, `forge-hearth`, `flow-toolkit`, `anvil-voice`, `coding-practice`, marketplace와 관련 설치 경로다. 2026-10-18 확인 시 Flow·Hearth·Anvil에는 remote가 없었고, family 저장소에 release tag가 없었다. Glow source와 설치 cache는 같은 `0.8.0`이지만 주요 파일 내용이 달랐고, marketplace의 로컬 manifest와 설치 manifest도 달랐다. 이는 G0의 복구·배포 기준선 요구다. 로컬 경로·계정·회사 실데이터를 공개 산출물로 복사하지 않는다.
+추가 검수 범위는 `forge-glow`, `forge-hearth`, `flow-toolkit`, `anvil-voice`, `coding-practice`, marketplace의 연결 계약이다. 초기 조사에서 기록한 설치·remote 상태는 해당 checkout의 snapshot이다. 이번에 확인한 Glow는 커밋된 `0.8.0`과 미커밋 `0.9.0`이 다르며, 후자는 세션별 표시를 유지하면서 `hud/lib/parse-forge.sh`를 제거하는 중이다. 따라서 기존 v1 consumer가 현재 존재한다고 가정하지 않는다. G0a에서 접근 가능한 source·설치본·remote를 구분해 기록하고, 없는 저장소는 `unavailable`로 남긴다. 공개 문서에는 실제 사용자 경로·계정·비공개 자료를 복사하지 않는다.
 
 10월 원안의 Go daemon·CLI + TypeScript PWA 결정과 이번 TypeScript 단일 구현 후보는 서로 다르다. 언어 선택은 유지보수 비용·설치·signal/cancel·SQLite 동시성·복구 실험으로 재결정하고 ADR에 대체 이유를 남긴다. 지식 검색과 고급 언어 최적화는 뒤로 미루되, 원안이 요구한 실제 context·출처·언어·revision 기록은 첫 실행부터 유지한다.
 
@@ -51,7 +59,7 @@
 | Whetstone / `coding-practice` | 개인 연습·사람이 승인한 프로필 원본 | 개인 연습 데이터의 공개 pack 번들·자동 규칙 승격 |
 | `forge-market` | catalog 원본, host별 marketplace manifest·호환 BOM 생성 | runtime scheduler·Work 원장 |
 
-새 코어의 초기 모듈 경계는 `contracts`, `ledger`, `policy`, `verification`, `runtime-adapters`, `execution`, `cli`, `inbox`, `conformance`다. 이는 책임 분리이며 처음부터 개별 서비스나 별도 패키지를 뜻하지 않는다. 로컬 원장은 SQLite WAL을 기준으로 검증하고, 언어·DB 드라이버·배포 방식은 G0 실험 뒤 확정한다. 기존 shell을 일괄 재작성하거나 범용 workflow DSL을 만들지 않는다.
+새 코어의 초기 모듈은 `contracts`, `ledger`, `policy`, `verification`, `runtime-adapters`, `execution`, `cli`, `inbox`, `conformance`다. 이는 책임 분리이며 처음부터 개별 서비스나 별도 패키지를 뜻하지 않는다. 로컬 원장은 SQLite WAL을 기준으로 검증하고, 언어·DB 드라이버·배포 방식은 G0b 실험 뒤 확정한다. 기존 shell을 일괄 재작성하거나 범용 workflow DSL을 만들지 않는다.
 
 ### 메타포와 실행 책임
 
@@ -86,9 +94,9 @@ standalone 작업은 host-native 검증 계약을 따르고, managed Work의 최
 - `forge-status/v1`과 기존 관찰 계약은 당분간 기존 저장소가 소유한다. Work·Attempt·Approval·Evidence·Receipt와 core read model은 새 코어가 소유한다. legacy Hearth `sources v2`는 별도 계약으로 동결한다. 각 adapter는 지원 protocol·pack 범위를 선언하고 unknown field와 미지원 major를 구분한다.
 - 기존 단독 사용 상태는 기존 `bin/forge` 호환 범위에서 유지한다. 코어 관리 Work는 코어만 쓴다. 같은 Work에 두 scheduler나 두 writer를 두지 않는다.
 - `.claude/state`를 즉시 옮기지 않는다. 기존 소비자는 `bin/forge status --json`을 유지하고, 코어 관리 Work는 별도 ID와 versioned 조회 결과로 구분한다. 경로 이관은 consumer 호환 검증 후 별도 작업이다.
-- 새 CLI의 실제 이름은 P0에서 정해 기존 `forge`와의 충돌을 피한다. 내부 파일 경로를 저장소 간 API로 사용하지 않는다.
+- 새 CLI의 실제 이름은 G0b에서 정해 기존 `forge`와의 충돌을 피한다. 내부 파일 경로를 저장소 간 API로 사용하지 않는다.
 - core ledger는 managed 실행 사실의 정본이다. 프로젝트의 `progress.md`, ADR, Jira/GitHub와 개인 프로필은 각 소유자가 선언한 위치를 정본으로 유지하고 core에는 pointer·revision·receipt만 둔다. DecisionReceipt를 프로젝트 설계 결정으로 자동 승격하지 않는다.
-- 공개 상태 API는 접근 규격을 뜻하며 인터넷 공개를 뜻하지 않는다. realm별 조회 권한·삭제·보존 기간을 정의한다. Glow/Hearth가 core DB를 직접 읽거나 회사·개인 원문을 한 dashboard에 기본으로 합치지 않는다.
+- 공개 상태 API는 접근 규격을 뜻하며 인터넷 공개를 뜻하지 않는다. realm별 조회 권한·삭제·보존 기간을 정의한다. Glow/Hearth는 허용된 projection만 읽고 서로 다른 realm의 원문을 기본으로 합치지 않는다.
 
 ## 3. 멀티모델 지원의 정확한 범위
 
@@ -130,7 +138,7 @@ compiler의 최소 descriptor는 stable component ID·기존 alias·trigger/nega
 
 모델 라우팅 순서는 realm·데이터 허용 범위 → 필요한 capability → 위험·검증 가능성 → 작업별 품질 근거 → 비용·quota다. FAST/BALANCED/DEEP를 실제 모델 ID로 바꾸는 설정은 adapter에 두고 공통 정책에는 넣지 않는다. 미지원 effort를 조용히 무시하지 않는다. 강제할 수 없는 값은 advisory로 표시한다.
 
-실패 시 다른 provider로 넘기는 것은 새 Attempt다. 허용 계정·데이터 정책·예산을 다시 검사하고 기존 부분 결과를 격리한다. fallback 때문에 회사 자료가 개인 endpoint로 가거나 같은 외부 작업이 중복 실행되어서는 안 된다. 초기 자동 routing은 정적 규칙으로 시작한다.
+실패 시 다른 provider로 넘기는 것은 새 Attempt다. 허용 계정·데이터 정책·예산을 다시 검사하고 기존 부분 결과를 격리한다. fallback도 허용된 realm·endpoint를 유지하며 외부 작업을 중복 실행하지 않아야 한다. 초기 자동 routing은 정적 규칙으로 시작한다.
 
 다른 모델의 리뷰는 유용한 추가 관점이지만 테스트·정적 분석·readback을 대체하지 않는다. 모델 다수결이나 실행기의 자기 평가로 완료를 판정하지 않는다. OpenAI 호환 API를 받는다는 사실만으로 tool 사용·장기 복구·권한 처리까지 호환된다고 보지 않는다.
 
@@ -165,13 +173,26 @@ compiler의 최소 descriptor는 stable component ID·기존 alias·trigger/nega
 
 ### 계약과 상태
 
-P0에서 `WorkSpec`, `PolicySnapshot`, `RepositoryProfile`, `VerificationRecipe`, `Attempt`, `CheckResult`, `Evidence`, `Receipt`의 최소 fixture를 먼저 연결한다. `CandidatePackage`, `DecisionRequest/Receipt`, `ApprovalGrant`, `ActionRequest`, `ApplicationReceipt`, `RunPolicy`, `ContextEnvelope`는 같은 v0 계약의 해당 흐름에서 검증한다. v0를 범용 SDK의 영구 schema로 고정하지 않는다. RunPolicy는 시도·retry·시간 상한, PolicySnapshot은 해석된 집행 항목·원문 참조·digest를 맡는다.
+G0b에서 `WorkSpec`, `PolicySnapshot`, `RepositoryProfile`, `VerificationRecipe`, `Attempt`, `CheckResult`, `Evidence`, `Receipt`의 최소 fixture를 먼저 연결한다. `CandidatePackage`, `DecisionRequest/Receipt`, `ApprovalGrant`, `ActionRequest`, `ApplicationReceipt`, `RunPolicy`, `ContextEnvelope`는 같은 v0 계약의 해당 흐름에서 검증한다. v0를 범용 SDK의 영구 schema로 고정하지 않는다. RunPolicy는 시도·retry·시간 상한, PolicySnapshot은 해석된 집행 항목·원문 참조·digest를 맡는다.
 
 상태는 Work, Attempt, 검사 결과, 외부 Action을 분리한다. `QUEUE_DRAINED`나 provider의 turn 완료는 Work 검증 완료가 아니다. action의 `PREPARE → PROPOSE → APPLY → POST_APPLY_VERIFY`와 Attempt 내부 GAVA의 코드 작성 `APPLY`는 namespace로 구분한다. 각 전이에 필요한 증거와 실패·취소 경로를 표로 정의한다. 질문이 필요한 노드만 `WAITING_DECISION`으로 두고 독립 노드는 계속 진행한다. 버전이 달라진 질문의 답은 자동 적용하지 않는다.
 
 SQLite WAL, migration, transaction outbox, lease·heartbeat·recovery를 구현한다. 네트워크를 포함한 exactly-once를 가정하지 않는다. 외부 action 결과가 불명확하면 idempotency key 또는 readback으로 조정하기 전 재시도하지 않는다. 만료된 worker가 새 worker 결과를 덮어쓰지 못하도록 attempt/lease 세대를 검사한다.
 
-첫 결합 시험은 runtime 하나·폐기 가능한 worktree 하나·고정 검증·로컬 반영을 연결한다. 이후 같은 G2에서 durable 복구·질문·반응형 Inbox·별도 apply executor를 완성한다. 여러 서비스·분산 scheduler·모든 외부 action을 첫 결합 시험의 전제로 만들지 않는다.
+첫 결합 시험은 사람이 검토한 WorkSpec 파일을 core CLI에 넣고 runtime 하나·폐기 가능한 worktree 하나·고정 검증·CLI 승인·로컬 반영·readback을 연결한다. 로컬 반영 대상도 별도 폐기 가능한 브랜치로 제한한다. 이후 같은 G2에서 durable 복구·질문·반응형 Inbox·별도 apply executor와 단일 장비의 OS wake/restart를 완성한다. `/start`의 managed 연결은 G2 후반, 두 호스트의 parity는 G3에서 검증한다. `exec` 기반 단발 실험은 해당 capability만 입증하며 structured session·cancel·resume 통과를 대신하지 않는다.
+
+G0b의 합성 Git fixture는 공개 가능한 소스만 사용하며 다음 입력과 기대 결과를 먼저 고정한다. 모델이 만든 검사를 정답으로 삼지 않는다.
+
+| 사례 | 기대 결과와 판정 기준 |
+|---|---|
+| 설정 오류·도구 부재를 성공으로 처리하는 결함 수정 | 실패 상태를 정확히 구분하고 정상 입력도 통과. 심어 둔 false PASS 사례 수 2 → 0을 고정 oracle로 확인 |
+| 테스트·fixture·threshold·CI 약화 후보 | 검사 실행이 성공해도 `REVIEW_REQUIRED` |
+| 필수 검사 미실행·실행 오류 | 원인을 보존하고 `VERIFIED_CANDIDATE` 생성 금지 |
+| 승인 뒤 base·artifact·policy 변경 | stale 승인 거부, 반영 0회 |
+| 반영 직후 응답 유실·재시작 | 결과 확인 전 재실행 금지, 조정 후 실제 effect 1회 |
+| 질문 대기와 다른 Work, 잘못된 realm의 응답 | 의존 Work만 대기, 독립 Work 진행, 다른 realm 응답 거부 |
+
+이 fixture는 판정기의 정확성을 검증한다. G2는 별도의 공개 저장소 profile에서도 결함 또는 병목 개선 한 건을 재현하고 correctness·보조 지표 비퇴행을 입증해야 한다. 최초 실제 profile 후보는 안전성 검사를 가진 CodeForge 고정본이며 G0b에서 명령·환경·기준 SHA를 확정한다. 처리 속도·token·비용의 개선 주장은 해당 비교 자료가 있을 때만 한다.
 
 ### 실제 context와 개인 판단 기준
 
@@ -179,7 +200,7 @@ SQLite WAL, migration, transaction outbox, lease·heartbeat·recovery를 구현�
 
 개인 프로필은 Whetstone의 승인된 원본과 프로젝트 overlay를 연결하되 원문 전체를 공개 core에 번들하지 않는다. 프로젝트의 강제 정책을 우선하고, 허용된 개인 선호와 기본 Blueprint를 그 아래 적용한다. 반복 관찰→후보→사람 승인→profile 개정 흐름을 보존한다. 근거 없는 전체 profile 상시 주입이나 자동 규칙 승격은 하지 않는다.
 
-realm별 DB·설정·artifact 경로, 최소 파일 권한, 원문 저장 여부, redaction, retention/GC, export/delete와 백업 범위를 G0에서 정한다. 첫 실행부터 출처는 기록하되 필요하지 않은 원문·credential은 수집하지 않는다.
+G0b fixture에는 realm별 경로·최소 파일 권한과 원문·credential 미수집 기본값을 둔다. 실제 DB·artifact의 redaction, retention/GC, export/delete와 백업 정책은 G2의 첫 managed 결합 시험 전에 확정한다. 첫 실행부터 출처를 기록한다.
 
 ### 독립 검증과 최적화
 
@@ -195,13 +216,13 @@ host-native, 현재 full harness 고정본, 얇은 공통 pack, 작업별 skill 
 
 준비 worker와 apply executor의 권한을 분리한다. 승인은 artifact digest·base SHA·policy digest·target·account·action·만료 시각에 묶고, 변경되면 재승인한다. 승인된 범위만 실행하고 결과를 readback으로 확인한다. Goal 생성이나 구현 승인만으로 push·PR·merge·배포 권한이 생기지 않는다.
 
-반응형 Inbox에는 후보 diff·검사·미확인·비용, 질문과 실제 반영 action을 구분해 보여 준다. 첫 버전은 로컬 사용을 우선하며 원격 모바일 접근은 인증·realm·전송 경계 검증 뒤 연다. 회사·개인 credential·원문·원장은 섞지 않는다.
+반응형 Inbox에는 후보 diff·검사·미확인·비용, 질문과 실제 반영 action을 구분해 보여 준다. 첫 버전은 단일 public realm의 로컬 실행과 다른 realm 거부 검사를 포함한다. 원격 모바일 접근은 G4에서 인증·realm·전송 검증 뒤 연다. 각 realm의 credential·원문·원장은 분리한다.
 
-기존 계획 승인·core의 Decision/Approval·host의 도구 승인을 같은 화면에서 관련 요청으로 묶고, 이미 허용된 범위를 반복 질문하지 않는다. 다만 한 종류의 승인이 다른 권한을 만들지는 않는다. Voice에서도 질문 확인·응답·승인 범위 재확인이 가능해야 하고, 답변을 잘못 인식했거나 version이 바뀌면 실행하지 않는다.
+기존 계획 승인·core의 Decision/Approval·host의 도구 승인을 같은 화면에서 관련 요청으로 묶고, 이미 허용된 범위를 반복 질문하지 않는다. 다만 한 종류의 승인이 다른 권한을 만들지는 않는다. 기존 Voice 입력을 보존하고 G3에서 질문 확인·응답·승인 범위 재확인을 연결한다. 답변을 잘못 인식했거나 version이 바뀌면 실행하지 않는다.
 
 ### Family 연결과 Hearth 재평가
 
-- **Glow**: 명시적으로 해석한 실행 경로와 공개 조회 계약을 사용한다. Claude cache의 가장 높은 버전을 임의 선택하지 않는다. 기존 v1을 읽는 consumer부터 새 managed projection을 지원한 뒤 producer를 전환하고 golden을 CI에서 검증한다. 조회 실패를 PASS나 0원으로 표시하지 않는다.
+- **Glow**: 현재 session-local HUD를 보존하고 managed projection은 선택 기능으로 연결한다. 기존 v1 reader가 있는 지원 버전에는 consumer-first 전환을 적용한다. reader가 제거된 버전에는 adapter를 별도로 합의하고 테스트하며 기존 기능으로 가정하지 않는다. 명시적으로 해석한 실행 경로를 사용하고 cache의 가장 높은 버전을 임의 선택하지 않는다. 조회 실패를 PASS나 0원으로 표시하지 않는다.
 - **Hearth**: G0에서 백업·동결하고 초기 출시 필수 항목에서 제외한다. core 비관리 프로젝트까지 모으는 Markdown 보고서 수요가 있을 때 재평가한다. 유지 시 core projection과 legacy progress adapter를 읽고 source·관측 시각을 표시한다. 수동 `done`·checkbox를 검증 완료로 승격하지 않는다.
 - **Hearth 활성화 조건**: sources/preset schema, Node/Python 공통 fixture 또는 단일 normalized read model, shell 보간 제거, project/preset ID와 출력 경로 검증, 명시적 demo 모드, realm별 config/output, 비파괴 installer를 갖춘다. 현재 옛 설치 URL·누락 schema·repo 내부 생성물 경로를 수리한 뒤 설치한다.
 - **Hearth 거취**: 다중 source·portable Markdown의 실사용이 있으면 독립 유지한다. core 데이터만 쓰고 출력만 필요하면 core report로 흡수한다. 수요가 없으면 이력·복원 가능한 archive를 보존한다. 지금 즉시 병합·삭제하지 않는다.
@@ -211,15 +232,26 @@ host-native, 현재 full harness 고정본, 얇은 공통 pack, 작업별 skill 
 
 ## 6. 구현 순서와 병렬 작업 경계
 
-이 문서의 P0~P4는 통합 계획의 새 단계명이다. 과거 문서의 P0~P3 번호와 동일한 의미가 아니다.
+이 문서의 P0a/P0b~P4는 통합 계획의 단계명이며 G0a/G0b~G4는 완료 단위다. 과거 문서의 단계 번호는 아래 매핑을 적용한다.
 
 | 단계 | 결과 | 진입과 종료 조건 |
 |---|---|---|
-| P0 재기준화와 계약 | WIP 복원·family inventory·기존 동작 baseline, 책임 ADR, 최소 v0 fixture, host 능력표·예산 | 구현 승인 뒤 시작. restore rehearsal·mock 계약 통과. 다음 단계의 blocking 결정은 해소하고 나머지만 담당·기한 기록 |
+| P0a baseline 복구 | WIP 복원·접근 가능한 family inventory·기존 동작과 설치본 기준선 | G0a 복원 리허설 뒤 lane A 시작 가능 |
+| P0b 실행 계약 | 책임 ADR, 정답 fixture, host 능력표·runtime 실증·예산 | G0b에서 해당 작업의 blocking 결정만 해소. B는 host 능력표, C~F는 최소 schema 뒤 시작 |
 | P1 기반 병렬 구현 | 안전성 수리 뒤 host pack·설치, ledger·verifier·runtime stub·Inbox mock | P0 뒤 서로 독립된 모듈만 병렬. G1a 안전성·G1b 두 host pack을 구분하고 공통 schema는 단일 담당 |
-| P2 첫 수직 단면 | 단일 runtime의 격리 변경·독립 검증·질문·승인·반영·복구 | 작은 로컬 결합 시험 뒤 전체 수직 단면 완료. source provenance·실제 repo·재시작·취소·stale 승인 검증 |
+| P2 첫 수직 단면 | 단일 runtime의 격리 변경·독립 검증·질문·승인·반영·복구·단일 장비 무인 준비 | 작은 로컬 결합 시험 뒤 전체 수직 단면 완료. 실제 repo 개선·provenance·OS wake/restart·취소·stale 승인 검증 |
 | P3 멀티모델 출시 검증 | Claude/Codex 두 runtime·두 pack·서로 다른 repo profile, Glow·Voice·설치·복구 | 동일 핵심 계약, native/managed 독립 가치, 정책 위반·허위 PASS·중복 action 부재와 작업 효과 검증 |
-| P4 선택 확장 | GLM/Qwen, 별도 authority·worker, 지식 검색·언어/prompt 최적화, Flow/Hearth·팀 기능 | P3 이후 수요·eval·운영 비용별 Goal. 최소 context 출처 기록은 이미 P2에서 동작 |
+| P4 선택 확장 | G4 원격 모바일·별도 authority/worker, GLM/Qwen, 지식 검색·언어/prompt 최적화, Flow/Hearth·팀 기능 | P3 이후 수요·eval·운영 비용별 Goal. 단일 장비 무인 준비와 최소 context 출처 기록은 P2에서 동작 |
+
+| 기존 문서의 단계 | 이 통합 계획에서의 위치 |
+|---|---|
+| 9월 리팩터링의 기준선·안전성·기록 수리 | G0a → G1a. prompt 파일럿의 합성 평가 방법은 보존하고 활성 prompt 승격은 P4 |
+| 09번 Phase 0, 11번 P0 계약, 12번 P0 계약 | G0b의 최소 fixture → P1 core 기반. 전 객체의 영구 schema 고정을 선행 조건으로 두지 않음 |
+| 09번 Phase 1, 11번 P1, 12번 P1 개인 수직 단면 | G2. 공개 코드 profile 하나·runtime 하나, 단일 장비 무인 준비 포함 |
+| 09번 Phase 2, 11번 P2, 12번 P2의 두 runtime | G3. 두 native pack은 별도 G1b 검증 |
+| 09번 Phase 3, 11번 P3, 12번 P2의 원격·모바일·별도 worker | G4. 단일 장비 OS wake/restart와 구분 |
+| 09번 Phase 4~6, 11번 P4~P6, 12번 P3, 8월 Flow 실행 엔진 | P4 수요별 확장. Flow는 필수 엔진으로 채택하지 않음 |
+| `codex-coexistence.md`의 pack 단계 | G1b의 생성·설치·실호스트 검증. core runtime 단계와 구분 |
 
 첫 runtime 후보는 현재 CLI가 있는 Codex지만, P0 실증에서 구조화 이벤트·인증·필수 권한 경계가 안 맞으면 Claude를 먼저 연결한다. **연결 순서가 바뀌어도 P3의 두 runtime 조건은 유지한다.** native pack은 개발 호스트의 사용성이고 runtime adapter는 코어 실행 능력이므로 각각 테스트한다.
 
@@ -246,13 +278,15 @@ lane 수는 동시 에이전트 수가 아니다. P1은 A+B와 코어 기반 중
 
 | Goal | 완료 조건 | 제외 범위 |
 |---|---|---|
-| G0 복구 가능한 baseline과 공통 계약 | WIP 실제 백업·복원, 설치본/source 구분, family·메타포·권위 ADR, profile/context·기존 동작 baseline, 최소 fixture·실행 상한 | 기능 구현·새 저장소의 외부 공개·배포 |
+| G0a 복구 가능한 baseline | WIP 실제 백업·복원, 설치본/source 구분, 접근 가능한 family·기존 동작 baseline | 기능 구현·새 저장소 공개·배포 |
+| G0b 최소 실행 계약 | 책임 ADR, 정답 fixture, profile/context, host 능력표·runtime 실증, 언어·저장 방식 ADR·실행 상한 | 전 객체 영구 SDK·모든 외부 action |
 | G1a 기존 제품 안전성 | 재현된 gate·state·hook·handoff 결함 수리, 기존 alias·Smith 정책·Voice·Glow 회귀 | 전역 무인 원장 |
 | G1b 두 호스트 pack | 공용 본문·descriptor, Claude/Codex 발견·권한·설치·재설치·제거, 사용자 설정·기존 hook 보존, core 없는 사용 | core runtime 지원 완료 주장 |
-| G2 코어의 개인 수직 단면 | runtime 하나·repo 하나의 전체 개선·독립 검증·질문/승인·반영/readback, provenance·realm·재시작·취소·음성 입력 경로 | 모든 provider·외부 action·팀 서버 |
+| G2 코어의 개인 수직 단면 | runtime 하나·repo 하나의 실제 개선·독립 검증·질문/승인·반영/readback, provenance·단일 realm과 타 realm 거부·OS wake/restart·취소 | 모든 provider·외부 action·원격 모바일·새 Voice 승인 기능·팀 서버 |
 | G3 멀티모델과 family 출시 gate | 두 runtime·두 pack·두 profile, native/managed·Glow·Voice·호환성·복구·실제 효과 보고 | GLM/Qwen·Hearth 지원 완료 주장 |
+| G4 교차 기기와 상시 접근 | 원격 모바일 인증·질문/승인, 별도 authority/worker, disconnect·전원 장애·중복 응답 검사 | 팀 Hub·임의 provider 지원 |
 
-각 Goal에는 repo·branch·base SHA·쓰기 허용 경로·선행 Goal·소유 파일·검증 명령·중단 조건·token/시간/비용/동시성 상한을 붙인다. 상한은 사용자가 검수 후 정하며 임의로 유료 호출 예산을 승인된 것으로 취급하지 않는다. 같은 실패 원인이 반복되고 새 증거가 없으면 해당 경로만 중단·보고한다.
+각 Goal에는 repo·branch·base SHA·쓰기 허용 경로·선행 Goal·소유 파일·검증 명령·중단 조건·token/시간/비용/동시성 상한을 붙인다. G0b의 인증 실증 전에는 허용된 account alias·realm·호출 범위와 실행 상한을 확인한다. 기존에 유효하게 허용된 범위는 재사용하고 새로운 유료 예산은 별도 결정한다. 결정 대기는 해당 실증만 차단하며 G0a·G1a의 독립 작업은 계속할 수 있다. 같은 실패 원인이 반복되고 새 증거가 없으면 해당 경로만 중단·보고한다.
 
 ## 8. 출시와 완료 판정
 
@@ -300,4 +334,4 @@ lane 수는 동시 에이전트 수가 아니다. P1은 A+B와 코어 기반 중
 | 데이터 보존 | realm별 DB·artifact·원문 수집 범위·retention·export/delete·백업 정책 | 첫 managed 실행 전 |
 | 공개와 라이선스 | 새 저장소 공개 범위·라이선스는 별도 확정. 비공개 참고 코드 복사 안 함 | 저장소 공개·배포 전 |
 
-문서 반영·커밋·푸시와 구현 착수를 구분한다. 이번 반영으로 Goal·새 저장소·계정 연결·모델 호출·인접 저장소 변경을 시작하지 않는다. 다음 구현 승인이 주어지면 G0에서 복원 가능한 baseline과 blocking 결정을 먼저 확정하고, 그 뒤 소유 범위가 분리된 작업을 진행한다.
+이번 작업은 공개 문서 통합과 요청된 교차 모델 검수다. Goal·새 저장소·runtime 계정 연결·인접 저장소 변경·배포는 별도 구현 단계다. 구현 시작 시 G0a에서 복원 가능한 baseline을 확보하고, G0b의 미결 결정은 의존하는 작업에만 적용한다.

@@ -982,7 +982,7 @@ forge-glow는 run.json이나 .claude/state를 직접 읽거나 수정하지 않�
 - [ ] flow-toolkit은 현재 clean 상태와 HEAD 기록
 - [ ] FT 작업 전 flow-toolkit이 쓰기 가능한 workspace인지 확인
 - [ ] flow-toolkit 문서의 TODO·미구현·obsolete 명령을 실제 상태와 일치시킴
-- [ ] flow-toolkit 공개 전 회사·개인 식별자와 package name 재감사
+- [ ] flow-toolkit 공개 전 실제 사용자 식별자와 package name 재감사
 - [ ] versioned fixture manifest, oracle owner, replay 명령, 환경 hash 정의
 - [ ] 이 문서 §17의 code-forge 전체 검증 행렬 실행
 

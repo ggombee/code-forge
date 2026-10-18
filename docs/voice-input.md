@@ -189,7 +189,7 @@ Whisper는 한국어 일반 텍스트는 잘 받지만, 코드 친화 패턴은 
 - AI 후처리 옵션 활성 시에만 Claude API에 전송 — 코드/시크릿 발화 주의
 - macOS 마이크 권한은 Hammerspoon에만 — 본 도구 비활성 시 권한 자동 해제
 
-→ 회사 노트북 사용 시 AI 후처리 OFF + local Whisper만 권장.
+→ 외부 전송이 허용되지 않은 데이터는 AI 후처리 OFF + local Whisper만 사용.
 
 ---
 

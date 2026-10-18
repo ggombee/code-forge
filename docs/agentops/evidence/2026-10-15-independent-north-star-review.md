@@ -22,11 +22,11 @@ CodeForge가 work·policy·approval·evidence·knowledge 계약을 소유하고 
 
 ## 과거 검토에서 유지할 것
 
-- Dooray, Git, provider session의 정본을 복제하지 않고 field별 소유자와 source revision을 남긴다.
+- 외부 문서·이슈 시스템, Git, provider session의 field별 소유자와 source revision을 남긴다.
 - agent의 완료 주장과 evidence로 검증된 결과를 분리한다.
 - terminal, agent loop, model transport, messenger와 cron은 기존 구현을 재사용한다.
 - Herdr·Hermes·OpenHands·OMP 같은 외부 도구는 adapter 또는 선택형 surface로 연결한다.
-- 회사와 개인 데이터는 realm별로 격리하고 prompt에만 맡기지 않는다.
+- 데이터는 realm별로 격리하고 host permission·sandbox·credential로 집행한다.
 
 ## 과거 검토에서 폐기할 것
 
@@ -95,7 +95,7 @@ forge-glow/
 
 초기에는 개인 데스크톱 한 대에서 authority와 worker를 분리된 service로 돌릴 수 있다. 재부팅 중에도 모바일 질문·승인이 필요하면 작은 always-on authority host를 선택형 GPU worker와 분리한다.
 
-개인과 회사는 별도 ledger, artifact store, credential, provider allowlist와 service identity를 사용한다. 통합 화면은 허용된 status projection만 모은다. 계정의 이름이나 저장소 경로만으로 허용 여부를 추측하지 않고 realm, data class, account, device, action을 따로 평가한다.
+서로 다른 realm은 별도 ledger, artifact store, credential, provider allowlist와 service identity를 사용한다. 통합 화면은 허용된 status projection만 모은다. 계정의 이름이나 저장소 경로만으로 허용 여부를 추측하지 않고 realm, data class, account, device, action을 따로 평가한다.
 
 ## 첫 제품과 구현 순서
 

@@ -14,7 +14,7 @@
 | **code-forge** | 🟢 wired | UX (Claude Code 플러그인) | 자연어/슬래시 → 단계별 워크플로우. 에이전트/스킬 수는 디스크가 진실. | 사용자 발화, `/start`, `/test`, `/setup` | `.claude/state/quality.jsonl`, `route.json`(emit-event), `bin/forge status --json` |
 | **forge-glow** | 🟢 wired | observability (HUD) | 실시간 statusLine + Python rich TUI + tmux. 5-layer 데이터 (L1~L5). | stdin / transcript / `bin/forge` / OTel | statusLine 출력, `forge-glow-stats` TUI |
 | **flow-toolkit** | 📐 designed, opt-in | legacy execution / domain capability | 비즈니스 policy / TC / spec / retro. core 실행 권한 정책과 구분 | 명시 실행 또는 지원하는 source의 opt-in | `.policy/*.json`, legacy Flow state. 새 Work 원장과 dual-write 금지 |
-| **forge-hearth** | 📐 designed (미가동) | reporting (markdown dashboard) | 다중 프로젝트 progress 집계. tracker-agnostic. | `sources.json` v2 / `~/.forge-glow/workflow.json` | `dashboard.md` — 입력 데이터 미존재로 미가동. 마스터플랜 10단계에서 재상정 |
+| **forge-hearth** | 📐 designed (미가동) | reporting (markdown dashboard) | 다중 프로젝트 progress 집계. tracker-agnostic. | `sources.json` v2 / `~/.forge-glow/workflow.json` | `dashboard.md` — 입력 데이터 미존재로 미가동. 통합 계획 P4에서 재평가 |
 | **새 core** | 📐 구현 전 | trust / execution | managed Work 원장·독립 검증·Inbox·반영/readback | WorkSpec·versioned pack·RepositoryProfile | Evidence·Receipt·versioned read model |
 | **Herdr** | 로컬 설치·능력 확인, core 연결 미구현 | terminal / process control | pane·workspace·agent 관찰과 제어 | 허용된 adapter 요청 | terminal 상태. Work 완료 판정은 아님 |
 | **Voice / Anvil** | 기존 입력 경로 존재, provider 전환 설계 | accessibility / input | STT·단축키·입력, 선택형 wake·dispatch | 음성·명시한 대상 host | 텍스트 또는 승인 범위 안의 실행 요청 |
@@ -191,22 +191,22 @@ statusLine   Python TUI                tmux 하단바
 
 ## 6. 설치 / 위치
 
-| 컴포넌트 | 본 PC 위치 | 설치 방법 | 자동 갱신 |
+| 컴포넌트 | 예시 clone 위치 | 설치 방법 | 자동 갱신 |
 |---|---|---|---|
-| code-forge | `~/Desktop/workspace/code-forge/` | `claude plugin install` 또는 `--plugin-dir` | 마켓플레이스/수동. dev clone의 session-init 갱신은 `FORGE_AUTO_UPDATE=1`일 때만 |
-| forge-glow | `~/Desktop/workspace/forge-glow/` | `claude plugin install` 또는 `curl-install.sh` | tools/self-update.sh (1h) |
-| flow-toolkit | `~/Desktop/workspace/flow-toolkit/` | `curl-install.sh` → `~/.local/share/flow-toolkit/` | (수동 `git pull`) |
-| forge-hearth | `~/Desktop/workspace/forge-hearth/` | `node builder.mjs` 직접 또는 alias | cron `*/10 * * * *` 선택 |
+| code-forge | `<workspace>/code-forge/` | `claude plugin install` 또는 `--plugin-dir` | 마켓플레이스/수동. dev clone의 session-init 갱신은 `FORGE_AUTO_UPDATE=1`일 때만 |
+| forge-glow | `<workspace>/forge-glow/` | `claude plugin install` 또는 `curl-install.sh` | tools/self-update.sh (1h) |
+| flow-toolkit | `<workspace>/flow-toolkit/` | `curl-install.sh` → `~/.local/share/flow-toolkit/` | (수동 `git pull`) |
+| forge-hearth | `<workspace>/forge-hearth/` | `node builder.mjs` 직접 또는 alias | cron `*/10 * * * *` 선택 |
 
 ---
 
-## 7. 회사 데이터 분리 원칙
+## 7. 공개 자료와 realm 데이터
 
-- 회사 working copy·티켓·source config·생성 dashboard·credential은 권한이 없는 개인 저장소에 push하거나 기기 간 sync하지 않는다.
+- working copy·이슈·source config·생성 dashboard·credential은 해당 realm의 허용 범위에서만 저장·동기화한다.
 - 공개 문서와 `sources.example.json`에는 sanitized sample만 사용한다.
 - `sources.json`과 기존 `~/.forge-glow/workflow.json`에 포함될 수 있는 원문은 별도 비공개 데이터다. 도구 코드 백업에 자동 포함하지 않는다.
 - 새 core는 realm별 DB·artifact·보존/삭제·조회 권한을 정의한다. 여러 realm의 상태를 모을 때는 허용된 요약만 사용한다.
-- 도구 코드의 공개 여부·라이선스와 회사 소유 자산의 공개 권한을 각각 확인한다.
+- 도구 코드의 공개 라이선스와 입력 자료의 공개 권한을 각각 확인한다.
 
 ---
 
@@ -290,9 +290,9 @@ Hermes는 Telegram/WhatsApp gateway로 voice memo transcription 제공. Forge Vo
 ## 10. 참고 문서
 
 - code-forge: [`README.md`](../../README.md), [`CLAUDE.md`](../../CLAUDE.md), [`docs/contracts/state-schema.md`](state-schema.md)
-- forge-glow: `~/Desktop/workspace/forge-glow/README.md`, `docs/otel-setup.md`, `docs/workflow-setup.md` (Phase 7)
-- flow-toolkit: `~/Desktop/workspace/flow-toolkit/README.md`, `CLAUDE.md`, `AGENTS.md`, `packages/flow-rules/docs/auto-trigger.md`
-- forge-hearth: `~/Desktop/workspace/forge-hearth/README.md`, `NEXT_STEPS.md`
+- forge-glow clone: `README.md`, `docs/otel-setup.md`, `docs/workflow-setup.md` (지원 버전별 확인)
+- flow-toolkit clone: `README.md`, `CLAUDE.md`, `AGENTS.md`, `packages/flow-rules/docs/auto-trigger.md`
+- forge-hearth clone: `README.md`, `NEXT_STEPS.md`
 
 ---
 

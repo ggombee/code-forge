@@ -11,8 +11,8 @@
 ## 사용법
 
 ```bash
-cd ~/your-company-project
-claude --plugin-dir ~/Desktop/ai/code-forge
+cd ~/projects/sample-app
+claude --plugin-dir ~/tools/code-forge
 ```
 
 아래 프롬프트를 복붙:
@@ -101,7 +101,7 @@ claude --plugin-dir ~/Desktop/ai/code-forge
 
 ### 통합 시 우선순위
 1. 토론으로 확정된 기준 (Q1~Q12) — 이미 검증됨
-2. 회사 코드에서 발견된 실제 패턴 — 습관 확인
+2. 공개 가능한 예제 코드에서 발견된 실제 패턴 — 습관 확인
 3. 상충하면 → 사용자에게 "토론 결과는 이건데, 실제 코드는 저렇습니다. 어떤 걸 기준으로 할까요?" 물어보기
 
 ### 남은 질문 (아직 토론 안 한 것)
@@ -114,4 +114,4 @@ claude --plugin-dir ~/Desktop/ai/code-forge
 - 테스트 작성 스타일 (RTL? 단위? 통합?)
 - git 브랜치 전략
 
-이것들은 회사 코드 분석으로 자연스럽게 답이 나올 수 있음.
+이 항목은 공개 가능한 예제 코드를 분석해 확인한다.

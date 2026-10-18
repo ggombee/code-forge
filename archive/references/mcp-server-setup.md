@@ -112,7 +112,7 @@ curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
       "command": "uvx",
       "args": ["mcp-atlassian"],
       "env": {
-        "JIRA_URL": "https://회사도메인.atlassian.net",
+        "JIRA_URL": "https://sample-workspace.atlassian.net",
         "JIRA_USERNAME": "이메일",
         "JIRA_API_TOKEN": "토큰"
       }
