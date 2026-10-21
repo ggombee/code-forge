@@ -1,10 +1,12 @@
 # CodeForge AgentOps 설계 문서 지도
 
-> 상태: 제품 북극성 유지 · 2026-10-18 통합 계획으로 실행 순서 갱신 · 제품 구현 전
+> 상태: 제품 북극성 유지 · 2026-10-21 관리형·개인화·보안 요구 반영 · 제품 구현 전
 >
 > 초기 사용자: 여러 AI 코딩 세션을 함께 쓰는 개인 개발자와 소규모 팀
 
 ## 먼저 볼 문서
+
+최신 전체 그림은 [서비스 설계 HTML](./codeforge-service-design-review-2026-10-21.html)을 내려받아 브라우저에서 연다. [관리형·개인화 상세 계획](./13.hosted-personalized-service-plan.md)은 보안 경계·학습·수익 구조와 요구사항별 완료 조건을 정리한다. 실행 순서는 아래 통합 개선 계획의 2026-10-21 개정본이 기준이다. 이번 개정은 Claude 재검수를 받지 않았다.
 
 1. [AI가 만든 소프트웨어를 더 견고하고 효율적으로 만드는 시스템](./11b.codeforge-public-service-summary.md) — 제품이 해결할 문제와 실제 개선 루프부터 읽는다.
 2. [2026-10-18 통합 개선 계획](../../plan/code-forge-final-improvement-plan-2026-10-18.md) — 현재 구현 순서·저장소 책임·통과 기준의 단일 기준이다.
@@ -15,7 +17,9 @@
 | 문서 | 현재 지위 | 읽는 목적 |
 |---|---|---|
 | [2026-10-18 통합 개선 계획](../../plan/code-forge-final-improvement-plan-2026-10-18.md) | 실행 순서 기준 | 기존 제품 수리·두 host pack·새 core·출시 gate와 과거 단계 매핑 확인 |
-| [통합 최종 검수](./evidence/2026-10-18-integrated-plan-review.md) | 현재 검수 근거 | Codex·Claude의 반론과 반영 결과, 실제 검사 범위 확인 |
+| [관리형·개인화 상세 계획](./13.hosted-personalized-service-plan.md) | 최신 제품 요구사항 | hosted-first·선택 context·조직 분리·prompt 학습·원가·출하 조건 |
+| [서비스 설계 HTML](./codeforge-service-design-review-2026-10-21.html) | 시각화 검토 자료 | 제품 구조·메타포·비용 계산·리서치 출처 |
+| [통합 최종 검수](./evidence/2026-10-18-integrated-plan-review.md) | 10월 18일 검수 이력 | 당시 Codex·Claude 반론과 검사 범위. 10월 21일 개정 검수로 해석하지 않음 |
 | [08 Herdr·OMP·Hermes·Qwen 재검토](./08.herdr-omp-hermes-qwen-control-plane-review.md) | 초기 비교 자료 | 기존 도구의 기능과 한계를 확인 |
 | [09 CodeForge 중심 장기 설계](./09.codeforge-owned-agent-system-design.md) | 채택된 북극성 | 확장 가능한 전체 구조와 단계별 목적지를 확인 |
 | [10 Thin Coordinator 검증](./10.codeforge-thin-coordinator-overengineering-validation.md) | 역사적 판단 기록 | 초기 과잉설계 논쟁과 작은 관찰 실험의 측정법을 확인 |

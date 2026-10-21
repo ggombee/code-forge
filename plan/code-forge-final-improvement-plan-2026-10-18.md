@@ -1,6 +1,8 @@
 # CodeForge 멀티모델 전환과 검증 플랫폼 최종 개선 계획안
 
-작성·개정일: 2026-10-18. 상태: AgentOps 계획 브랜치와 최신 main 통합, Codex·Claude 2차 검수 후 계획 검수 GO. 공개 문서 통합·검수를 마쳤으며, 제품 구현·새 저장소 생성·Goal 실행·배포는 시작하지 않았다.
+작성일: 2026-10-18. 최종 개정: 2026-10-21. 10월 18일 통합본의 Codex·Claude 검수는 역사적 기록이다. 이번 완전관리형 제품·개인화·보안 요구사항 개정은 Codex가 반영했으며 Claude 재검수는 수행하지 않았다. 문서 반영은 제품 구현·보안 인증·배포 완료를 뜻하지 않는다.
+
+[2026-10-21 서비스 상세 계획](../docs/agentops/13.hosted-personalized-service-plan.md)은 이 문서의 제품·보안·학습·사업 요구사항을 구체화한다. [시각화 HTML](../docs/agentops/codeforge-service-design-review-2026-10-21.html)은 검토용 설명 자료다. 실행 순서와 완료 조건은 이 문서를 따른다.
 
 이 문서를 **통합 실행 순서의 단일 기준**으로 사용한다. `docs/agentops/09·11·11b·12`는 제품 목적과 세부 요구사항, 8·9월 계획은 이력으로 보존한다. 단계·지원 범위·기술 선택이 다르면 이 문서의 단계표와 결정 상태를 따른다. [통합 검수 기록](../docs/agentops/evidence/2026-10-18-integrated-plan-review.md)에 변경 근거와 남은 검증을 기록한다.
 
@@ -10,7 +12,7 @@
 
 현재 CodeForge의 규칙·스킬·Smith는 저장소에 맞는 작업 환경을 구성한다. Claude·Codex는 분석·코딩 실행기, Herdr는 터미널 제어, Glow는 세션 표시, Hermes는 선택형 예약·전송 기능을 제공한다. 새 core는 이 기능들을 연결하면서 작업 기준·검증 결과·승인·복구 기록을 유지한다. 기존 도구를 재사용하는 범위와 새로 구현하는 책임은 §2의 표를 따른다.
 
-이 문서는 기존 CodeForge 리팩토링과 최근 AgentOps 계획을 하나의 실행 순서로 합친다. **기존 `code-forge`는 멀티호스트 규칙·스킬·설치 제품으로 개선하고, 장기 실행·독립 검증·승인 원장은 새 `code-forge-core` 저장소에 만든다**는 것이 권고안이다. 새 이름은 가칭이다. 두 저장소가 같은 실행 상태를 각각 관리하지 않도록 책임과 연결 계약부터 고정한다.
+기존 `code-forge`는 독립적으로 유용한 무료 OSS로 유지한다. 이를 사용하는 완전관리형 개인화 제품은 별도 제품 저장소를 권고하되, G0b에서 pack 소비·설치 분리 실험 후 확정한다. 새 core 저장소를 먼저 만드는 것은 선행 조건이 아니다. Atelier는 제품 이름 후보이며 이름 변경·상표 확인·새 저장소 생성은 아직 하지 않았다. 제품은 승인된 개인 지식과 판단 기준을 필요한 만큼 사용하고, 코드 개선 결과를 독립 검증한다. 같은 Work의 실행 원장은 하나만 둔다.
 
 멀티모델은 기존 계획에 이미 포함돼 있었다. 다만 현재 로컬은 Claude 중심 구현과 Codex 부분 지원 상태이며, 공통 정책을 썼다는 사실만으로 네이티브 지원이나 자동 라우팅이 완성된 것은 아니다. **기존 제품의 두 native pack과 새 코어의 두 runtime을 각각 출시 조건으로 둔다.** G2의 단일 runtime 실증은 내부 alpha이며, Claude/Codex 양쪽을 통과한 G3에서 멀티모델 제품 지원을 선언한다. GLM·Qwen 등은 같은 계약을 통과한 작업 유형부터 확장한다.
 
@@ -41,11 +43,11 @@
 
 | 선택 | 이점 | 비용과 판단 |
 |---|---|---|
-| 기존 저장소에 모두 구현 | 한 저장소에서 개발·리뷰 가능 | Claude 플러그인 설치물에 daemon·DB·웹·다중 runtime 책임이 섞임. 이번 권고에서 제외 |
+| 기존 저장소의 분리된 패키지에서 실증 | 한 저장소에서 개발·리뷰 가능 | 설치물·배포·의존성을 분리할 수 있는지 G0b에서 검증. 실험 단계의 유효한 선택 |
 | 기존 제품을 폐기하고 새 저장소로 전부 이동 | 새 구조에 일괄 정리 | 사용자 설정·배포·미커밋 개선 이관 부담이 큼. 제외 |
 | 기존 제품 개선과 새 코어 분리 | 기존 사용자 호환성을 유지하며 중립 실행 플랫폼 구축 | 버전 협상·통합 검증 필요. **권고안** |
 
-`CodeForge`는 전체 제품군을 뜻한다. 기존 `code-forge`는 공통 규칙·스킬과 host pack 제품이고, 새 저장소는 신뢰·실행 코어다. Claude/Codex별로 원본 저장소를 나누지 않는다. 기존 제품은 새 코어 없이도 두 호스트에서 선택한 기능을 제공하는 것이 목표다. 새 코어는 Claude 플러그인 설치 없이 versioned pack artifact·저장소 profile·runtime adapter로 실행할 수 있어야 한다. pack은 설치 때 pin하며 세션 시작에 원본 저장소를 자동 갱신하지 않는다.
+CodeForge는 기존 OSS의 이름으로 유지하고, 새 관리형 제품의 이름과 저장소 경계는 별도 결정한다. 아래의 `core`는 논리적 실행 책임이며 반드시 독립 저장소나 마이크로서비스를 뜻하지 않는다. Claude/Codex별로 원본 저장소를 나누지 않는다. 기존 제품은 가입·유료 서버 없이 독립 사용 가능해야 한다. 새 제품은 Claude 플러그인 설치 없이 versioned pack artifact·저장소 profile·runtime adapter로 실행한다. pack은 설치 때 pin하며 세션 시작에 원본 저장소를 자동 갱신하지 않는다.
 
 | 대상 | 책임 | 갖지 않는 책임 |
 |---|---|---|
@@ -156,7 +158,7 @@ compiler의 최소 descriptor는 stable component ID·기존 alias·trigger/nega
 
 ## 5. 새 코어의 첫 완성 범위
 
-첫 제품은 공개 코드 저장소 하나에서 다음 흐름을 끝까지 수행한다.
+첫 내부 실증은 공개 코드 저장소 하나에서 다음 흐름을 끝까지 수행한다. 첫 고객용 alpha는 GH의 완전관리형 환경에서 제공하며 로컬 설치를 가입 조건으로 삼지 않는다.
 
 ```text
 개선 목표와 저장소 선택
@@ -177,7 +179,7 @@ G0b에서 `WorkSpec`, `PolicySnapshot`, `RepositoryProfile`, `VerificationRecipe
 
 상태는 Work, Attempt, 검사 결과, 외부 Action을 분리한다. `QUEUE_DRAINED`나 provider의 turn 완료는 Work 검증 완료가 아니다. action의 `PREPARE → PROPOSE → APPLY → POST_APPLY_VERIFY`와 Attempt 내부 GAVA의 코드 작성 `APPLY`는 namespace로 구분한다. 각 전이에 필요한 증거와 실패·취소 경로를 표로 정의한다. 질문이 필요한 노드만 `WAITING_DECISION`으로 두고 독립 노드는 계속 진행한다. 버전이 달라진 질문의 답은 자동 적용하지 않는다.
 
-SQLite WAL, migration, transaction outbox, lease·heartbeat·recovery를 구현한다. 네트워크를 포함한 exactly-once를 가정하지 않는다. 외부 action 결과가 불명확하면 idempotency key 또는 readback으로 조정하기 전 재시도하지 않는다. 만료된 worker가 새 worker 결과를 덮어쓰지 못하도록 attempt/lease 세대를 검사한다.
+로컬 실증은 SQLite WAL을 후보로 사용하고 관리형 저장소는 tenant 격리·동시성·백업 실험 뒤 결정한다. migration, transaction outbox, lease·heartbeat·recovery를 구현한다. 네트워크를 포함한 exactly-once를 가정하지 않는다. 외부 action 결과가 불명확하면 idempotency key 또는 readback으로 조정하기 전 재시도하지 않는다. 만료된 worker가 새 worker 결과를 덮어쓰지 못하도록 attempt/lease 세대를 검사한다.
 
 첫 결합 시험은 사람이 검토한 WorkSpec 파일을 core CLI에 넣고 runtime 하나·폐기 가능한 worktree 하나·고정 검증·CLI 승인·로컬 반영·readback을 연결한다. 로컬 반영 대상도 별도 폐기 가능한 브랜치로 제한한다. 이후 같은 G2에서 durable 복구·질문·반응형 Inbox·별도 apply executor와 단일 장비의 OS wake/restart를 완성한다. `/start`의 managed 연결은 G2 후반, 두 호스트의 parity는 G3에서 검증한다. `exec` 기반 단발 실험은 해당 capability만 입증하며 structured session·cancel·resume 통과를 대신하지 않는다.
 
@@ -216,7 +218,13 @@ host-native, 현재 full harness 고정본, 얇은 공통 pack, 작업별 skill 
 
 준비 worker와 apply executor의 권한을 분리한다. 승인은 artifact digest·base SHA·policy digest·target·account·action·만료 시각에 묶고, 변경되면 재승인한다. 승인된 범위만 실행하고 결과를 readback으로 확인한다. Goal 생성이나 구현 승인만으로 push·PR·merge·배포 권한이 생기지 않는다.
 
-반응형 Inbox에는 후보 diff·검사·미확인·비용, 질문과 실제 반영 action을 구분해 보여 준다. 첫 버전은 단일 public realm의 로컬 실행과 다른 realm 거부 검사를 포함한다. 원격 모바일 접근은 G4에서 인증·realm·전송 검증 뒤 연다. 각 realm의 credential·원문·원장은 분리한다.
+반응형 Inbox에는 후보 diff·검사·미확인·비용, 질문과 실제 반영 action을 구분해 보여 준다. G2는 단일 public realm의 내부 실증과 다른 realm 거부 검사를 포함한다. 고객의 웹·모바일 접근은 GH의 인증·tenant·전송 검증을 통과한 관리형 환경에서 제공한다. G4는 이후 개인 로컬·조직 환경 연결을 뜻하며, GH로 회사 컴퓨터의 원격 제어 권한이 생기지 않는다. 각 realm의 credential·원문·원장은 분리한다.
+
+### 개인화와 정보 경계
+
+검색 전에 realm·source ACL·기기·작업 권한을 검사하고, 허용 자료 안에서 관련성·최신성·중복·토큰 예산으로 선택한다. 회사 원문을 개인 세션으로 읽은 뒤 마스킹하는 방식은 금지한다. 업무 존재 자체도 기본 비공개이며, 조직이 별도로 승인한 최소 상태 projection만 대상·TTL·철회 정책에 따라 개인 화면에 표시할 수 있다. 요약·임베딩도 원본 분류를 상속한다.
+
+직접 요청, 에이전트의 위임 프롬프트, 실제 전달문, 독립 검증 결과, 사용자 교정을 Work/Attempt로 연결한다. 원문 장기 보관·학습은 별도 동의와 realm 정책을 따른다. 에이전트 작성문을 사용자 선호로 자동 승격하지 않는다. 승인된 메모리와 프롬프트 생성기 최적화는 별도 흐름으로 관리한다. 상세 데이터 계약·공격 사례·삭제 범위는 서비스 상세 계획 §3~5를 따른다.
 
 기존 계획 승인·core의 Decision/Approval·host의 도구 승인을 같은 화면에서 관련 요청으로 묶고, 이미 허용된 범위를 반복 질문하지 않는다. 다만 한 종류의 승인이 다른 권한을 만들지는 않는다. 기존 Voice 입력을 보존하고 G3에서 질문 확인·응답·승인 범위 재확인을 연결한다. 답변을 잘못 인식했거나 version이 바뀌면 실행하지 않는다.
 
@@ -240,17 +248,19 @@ host-native, 현재 full harness 고정본, 얇은 공통 pack, 작업별 skill 
 | P0b 실행 계약 | 책임 ADR, 정답 fixture, host 능력표·runtime 실증·예산 | G0b에서 해당 작업의 blocking 결정만 해소. B는 host 능력표, C~F는 최소 schema 뒤 시작 |
 | P1 기반 병렬 구현 | 안전성 수리 뒤 host pack·설치, ledger·verifier·runtime stub·Inbox mock | P0 뒤 서로 독립된 모듈만 병렬. G1a 안전성·G1b 두 host pack을 구분하고 공통 schema는 단일 담당 |
 | P2 첫 수직 단면 | 단일 runtime의 격리 변경·독립 검증·질문·승인·반영·복구·단일 장비 무인 준비 | 작은 로컬 결합 시험 뒤 전체 수직 단면 완료. 실제 repo 개선·provenance·OS wake/restart·취소·stale 승인 검증 |
+| PH 완전관리형 alpha와 유료 파일럿 | 설치·키 없는 샘플 → 최소 권한 연동 → 격리 실행 → 독립 검증 → 보호된 preview → 승인된 반영 | G2 핵심 계약과 GH 격리·인증·예산·복구·삭제 검증 후 고객 제공. G1b/G3 미완료 시 지원 범위를 단일 runtime alpha로 명시 |
 | P3 멀티모델 출시 검증 | Claude/Codex 두 runtime·두 pack·서로 다른 repo profile, Glow·Voice·설치·복구 | 동일 핵심 계약, native/managed 독립 가치, 정책 위반·허위 PASS·중복 action 부재와 작업 효과 검증 |
-| P4 선택 확장 | G4 원격 모바일·별도 authority/worker, GLM/Qwen, 지식 검색·언어/prompt 최적화, Flow/Hearth·팀 기능 | P3 이후 수요·eval·운영 비용별 Goal. 단일 장비 무인 준비와 최소 context 출처 기록은 P2에서 동작 |
+| PL 학습 평가 | 승인된 메모리·프롬프트 생성기 후보·모델별 평가·rollback | 수집·동의·출처는 G2/GH부터. GL의 독립 holdout과 보안·품질 기준을 충족한 뒤 GEPA 배치 최적화. 모든 요청에 최적화 실행 금지 |
+| P4 선택 확장 | G4 로컬 connector·조직 BYOC·사내망, 별도 authority/worker, 이후 폐쇄망·추가 provider·고급 hosting | GH/G3 뒤 수요와 보안 검증별 Goal. 개인 웹·모바일은 GH, 조직 원격 접근은 별도 허가. Flow/Hearth는 선택 사항 |
 
 | 기존 문서의 단계 | 이 통합 계획에서의 위치 |
 |---|---|
-| 9월 리팩터링의 기준선·안전성·기록 수리 | G0a → G1a. prompt 파일럿의 합성 평가 방법은 보존하고 활성 prompt 승격은 P4 |
+| 9월 리팩터링의 기준선·안전성·기록 수리 | G0a → G1a. prompt 파일럿의 합성 평가 방법은 보존하고 생성기 승격은 GL |
 | 09번 Phase 0, 11번 P0 계약, 12번 P0 계약 | G0b의 최소 fixture → P1 core 기반. 전 객체의 영구 schema 고정을 선행 조건으로 두지 않음 |
 | 09번 Phase 1, 11번 P1, 12번 P1 개인 수직 단면 | G2. 공개 코드 profile 하나·runtime 하나, 단일 장비 무인 준비 포함 |
 | 09번 Phase 2, 11번 P2, 12번 P2의 두 runtime | G3. 두 native pack은 별도 G1b 검증 |
-| 09번 Phase 3, 11번 P3, 12번 P2의 원격·모바일·별도 worker | G4. 단일 장비 OS wake/restart와 구분 |
-| 09번 Phase 4~6, 11번 P4~P6, 12번 P3, 8월 Flow 실행 엔진 | P4 수요별 확장. Flow는 필수 엔진으로 채택하지 않음 |
+| 09번 Phase 3, 11번 P3, 12번 P2의 원격·모바일·별도 worker | 관리형 웹·모바일은 GH, 로컬·조직 connector는 G4. 단일 장비 복구와 구분 |
+| 09번 Phase 4~6, 11번 P4~P6, 12번 P3, 8월 Flow 실행 엔진 | 학습 기반은 G2/GH·최적화는 GL, 조직/고급 확장은 P4. Flow는 필수 엔진으로 채택하지 않음 |
 | `codex-coexistence.md`의 pack 단계 | G1b의 생성·설치·실호스트 검증. core runtime 단계와 구분 |
 
 첫 runtime 후보는 현재 CLI가 있는 Codex지만, P0 실증에서 구조화 이벤트·인증·필수 권한 경계가 안 맞으면 Claude를 먼저 연결한다. **연결 순서가 바뀌어도 P3의 두 runtime 조건은 유지한다.** native pack은 개발 호스트의 사용성이고 runtime adapter는 코어 실행 능력이므로 각각 테스트한다.
@@ -283,8 +293,10 @@ lane 수는 동시 에이전트 수가 아니다. P1은 A+B와 코어 기반 중
 | G1a 기존 제품 안전성 | 재현된 gate·state·hook·handoff 결함 수리, 기존 alias·Smith 정책·Voice·Glow 회귀 | 전역 무인 원장 |
 | G1b 두 호스트 pack | 공용 본문·descriptor, Claude/Codex 발견·권한·설치·재설치·제거, 사용자 설정·기존 hook 보존, core 없는 사용 | core runtime 지원 완료 주장 |
 | G2 코어의 개인 수직 단면 | runtime 하나·repo 하나의 실제 개선·독립 검증·질문/승인·반영/readback, provenance·단일 realm과 타 realm 거부·OS wake/restart·취소 | 모든 provider·외부 action·원격 모바일·새 Voice 승인 기능·팀 서버 |
+| GH 관리형 고객 alpha | G2 핵심 계약, tenant 격리·웹/모바일 인증·짧은 토큰·취소/복구, no-key 샘플, 최소 권한 repo 연동, 보호 preview, 비용 예약/정산·삭제·운영 대응 | 조직 장비 접근·무제한 실행·상시 앱 hosting 포함 주장. 상세 계획 §2·7의 출하 검사 필수 |
+| GL 개인화 개선 | 수집 동의·출처·승인 메모리, 계보별 분리 eval/holdout, 모델별 품질·보안 비퇴행, 후보 검토·점진 배포·rollback·삭제 전파 | 모델 가중치 튜닝·모든 모델 최적 보장·조직 자료의 개인 학습 전용 |
 | G3 멀티모델과 family 출시 gate | 두 runtime·두 pack·두 profile, native/managed·Glow·Voice·호환성·복구·실제 효과 보고 | GLM/Qwen·Hearth 지원 완료 주장 |
-| G4 교차 기기와 상시 접근 | 원격 모바일 인증·질문/승인, 별도 authority/worker, disconnect·전원 장애·중복 응답 검사 | 팀 Hub·임의 provider 지원 |
+| G4 로컬·조직 연결 | connector·BYOC·조직 IdP/기기 정책·realm별 저장소/키·egress 통제, disconnect·전원 장애·중복 응답 검사. 폐쇄망은 별도 오프라인 공급망·무통신 검사 | 개인 인증으로 회사 자료 접근·외부 모델 자동 fallback·임의 provider 지원 |
 
 각 Goal에는 repo·branch·base SHA·쓰기 허용 경로·선행 Goal·소유 파일·검증 명령·중단 조건·token/시간/비용/동시성 상한을 붙인다. G0b의 인증 실증 전에는 허용된 account alias·realm·호출 범위와 실행 상한을 확인한다. 기존에 유효하게 허용된 범위는 재사용하고 새로운 유료 예산은 별도 결정한다. 결정 대기는 해당 실증만 차단하며 G0a·G1a의 독립 작업은 계속할 수 있다. 같은 실패 원인이 반복되고 새 증거가 없으면 해당 경로만 중단·보고한다.
 
@@ -315,8 +327,10 @@ lane 수는 동시 에이전트 수가 아니다. P1은 A+B와 코어 기반 중
 
 | 항목 | 권고안 | 결정이 필요한 시점 |
 |---|---|---|
-| 저장소 경계 | 기존 code-forge 유지 + 새 code-forge-core 가칭 | G0 시작 전 |
-| 제품·메타포 | CodeForge 전체 제품군, 기존 host pack과 새 신뢰·실행 core의 이름·역할 구분 | G0 ADR |
+| 저장소 경계 | CodeForge 무료 OSS 유지 + 이를 소비하는 별도 제품 권고. 신규 core repo 필수 아님 | G0b packaging·consumer 실증 후 |
+| 제품·메타포 | CodeForge OSS, Atelier 가칭 제품. Library/Workbench/Inspector는 설명용 책임 이름 | G0 ADR·상표 검토 전 이름 확정 금지 |
+| 첫 고객 경험 | 완전관리형 GH, 로컬/BYOK는 선택. 실행·임시 preview·상시 앱 hosting 비용 분리 | G0b 비용/격리 실증, 고객 제공 전 GH |
+| 수익 구조 | 기본 구독 + 제한된 사용량 + 명시적 추가 구매. 가격은 가설, 무제한 약속 금지 | 유료 파일럿 전 실제 원가·약관 검증 |
 | 기존 계획과의 관계 | 이 통합 계획을 실행 순서 기준으로 채택. 기존 문서는 요구사항·이력으로 보존 | G0 시작 전 |
 | 직접/관리 실행 | 작은 작업은 native, 장기 목표는 명시적 managed. 설치만으로 자동 전환 금지 | G0 계약 |
 | 정책·판정 권위 | advisory/preference와 집행 항목 구분, managed verdict는 core, host permission 별도 | schema fixture 전 |
@@ -325,7 +339,7 @@ lane 수는 동시 에이전트 수가 아니다. P1은 A+B와 코어 기반 중
 | Hearth | 휴면 백업. 다중 source Markdown 수요와 안전성·schema·parser gate 뒤 유지/흡수/archive | G0 동결, P4 재평가 |
 | Glow·Herdr | Glow는 projection, Herdr는 권한 있는 제어 adapter. 실제 설치·능력 별도 검증 | G0 능력표 |
 | Voice·Whetstone | 접근성 경로·승인된 개인 프로필·사람 학습 보존, 자동 규칙 승격 금지 | G1 baseline 전 |
-| context·언어 | 실제 선택 source/revision/digest/realm/locale를 첫 실행부터 기록, 검색·자동 언어 최적화는 후속 | G0 최소 fixture |
+| context·언어 | 권한 선검사·최소 선택·출처는 G2/GH부터. 고급 검색 UI·자동 언어 최적화는 후속 | G0 최소 fixture, GH 누출 검사 |
 | 멀티모델 범위 | Claude/Codex 두 runtime·두 native pack을 초기 출시 gate로 지정 | G0 시작 전 |
 | 첫 실증 범위 | 공개 코드 저장소 한 곳과 구조화 runtime 하나, 이후 두 번째로 범용성 확인 | G0에서 repo·runtime 확정 |
 | 기술 재결정 | 10월 Go+TS 결정과 TS 단일 후보를 설치·복구·SDK 실험으로 비교, SQLite WAL 검증 | G0 실험 뒤 ADR |
@@ -334,4 +348,4 @@ lane 수는 동시 에이전트 수가 아니다. P1은 A+B와 코어 기반 중
 | 데이터 보존 | realm별 DB·artifact·원문 수집 범위·retention·export/delete·백업 정책 | 첫 managed 실행 전 |
 | 공개와 라이선스 | 새 저장소 공개 범위·라이선스는 별도 확정. 비공개 참고 코드 복사 안 함 | 저장소 공개·배포 전 |
 
-이번 작업은 공개 문서 통합과 요청된 교차 모델 검수다. Goal·새 저장소·runtime 계정 연결·인접 저장소 변경·배포는 별도 구현 단계다. 구현 시작 시 G0a에서 복원 가능한 baseline을 확보하고, G0b의 미결 결정은 의존하는 작업에만 적용한다.
+이번 개정은 공개 문서 통합이며 새 교차 모델 검수는 수행하지 않았다. Goal·새 저장소·runtime 계정 연결·인접 저장소 변경·배포는 별도 구현 단계다. 구현 시작 시 G0a에서 복원 가능한 baseline을 확보하고, G0b에서 packaging과 관리형 격리·원가를 함께 실증한다. 로컬 개발 실증을 고객의 설치 의무로 해석하지 않는다.
