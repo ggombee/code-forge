@@ -1,0 +1,7 @@
+interface:
+  display_name: "Polish Korean"
+  short_description: "사실과 구조를 지키며 한국어 문장을 자연스럽게 윤문"
+  default_prompt: "Use $polish-korean to polish this Korean draft without changing its facts, structure, or technical terms."
+
+policy:
+  allow_implicit_invocation: true

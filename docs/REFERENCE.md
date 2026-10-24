@@ -69,7 +69,7 @@
 
 ---
 
-## 스킬 (산출: `ls skills/*/SKILL.md | wc -l` — 2026-06-12 디스크 기준 재생성)
+## 스킬 (산출: `ls skills/*/SKILL.md | wc -l` — 2026-10-24 디스크 기준 재생성)
 
 > ⚠️ `/done` `/bug-fix` `/refactor` `/quality`는 **v4.0에서 폐지** — 규칙/훅으로 흡수됨. 대체 매핑은 [`docs/CATALOG.md`](CATALOG.md) 참조. 문서에 다시 추가하지 말 것.
 
@@ -78,7 +78,8 @@
 | 스킬 | 용도 |
 |------|------|
 | `/start` | MD/Jira/텍스트 → 분석 → 구현 → 검증 → 커밋 → PR. `--auto` 비블로킹 |
-| `/handoff` | 세션 핸드오프 — 중요 맥락 → progress.md 갱신 + 킥오프 프롬프트 클립보드 복사 |
+| `/handoff` | 기존 활성 체크포인트 하나를 갱신해 세션·도구 사이에서 작업 맥락을 이어감 |
+| `/polish-korean` | 사실과 의도를 보존하면서 한국어 초안의 번역투·AI식 표현·중복을 윤문 |
 | `/test` | 테스트 통합 진입점 (유닛/E2E/세팅 자동 라우팅) |
 | `/e2e` | 화면 단위 E2E 자동화 (Figma/코드 → Playwright → Forge Loop) |
 | `/setup-e2e` | Playwright E2E 환경 세팅 |

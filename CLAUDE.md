@@ -23,7 +23,8 @@ claude plugin install code-forge
 
 ```
 /start feature.md   → 분석 → 구현 → 검증 → 커밋 → PR (원큐; 완료 검증/버그 옵션 제시는 규칙·훅에 흡수 — docs/CATALOG.md)
-/handoff            → 세션 핸드오프 (중요 맥락 → progress.md + 킥오프 프롬프트 클립보드)
+/handoff            → 활성 체크포인트 하나로 연속 작업의 맥락 유지
+/polish-korean      → 사실·의도를 보존하는 한국어 윤문
 /test               → 테스트 통합 진입점 (유닛/E2E/세팅 자동 라우팅)
 /setup              → 스택 감지 → CLAUDE.md + AGENTS.md 생성
 ```

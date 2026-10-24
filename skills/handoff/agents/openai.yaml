@@ -1,0 +1,7 @@
+interface:
+  display_name: "Handoff"
+  short_description: "기존 체크포인트를 지시·결과마다 갱신해 Claude·Codex 사이 맥락을 잇는다"
+  default_prompt: "$handoff로 기존 체크포인트를 찾아 받은 결과와 다음 작업을 갱신하고, 같은 문서로 이어갈 프롬프트를 만들어줘."
+
+policy:
+  allow_implicit_invocation: true
