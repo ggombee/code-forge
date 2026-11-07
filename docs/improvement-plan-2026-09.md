@@ -1,6 +1,6 @@
 # CURRENT — CodeForge 개선 계획
 
-2026-11-07 · G0b 첫 좁은 구현·실제 검증 기록 보완 · 이전 기획 문서 브랜치 `docs/agentops-platform-plan` · 기획 문서 4개 게시·원격 SHA 일치 확인 기준 `a2ecb128d9928e7645a345f5fccd14a35b1028ee` · 이전 문서 준비 기준 `388107defbca80cef612e14716ea2dc0c7242cb0`.
+2026-11-07 · G0b 첫 좁은 구현 게시 후 상태 갱신 · 게시 브랜치 `docs/agentops-platform-plan` · 구현 산출물 게시·원격 readback SHA 일치 확인 기준 `3172165773f365173b8cfce5c3954826afcc5505`.
 
 전체 목표는 웹/모바일의 쉬운 채팅 진입점과 개발자 TUI·편리한 workspace가 같은 Core의 Work·정책·증거·승인·복구·scoped memory를 사용하는 플랫폼이다. 초기 controlled OMP fork와 기존 terminal 기반을 재사용하고 upstream은 검증 후 선택 반입한다. Tern은 선택 host이며 필수 tenant sandbox가 아니다. 비개발자만을 대상으로 좁히지 않는다.
 
@@ -12,7 +12,7 @@
 
 ## 상태와 이번 승인 범위
 
-기획 통합안과 그 원문에 기록된 실제 Claude 독립 검토·개인 Codex 대조/감사는 지정 자료 범위의 계획 검수다. 제품 구현·보안/격리 실증·시장 검증·출시 완료가 아니다. 그 뒤 사용자의 별도 구현 승인으로 실제 개인 Codex 세션들이 첫 실험을 구현했고 부모가 실제 실행·검증했다. 이번 마무리는 실행 가이드·이 CURRENT·기존 실행 계획·CHANGELOG 네 문서에 한정하며, 앱·테스트·추가 모델 실행을 반복하지 않는다.
+기획 통합안과 그 원문에 기록된 실제 Claude 독립 검토·개인 Codex 대조/감사는 지정 자료 범위의 계획 검수다. 제품 구현·보안/격리 실증·시장 검증·출시 완료가 아니다. 그 뒤 사용자의 별도 구현 승인으로 실제 개인 Codex 세션들이 첫 실험을 구현했고 부모가 실제 실행·검증·게시했다. 이번 승인 범위는 게시 결과를 반영하는 이 CURRENT 한 파일의 상태 갱신이며, 앱·테스트·추가 모델 실행을 반복하지 않는다.
 
 단계적으로 구현 계획을 확정하는 첫 실제 결정에서 사용자는 **데스크톱의 ‘작업 진행 중’ 기본 구조로 결과 작업대 중심을 선택했다.** 홈페이지·문서·기타 산출물이 중앙의 주인공이고, 대화는 결과를 지시하는 열고 닫는 보조 영역이다. 작업 탐색은 얇게 두고 질문·변경·검증·승인은 해당 결과와 연결해 접근한다.
 
@@ -36,11 +36,13 @@
 
 **G0a/G0b 전체 gate는 미완료**다. provider identity의 충분한 증명·backend model 관측, 공급자 상업 OAuth 약관·원가/금액 cap, OMP isolated personal OAuth/RPC 접속·취소·복구, 실제 다른 호스트·원격 OS 차이, packaging·격리·기억·복구 등 남은 계약을 생략하지 않는다. 현재 budget은 호출 예약 횟수 cap이며 USD/token hard cap이 아니다. 공개 multi-tenant, Tern SDK, 네이티브 앱·웹·Telegram, provider 과금 취소/외부 effect rollback, OS 전체 sandbox는 미구현/미검증이다. CLI read-only·clean env·도구 이벤트 감시는 OS 전체 read/network 격리가 아니다.
 
-기존 기획 문서 네 개는 `a2ecb128d9928e7645a345f5fccd14a35b1028ee`로 게시됐고 실제 원격 readback의 SHA 일치까지 확인됐다. 이전의 ‘commit/push하지 않았다’는 문서 후보 당시 상태이며 현재 게시 상태가 아니다. main·릴리스·제품 배포는 승인 범위에 포함되지 않는다.
+기존 기획 문서 네 개의 게시·원격 readback 확인 기준은 `a2ecb128d9928e7645a345f5fccd14a35b1028ee`이며 이전 기획 게시 이력으로 유지한다.
 
-첫 실험 코드·회귀 테스트·실행 가이드와 기존 계획 상태 갱신을 `docs/agentops-platform-plan`에 게시하는 승인은 이미 받았다. **첫 실험의 제품코드와 이번 문서 보완은 아직 commit/push하지 않았다.** 이번 문서 마무리는 게시·버전 범프·배포를 수행하지 않는다. 향후 게시도 정확한 승인 범위와 공식 guard·기존 Git hooks를 지키며, 최종 커밋 자신의 SHA를 본문에 미리 쓰지 않는다.
+**첫 실험 코드·회귀 테스트·실행 가이드와 기존 계획 상태 갱신은 승인된 `docs/agentops-platform-plan`에 구현 커밋 `3172165773f365173b8cfce5c3954826afcc5505`로 일반 push됐고, 실제 원격 readback도 같은 SHA로 확인됐다.** main 게시·플러그인 버전 변경·배포는 수행하지 않았다. 이 CURRENT는 구현 증거 커밋을 가리키며, 이번 상태 갱신에서는 commit/push·버전 범프·배포를 수행하지 않는다.
 
-root main의 dirty 상태·사용자 변경·인덱스와 오래된 미존재 worktree 등록은 보존됐다. 첫 구현은 현재 별도 detached checkout에 있다. root의 미추적 동명 CURRENT는 읽거나 복제하지 않고 이전 게시 기준 문서 구조를 유지한다. 이번 마무리는 네 문서만 다루며 코드·테스트·설정·`.git`·상세 원문·다른 worktree를 변경하지 않는다. 자기 커밋 SHA를 쓰는 amend loop는 만들지 않는다.
+게시 전 공식 personal identity·destination·14파일 inspect·staged·pre-commit·pre-push gate를 통과했고, 시험 서버 중지·신규 SSH 시험키 삭제·throwaway smoke scripts 정리를 완료했다.
+
+root main의 HEAD·dirty 상태·사용자 변경·인덱스와 오래된 미존재 worktree 등록은 보존됐다. 현재 detached worktree의 HEAD와 index는 구현 커밋 `3172165`에 맞춰져 있다. root의 미추적 동명 CURRENT는 읽거나 복제하지 않고 이 진입점 하나만 유지한다. 이번 갱신은 이 CURRENT만 다루며 코드·테스트·설정·`.git`·상세 원문·다른 worktree를 변경하지 않는다. 자기 커밋 SHA를 쓰는 amend loop는 만들지 않는다.
 
 ## 무결성과 이식 범위
 
@@ -54,6 +56,6 @@ root main의 dirty 상태·사용자 변경·인덱스와 오래된 미존재 wo
 
 데스크톱 작업 진행 중의 결과 작업대 중심 정보 구조와 개발자 TUI·원격 사용 우선 순서는 확정됐다. 웹의 필수 정보·작업 흐름, 시각 방향·실제 레퍼런스·작은 와이어프레임 검토는 후속 단계에 남기며 바로 할 일로 두지 않는다. 첫 요청의 채팅 진입점·모바일·TUI의 경계는 위 선택 범위를 따른다. 첫 실험의 경계는 이 저장소의 `experiments/g0b-tui-remote/`, Python stdlib·SQLite, 개인 Codex CLI와 macOS loopback SSH로 정해 실제 검증했다. 제품 이름·최종 언어/배포 구조·controlled OMP fork 실제 변경 범위·최소 실행 계약의 정식 채택·후속 runtime/host 조합은 아직 확정하지 않았다. provider별 BYOK/허용 OAuth·local/managed 약관과 원가, 사용자 간 인증·기억·비용 격리 실증, 삭제/backup·유료 반복 사용은 결정 또는 검증 대기다. Paperthin/Hermes는 근거 확인과 선택 평가가 남은 참고 후보이며 필수 의존성·도입 완료가 아니다. 가격·quota·라이선스 조건을 새로 확정하지 않는다.
 
-**다음 한 단계:** 이 첫 실험을 근거로 최소 실행 계약(상태·action·독립 검증·승인·readback·단절/재접속/취소/unknown 복구)을 검토·확정하고, OMP isolated personal OAuth/RPC 접속 실증 또는 실제 다른 호스트 원격 실증 중 우선할 한 단계를 좁힌다. 이미 선택한 개발자 TUI·원격 타깃, 첫 개인 Codex runtime과 웹 후속 순서를 다시 묻지 않는다. 기존 plugin 수리와 새 Core/controlled fork G0b는 분리하며, 새 디자인·프로토타입이나 기각 시안을 자동으로 재개하지 않는다.
+**다음 한 단계:** 이 첫 실험을 근거로 실제 제품 Core/controlled fork의 파일 경계와 최소 실행 계약(상태·action·독립 검증·승인·readback·단절/재접속/취소/unknown 복구)을 검토·확정하거나, OMP isolated personal OAuth/RPC 접속 실증과 실제 다른 호스트 원격 실증 중 우선할 한 단계를 좁힌다. 이미 선택한 개발자 TUI·원격 타깃, 첫 개인 Codex runtime과 웹 후속 순서를 다시 묻지 않는다. 기존 plugin 수리와 새 Core/controlled fork G0b는 분리하며, 새 디자인·프로토타입이나 기각 시안을 자동으로 재개하지 않는다.
 
-이번 문서 확인은 네 문서의 내용 대조와 내부 상대 링크의 현재 checkout 파일 존재 확인에 한정한다. 앱·테스트를 재실행하지 않았고 외부 링크·앵커 도달은 검증하지 않았다. 실제 검증 근거의 파일명·통과범위와 한계는 실행 가이드에 기록했으며 로그·상태 DB·SSH key·생성 candidate·개인 메타데이터를 저장소에 반입하지 않는다.
+이번 문서 확인은 이 CURRENT의 게시 상태·다음 단계 재읽기와 로컬 게시 receipt의 구현·원격 SHA 일치 확인에 한정한다. 실제 모델·회귀 47개·독립 oracle 16개·SSH CLI·로컬 PTY의 기존 검증은 재실행하지 않았고, 네트워크 조회·외부 링크·앵커 도달도 검증하지 않았다. 실제 검증 근거의 파일명·통과범위와 한계는 실행 가이드에 기록했으며 raw source·로그·상태 DB·SSH key·생성 candidate·계정 정보·개인 절대 경로를 저장소에 반입하지 않는다.
