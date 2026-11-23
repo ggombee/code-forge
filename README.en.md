@@ -70,7 +70,7 @@ Follow-ups like completion-validation and bug-fixing aren't separate skills; the
 
 ### `/handoff` — cut a session, continue later
 
-Instead of trusting auto-compact, it documents the context that lives only in the conversation (decisions, rationale, open questions) into `progress.md`, then copies a kickoff prompt for the next session to your clipboard. The next session picks it back up via session-init injection.
+Updates one existing active checkpoint with decisions, unanswered requests, exact working state, and files read/modified, then prepares a kickoff prompt. If a clipboard tool is unavailable, it prints the full prompt. The recipient checks the latest user instructions and actual state before proceeding; automatic omp handoffs are merged into the same checkpoint. In omp, use `/skill:handoff`, not the built-in `/handoff`. This skill does not change automatic compaction settings.
 
 ### Other key skills
 
@@ -78,6 +78,7 @@ Instead of trusting auto-compact, it documents the context that lives only in th
 |-------|-------------|
 | `/test` | Unified test entry point — routes to unit / E2E / setup automatically |
 | `/e2e` | Screen-level E2E automation (Playwright + autonomous run loop) |
+| `/design-parity` | Tool-neutral design comparison with an optional offline image board ([guide](skills/design-parity/SKILL.md)) |
 | `/debate` | Run a structured debate between models to decide direction |
 | `/research` | Fact-based structured research |
 | `/codex` | Pair programming with OpenAI Codex |

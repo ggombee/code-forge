@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff"
+  short_description: "기존 활성 체크포인트를 갱신하고 다음 작업자에게 인계"
+  default_prompt: "$handoff로 기존 활성 체크포인트를 갱신하고, 미응답 요청·정확한 작업 상태·파일 목록을 보존한 시작 프롬프트를 작성해 줘. 최신 사용자 지시와 대조하고 별도 인계 문서는 만들지 마."
