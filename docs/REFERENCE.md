@@ -78,9 +78,10 @@
 | 스킬 | 용도 |
 |------|------|
 | `/start` | MD/Jira/텍스트 → 분석 → 구현 → 검증 → 커밋 → PR. `--auto` 비블로킹 |
-| `/handoff` | 세션 핸드오프 — 중요 맥락 → progress.md 갱신 + 킥오프 프롬프트 클립보드 복사 |
+| `/handoff` | 기존 활성 체크포인트 갱신 + 시작 프롬프트. 미응답 요청·파일 목록 보존, omp 자동 인계 통합 (`/skill:handoff`) |
 | `/test` | 테스트 통합 진입점 (유닛/E2E/세팅 자동 라우팅) |
 | `/e2e` | 화면 단위 E2E 자동화 (Figma/코드 → Playwright → Forge Loop) |
+| `/design-parity` | 시안·실제 화면의 조건 고정 → 차이 분류 → 수정·재검증. 선택적 로컬 이미지 비교 보드 |
 | `/setup-e2e` | Playwright E2E 환경 세팅 |
 | `/cleanup` | 산출물 정리 (design-refs, test-results, .claude/state) |
 | `/generate-test` | BDD 시나리오 기반 테스트 생성 (`/test`가 위임) |
@@ -148,7 +149,7 @@
 |------|------|
 | `reflect.flag` | quality-gate 실패 시 다음 세션 ADAPT 강제 |
 | `quality.jsonl` | 검증 이벤트 로그 (외부 도구 소비) |
-| `progress.md` | 작업 이어가기 + 의사결정 누적 (`/start` append, `/handoff` 갱신, session-init 주입) |
+| `progress.md` | 기본 작업 진행 기록 (`/start` append, session-init의 마지막 80줄 주입). `/handoff`는 기존 활성 체크포인트를 우선하며 이 경로를 강제하지 않음 |
 | `route.json` | (예정) 실시간 라우팅 스냅샷 — `event-schema.md` §1 HYBRID |
 | `notepad.md` | (옵션) 사용자 작업 메모 |
 | `decisions.md` | (옵션) 설계 결정 누적 |
