@@ -1,0 +1,6 @@
+{
+  "type": "object",
+  "properties": {"candidate": {"type": "string"}},
+  "required": ["candidate"],
+  "additionalProperties": false
+}

@@ -5,6 +5,11 @@ code-forge 패치노트. 버전 범프 커밋에 본 파일 갱신이 **반드�
 
 ---
 
+## [미출시] — Experimental
+
+### 추가
+- **G0b 개인 Codex CLI·원격 TUI 첫 실험** — 별도 detached checkout에서 합성 파일의 detached 실행·독립 검증·승인·별도 반영/readback·loopback SSH 재접속을 실제 확인. [실행 가이드](experiments/g0b-tui-remote/README.md)와 기존 CURRENT·계획에 47개 테스트·oracle 16/16 근거와 한계를 기록. 전체 G0a/G0b gate·OMP RPC·실제 외부 원격 서버는 미완료이며 아직 commit/push·plugin 버전 범프·배포하지 않음.
+
 ## [4.11.0] — 2026-06-14
 
 > 재감사 워크플로우(19 에이전트)가 식별한 "게이트 없는 미처리 백로그" 중 코드 수정분. 마스터플랜 단계 외 품질 부채 정리.

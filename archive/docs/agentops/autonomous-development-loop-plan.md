@@ -3,7 +3,7 @@
 > 상태: 역사 자료 · 2026-10-18 통합 계획에서 실행 순서와 엔진 선택 재검토
 > 작성일: 2026-08-31
 > 기준점: code-forge HEAD 1779c8a와 현재 미커밋 작업 트리, flow-toolkit HEAD d15bf3c
-> 문서 역할: 당시 요구사항·판단 근거 보존. 현재 실행 순서는 [최종 개선 계획](code-forge-final-improvement-plan-2026-10-18.md)을 따른다. 아래 flow-toolkit 엔진·경로·수치·지원 설명은 당시 제안이며 현재 구현 완료를 뜻하지 않는다.
+> 문서 역할: 당시 요구사항·판단 근거 보존. 현재 실행 순서는 [최종 개선 계획](../../../plan/code-forge-final-improvement-plan-2026-10-18.md)을 따른다. 아래 flow-toolkit 엔진·경로·수치·지원 설명은 당시 제안이며 현재 구현 완료를 뜻하지 않는다.
 
 ---
 
@@ -1479,16 +1479,16 @@ shellcheck 같은 검증 도구 자체가 없으면 환경 prerequisite로 별�
 
 내부:
 
-- [설계 원칙](../docs/design-principles.md)
-- [Claude–Codex 공존 설계](../docs/codex-coexistence.md)
-- [통합 계약](../docs/contracts/INTEGRATION.md)
-- [상태 계약](../docs/contracts/state-schema.md)
-- [이벤트 계약](../docs/contracts/event-schema.md)
-- [라우팅 정책](../references/routing-policy.md)
-- [E2E 설계 계약](../docs/e2e-forge-loop-design.md)
-- [테스트 아키텍처](../docs/testing-architecture.md)
-- [현재 /start](../skills/start/SKILL.md)
-- [현재 /e2e](../skills/e2e/SKILL.md)
+- [설계 원칙](../../../docs/design-principles.md)
+- [Claude–Codex 공존 설계](../../../docs/codex-coexistence.md)
+- [통합 계약](../../../docs/contracts/INTEGRATION.md)
+- [상태 계약](../../../docs/contracts/state-schema.md)
+- [이벤트 계약](../../../docs/contracts/event-schema.md)
+- [라우팅 정책](../../../references/routing-policy.md)
+- [E2E 설계 계약](../../../docs/e2e-forge-loop-design.md)
+- [테스트 아키텍처](../../../docs/testing-architecture.md)
+- [현재 /start](../../../skills/start/SKILL.md)
+- [현재 /e2e](../../../skills/e2e/SKILL.md)
 - 당시 로컬 개발 문서 윤문 가이드: `skills/docs-polish/references/developer-writing.md`. 별도 미추적 WIP이므로 이번 계획 문서 커밋에는 포함하지 않으며, 배포된 참조로 취급하지 않는다.
 
 외부:

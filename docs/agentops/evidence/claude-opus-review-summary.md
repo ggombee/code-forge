@@ -48,7 +48,7 @@ Claude Opus와 세 라운드씩 두 차례 토론했다. 첫 토론은 현재 �
 ## 최종 반영
 
 - 제품 기준 문서: [`../11.codeforge-public-service-architecture-debate.md`](../11.codeforge-public-service-architecture-debate.md)
-- 작은 효용 실험: [`../10.codeforge-thin-coordinator-overengineering-validation.md`](../10.codeforge-thin-coordinator-overengineering-validation.md)
+- 작은 효용 실험: [`10.codeforge-thin-coordinator-overengineering-validation.md`](../../../archive/docs/agentops/10.codeforge-thin-coordinator-overengineering-validation.md)
 - 야간 실행 계약: [`../12.night-runner-reference-audit-and-design.md`](../12.night-runner-reference-audit-and-design.md)
 
 모델의 신뢰도 수치는 토론 내부의 판단 척도일 뿐 통계적 확률이 아니다. 실제 출시 결정은 문서에 정의한 사용자 행동·오류·검증·비용 지표로 다시 판단한다.
